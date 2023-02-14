@@ -1,0 +1,15 @@
+C:\src\CausalModel\Program\bin\Debug\net7.0\Program.exe
+C:\src\CausalModel\Program\bin\Debug\net7.0\Program.deps.json
+C:\src\CausalModel\Program\bin\Debug\net7.0\Program.runtimeconfig.json
+C:\src\CausalModel\Program\bin\Debug\net7.0\Program.dll
+C:\src\CausalModel\Program\bin\Debug\net7.0\Program.pdb
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.csproj.AssemblyReference.cache
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.GeneratedMSBuildEditorConfig.editorconfig
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.AssemblyInfoInputs.cache
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.AssemblyInfo.cs
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.csproj.CoreCompileInputs.cache
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.dll
+C:\src\CausalModel\Program\obj\Debug\net7.0\refint\Program.dll
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.pdb
+C:\src\CausalModel\Program\obj\Debug\net7.0\Program.genruntimeconfig.cache
+C:\src\CausalModel\Program\obj\Debug\net7.0\ref\Program.dll
