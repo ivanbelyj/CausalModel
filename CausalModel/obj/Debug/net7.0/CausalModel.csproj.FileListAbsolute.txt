@@ -1,0 +1,5 @@
+C:\src\CausalModel\CausalModel\obj\Debug\net7.0\CausalModel.csproj.AssemblyReference.cache
+C:\src\CausalModel\CausalModel\obj\Debug\net7.0\CausalModel.GeneratedMSBuildEditorConfig.editorconfig
+C:\src\CausalModel\CausalModel\obj\Debug\net7.0\CausalModel.AssemblyInfoInputs.cache
+C:\src\CausalModel\CausalModel\obj\Debug\net7.0\CausalModel.AssemblyInfo.cs
+C:\src\CausalModel\CausalModel\obj\Debug\net7.0\CausalModel.csproj.CoreCompileInputs.cache
