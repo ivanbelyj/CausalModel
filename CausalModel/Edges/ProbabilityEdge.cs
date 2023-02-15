@@ -79,6 +79,7 @@ namespace CausalModel.Edges
         /// (если вероятность определена как 0 или 1, любое фиксирующее значение не может
         /// повлиять на исход фактора)
         /// </summary>
-        public bool IsHappened => Probability - FixingValue > 0;
+        public static bool IsHappened(float probability, float fixingValue)
+            => probability - fixingValue > 0;
     }
 }

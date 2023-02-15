@@ -38,5 +38,10 @@ namespace CausalModel.Nodes
         public virtual bool IsRootNode() => ProbabilityNest.IsRootNest();
 
         public override string? ToString() => $"{Id} - " + (NodeValue?.ToString() ?? "null");
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 }

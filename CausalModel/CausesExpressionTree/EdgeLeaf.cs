@@ -1,4 +1,5 @@
 ﻿using CausalModel.Edges;
+using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,32 +22,11 @@ namespace CausalModel.CausesExpressionTree
         {
             Edge = edge;
         }
-        protected bool EvaluateNecessary()
+
+        public override bool Evaluate(float fixingValue, bool isCauseHappened)
         {
-            if (Edge.FixingValue is null)
-                throw new InvalidOperationException("Фиксирующее значение не установлено");
-
-            return Edge.IsHappened;
+            return ProbabilityEdge.IsHappened(Edge.Probability, fixingValue)
+                && (Edge.CauseId is null || isCauseHappened);
         }
-
-        protected bool EvaluateSufficient()
-        {
-            if (Edge.FixingValue is null)
-                throw new InvalidOperationException("Фиксирующее значение не установлено");
-
-            var cause = (IHappenable?)Edge.Cause;
-
-            // if (cause is not null && cause.IsHappened is null)
-            //     throw new NullReferenceException("Не определено, произошла ли причина");
-
-            // Исход ребер, не имеющих причин, зависит лишь от них самих
-            bool condA = cause is null ||
-                (/*cause.IsHappened is not null && */cause.IsHappened);
-            //bool condB = ProbabilityEdge.IsActuallyHappened(Edge.Probability,
-            //    Edge.FixingValue.Value);
-            return condA; // && condB;
-        }
-
-        public override bool Evaluate() => EvaluateNecessary() && EvaluateSufficient();
     }
 }

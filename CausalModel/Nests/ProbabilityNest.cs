@@ -18,11 +18,11 @@ namespace CausalModel.Nests
         /// Причинные ребра, структурированные в виде логического выражения. Значение
         /// выражения после вычисления определяет, произошло ли событие (узел модели)
         /// </summary>
-        public CausesExpression? CausesExpression { get; set; }
+        public CausesExpression CausesExpression { get; set; }
 
         // Для десериализации
         public ProbabilityNest() : this(null) { }
-        public ProbabilityNest(CausesExpression? expression)
+        public ProbabilityNest(CausesExpression expression)
         {
             CausesExpression = expression;
         }

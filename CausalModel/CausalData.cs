@@ -15,5 +15,6 @@ namespace CausalModel
             facts = new Dictionary<Guid, Fact<TNodeValue>>();
         }
         public Fact<TNodeValue> GetFactById(Guid id) => facts[id];
+        public IEnumerable<Fact<TNodeValue>> Nodes => facts.Values;
     }
 }
