@@ -34,7 +34,7 @@ namespace CausalModel.Edges
             }
         }
 
-        private double? fixingValue;
+        //private double? fixingValue;
         /// <summary>
         /// Значение, фиксирующее вероятность и определяющее, повлекла ли
         /// причинно-следственная связь за собой фактор события в текущей генерации.
@@ -42,32 +42,31 @@ namespace CausalModel.Edges
         /// и строго меньше 1.0
         /// Может принимать значение null, например, до генерации
         /// </summary>
-        public double? FixingValue
-        {
-            get => fixingValue;
-            set
-            {
-                if (value is null || value >= 0 && value < 1.0)
-                {
-                    fixingValue = value;
-                }
-                else
-                    throw new ArgumentOutOfRangeException("",
-                        "Некорректное фиксирующее значение");
-            }
-        }
+        //public double? FixingValue
+        //{
+        //    get => fixingValue;
+        //    set
+        //    {
+        //        if (value is null || value >= 0 && value < 1.0)
+        //        {
+        //            fixingValue = value;
+        //        }
+        //        else
+        //            throw new ArgumentOutOfRangeException("",
+        //                "Некорректное фиксирующее значение");
+        //    }
+        //}
 
-        public ProbabilityEdge(float probability, Guid? causeId = null,
-            float? actualProbability = null)
+        public ProbabilityEdge(float probability, Guid? causeId = null)
         {
             Probability = probability;
             CauseId = causeId;
-            FixingValue = actualProbability;
+            //FixingValue = actualProbability;
         }
 
         public override string ToString()
         {
-            string str = $"Probability: {Probability}; FixingValue: {FixingValue}; ";
+            string str = $"Probability: {Probability}; ";
             str += $"CauseId: {CauseId}";
             return str;
         }

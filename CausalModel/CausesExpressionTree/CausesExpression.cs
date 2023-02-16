@@ -12,7 +12,8 @@ namespace CausalModel.CausesExpressionTree
     /// </summary>
     public abstract class CausesExpression
     {
-        public abstract bool Evaluate();
+        public abstract bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+            IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider);
 
         /// <summary>
         /// Ребра, включенные в логическое выражение

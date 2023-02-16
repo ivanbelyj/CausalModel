@@ -29,8 +29,11 @@ namespace CausalModel.CausesExpressionTree
             return edges;
         }
 
-        public override bool Evaluate() =>
-            Operation(Operands.Select(expr => expr.Evaluate()).ToArray());
+        public override bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+            IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
+            => Operation(Operands.Select(expr => expr.Evaluate(factProvider,
+                happenedProvider, fixingValueProvider))
+                .ToArray());
 
         protected abstract bool Operation(bool[] operands);
     }

@@ -23,10 +23,16 @@ namespace CausalModel.CausesExpressionTree
             Edge = edge;
         }
 
-        public override bool Evaluate(float fixingValue, bool isCauseHappened)
+        public override bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+            IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
         {
-            return ProbabilityEdge.IsHappened(Edge.Probability, fixingValue)
-                && (Edge.CauseId is null || isCauseHappened);
+            bool probabilityHappened = ProbabilityEdge.IsHappened(Edge.Probability,
+                fixingValueProvider.GetFixingValue());
+            // Если причины нет, значит достаточно лишь выполнения самого фактора
+            // на основе вероятности
+            bool isCauseHappened = Edge.CauseId == null
+                || happenedProvider.IsHappened(Edge.CauseId.Value);
+            return probabilityHappened && isCauseHappened;
         }
     }
 }

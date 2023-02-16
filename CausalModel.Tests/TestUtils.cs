@@ -1,6 +1,7 @@
 ﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Edges;
 using CausalModel.Nests;
+using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +12,14 @@ namespace CausalModel.Tests
 {
     public static class TestUtils
     {
-        public static ProbabilityEdge NewFalseEdge() => new ProbabilityEdge(0, null, 0.5f);
-        public static ProbabilityEdge NewTrueEdge() => new ProbabilityEdge(1, null, 0.5f);
+        public static ProbabilityEdge NewFalseEdge() => new ProbabilityEdge(0, null);
+        public static ProbabilityEdge NewTrueEdge() => new ProbabilityEdge(1, null);
 
         // public static ProbabilityEdge NewRootEdge() => new ProbabilityEdge(1, null, 0.5);
         public static ProbabilityEdge NewNotRootEdge()
         {
-            var rootNode = NodeUtils.CreateNode(1, "root node", null);
-            return new ProbabilityEdge(1, rootNode.Id, 0.5f);
+            var rootNode = FactUtils.CreateNode(1, "root node", null);
+            return new ProbabilityEdge(1, rootNode.Id);
         }
 
         public static ProbabilityNest NewRootNest()
@@ -30,7 +31,7 @@ namespace CausalModel.Tests
 
         public static ProbabilityNest NewNotRootNest()
         {
-            var rootNode = NodeUtils.CreateNode(1, "root", null);
+            var rootNode = FactUtils.CreateNode(1, "root", null);
 
             var notRootEdge = new ProbabilityEdge(1, rootNode.Id);
 

@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace CausalModel
 {
-    public class CausalModel<TNodeValue>
+    public class CausalModel<TNodeValue> : IHappenedProvider, IFixingValueProvider
     {
         public event Action<Fact<TNodeValue>>? FactHappened;
 
-        private CausalData<TNodeValue> causalData;
+        private FactCollection<TNodeValue> causalData;
         private Dictionary<Guid, bool> factsHappened = new Dictionary<Guid, bool>();
 
         private Dictionary<Fact<TNodeValue>,
@@ -21,11 +21,14 @@ namespace CausalModel
         private Dictionary<Fact<TNodeValue>,
             List<FactVariant<TNodeValue>>> factsAndVariants;
 
-        public CausalModel(CausalData<TNodeValue> causalData) {
-            CausalData = causalData;
+        private Random rnd;
+
+        public CausalModel(FactCollection<TNodeValue> factCollection, int seed) {
+            CausalData = factCollection;
+            rnd = new Random(seed);
         }
 
-        public CausalData<TNodeValue> CausalData
+        public FactCollection<TNodeValue> CausalData
         {
             get => causalData;
             private set
@@ -34,6 +37,11 @@ namespace CausalModel
                 Initialize();
             }
         }
+
+        public bool IsHappened(Guid factId)
+            => factsHappened.ContainsKey(factId) && factsHappened[factId];
+
+        public float GetFixingValue() => (float)rnd.NextDouble();
 
         public void Fixate(Guid factId, bool? factHappened = null)
         {
@@ -49,7 +57,8 @@ namespace CausalModel
                 followsFromCauses = factHappened.Value;
             } else  // Иначе происшествие определяется на основе причин
             {
-                bool? isHappened = fact.ProbabilityNest.CausesExpression.Evaluate();
+                bool? isHappened = fact.ProbabilityNest.CausesExpression
+                    .Evaluate(causalData, this, this);
                 // Случай, когда недостаточно данных (некоторые причины
                 // еще не зафиксированы)
                 if (isHappened == null)
@@ -122,15 +131,13 @@ namespace CausalModel
         private FactVariant<TNodeValue>? SelectFactVariant(
             List<FactVariant<TNodeValue>> variants)
         {
-            Random rnd = new Random();
-
             // Собрать информацию о узлах и их общих весах, собрать сумму весов,
             // а также отбросить узлы с нулевыми весами
             var nodesWeights = new List<(Fact<TNodeValue> node, double totalWeight)>();
             double weightsSum = 0;
             foreach (var node in variants)
             {
-                double totalWeight = node.WeightNest.TotalWeight();
+                double totalWeight = node.WeightNest.TotalWeight(this);
                 if (totalWeight >= double.Epsilon)
                 {
                     nodesWeights.Add((node, totalWeight));
@@ -139,9 +146,6 @@ namespace CausalModel
             }
             if (weightsSum < double.Epsilon)
                 return null;
-
-            // Сумма вероятностей для выбора единственной реализации
-            // double weightsSum = nodes.Sum(node => node.WeightNest.TotalWeight());
 
             // Определить Id единственной реализации
             // Алгоритм Roulette wheel selection

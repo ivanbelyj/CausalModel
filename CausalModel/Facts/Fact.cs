@@ -11,15 +11,16 @@ namespace CausalModel.Nodes
     public class Fact<TNodeValue>
     {
         public Guid Id { get; set; }
+        
+        public ProbabilityNest ProbabilityNest { get; set; }
 
         /// <summary>
         /// Если null, то данное звено – только связующее
         /// </summary>
         public TNodeValue? NodeValue { get; set; }
-        public ProbabilityNest ProbabilityNest { get; set; }
 
         // Для десериализации
-        public Fact() : this(default, new ProbabilityNest()) { }
+        public Fact() : this(new ProbabilityNest(), default) { }
         public Fact(Guid id, ProbabilityNest probabilityNest,
             TNodeValue? nodeValue)
         {
@@ -27,7 +28,7 @@ namespace CausalModel.Nodes
             NodeValue = nodeValue;
             ProbabilityNest = probabilityNest;
         }
-        public Fact(TNodeValue? value, ProbabilityNest probabilityNest)
+        public Fact(ProbabilityNest probabilityNest, TNodeValue? value)
             : this(Guid.NewGuid(), probabilityNest, value) { }
 
         /// <summary>

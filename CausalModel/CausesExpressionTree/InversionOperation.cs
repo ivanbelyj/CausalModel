@@ -17,6 +17,8 @@ namespace CausalModel.CausesExpressionTree
 
         public override IEnumerable<ProbabilityEdge> GetEdges() => expression.GetEdges();
 
-        public override bool Evaluate() => !expression.Evaluate();
+        public override bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+            IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
+            => !expression.Evaluate(factProvider, happenedProvider, fixingValueProvider);
     }
 }

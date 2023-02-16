@@ -14,8 +14,11 @@ namespace CausalModel.Tests
             var falseEdge = TestUtils.NewFalseEdge();
             var trueEdge = TestUtils.NewTrueEdge();
 
-            Assert.False(new EdgeLeaf(falseEdge).Evaluate());
-            Assert.True(new EdgeLeaf(trueEdge).Evaluate());
+            var factCol = new FactCollection<string>();
+            var model = new CausalModel<string>(factCol, 123);
+
+            Assert.False(new EdgeLeaf(falseEdge).Evaluate(factCol, model, model));
+            Assert.True(new EdgeLeaf(trueEdge).Evaluate(factCol, model, model));
         }
 
         [Fact]
@@ -26,10 +29,13 @@ namespace CausalModel.Tests
             var trueEdge = TestUtils.NewTrueEdge();
             var trueEdge1 = TestUtils.NewTrueEdge();
 
-            Assert.False(Expressions.And(falseEdge, falseEdge1).Evaluate());
-            Assert.False(Expressions.And(falseEdge, trueEdge).Evaluate());
-            Assert.False(Expressions.And(trueEdge, falseEdge1).Evaluate());
-            Assert.True(Expressions.And(trueEdge, trueEdge1).Evaluate());
+            var factCol = new FactCollection<string>();
+            var model = new CausalModel<string>(factCol, 123);
+
+            Assert.False(Expressions.And(falseEdge, falseEdge1).Evaluate(factCol, model, model));
+            Assert.False(Expressions.And(falseEdge, trueEdge).Evaluate(factCol, model, model));
+            Assert.False(Expressions.And(trueEdge, falseEdge1).Evaluate(factCol, model, model));
+            Assert.True(Expressions.And(trueEdge, trueEdge1).Evaluate(factCol, model, model));
         }
 
         [Fact]
@@ -40,11 +46,13 @@ namespace CausalModel.Tests
             var trueEdge = TestUtils.NewTrueEdge();
             var trueEdge1 = TestUtils.NewTrueEdge();
 
+            var factCol = new FactCollection<string>();
+            var model = new CausalModel<string>(factCol, 123);
 
-            Assert.False(Expressions.Or(falseEdge, falseEdge1).Evaluate());
-            Assert.True(Expressions.Or(falseEdge, trueEdge).Evaluate());
-            Assert.True(Expressions.Or(trueEdge, falseEdge1).Evaluate());
-            Assert.True(Expressions.Or(trueEdge, trueEdge1).Evaluate());
+            Assert.False(Expressions.Or(falseEdge, falseEdge1).Evaluate(factCol, model, model));
+            Assert.True(Expressions.Or(falseEdge, trueEdge).Evaluate(factCol, model, model));
+            Assert.True(Expressions.Or(trueEdge, falseEdge1).Evaluate(factCol, model, model));
+            Assert.True(Expressions.Or(trueEdge, trueEdge1).Evaluate(factCol, model, model));
         }
 
         [Fact]
@@ -53,8 +61,11 @@ namespace CausalModel.Tests
             var falseEdge = TestUtils.NewFalseEdge();
             var trueEdge = TestUtils.NewTrueEdge();
 
-            Assert.True(Expressions.Not(falseEdge).Evaluate());
-            Assert.False(Expressions.Not(trueEdge).Evaluate());
+            var factCol = new FactCollection<string>();
+            var model = new CausalModel<string>(factCol, 123);
+
+            Assert.True(Expressions.Not(falseEdge).Evaluate(factCol, model, model));
+            Assert.False(Expressions.Not(trueEdge).Evaluate(factCol, model, model));
         }
 
 

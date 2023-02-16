@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Tests
+namespace CausalModel
 {
-    public class EdgesTests
+    public interface IFixingValueProvider
     {
-        // Todo:
+        public float GetFixingValue();
     }
 }

@@ -31,7 +31,7 @@ namespace CausalModel.Nests
         /// с произошедшими причинными событиями
         /// </summary>
         /// <returns></returns>
-        public double TotalWeight()
+        public double TotalWeight(IHappenedProvider happenedProvider)
         {
             if (edges.Count == 0)
                 throw new InvalidOperationException("Весовое гнездо не имеет ребер");
@@ -40,20 +40,12 @@ namespace CausalModel.Nests
 
             foreach (var edge in edges)
             {
-                var cause = (IHappenable?)edge.Cause;
-
                 // Если у весового гнезда нет причины, считается, что вес всегда влияет на выбор
-                if (cause is null)
+                if (edge.CauseId == null)
                 {
                     weightSum += edge.Weight;
                     continue;
-                }
-
-                //if (cause.IsHappened is null)
-                //    throw new NullReferenceException("На этапе вычисления суммы весового гнезда "
-                //        + " не было определено, произошло ли причинное событие");
-
-                if (cause.IsHappened)
+                } else if (happenedProvider.IsHappened(edge.CauseId.Value))
                     weightSum += edge.Weight;
             }
 

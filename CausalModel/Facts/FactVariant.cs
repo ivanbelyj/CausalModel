@@ -28,14 +28,15 @@ namespace CausalModel.Nodes
 
         public FactVariant(Guid id, Guid abstractNodeId, TNodeValue? value,
             WeightNest weightNest, ProbabilityNest? probabilityNest = null)
-            : base(id, probabilityNest ?? new ProbabilityNest(null, 1), value)
+            : base(id, probabilityNest ?? new ProbabilityNest(1, null), value)
         {
             AbstractFactId = abstractNodeId;
             WeightNest = weightNest;
         }
 
         public FactVariant(Guid abstractNodeId, WeightNest weightNest,
-            TNodeValue? value, ProbabilityNest probabilityNest)
+            ProbabilityNest probabilityNest,
+            TNodeValue? value)
             : this(Guid.NewGuid(), abstractNodeId, value, weightNest, probabilityNest)
         { }
 

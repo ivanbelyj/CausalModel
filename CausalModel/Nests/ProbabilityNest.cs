@@ -27,7 +27,7 @@ namespace CausalModel.Nests
             CausesExpression = expression;
         }
 
-        public ProbabilityNest(Guid? causeId, float probability)
+        public ProbabilityNest(float probability, Guid? causeId)
         {
 
             ProbabilityEdge edge = new ProbabilityEdge(probability, causeId);
@@ -40,29 +40,9 @@ namespace CausalModel.Nests
         /// структурирующего причинные связи.
         /// Допустимо вызывать, только если известно, имеют ли место все причины события.
         /// </summary>
-        public bool IsHappened() => CausesExpression.Evaluate();
-
-        // public bool IsHappenedNecessary() => CausesExpression.EvaluateNecessary();
+        // public bool IsHappened() => CausesExpression.Evaluate();
 
         public override IEnumerable<ProbabilityEdge> GetEdges()
             => CausesExpression.GetEdges();
-
-        //public override void DiscardEdge(Guid causeId)
-        //{
-        //    CausesExpression.Discard(causeId);
-        //    /* foreach (CausesOperation group in OperationsRoot)
-        //    {
-        //        foreach (CausalEdge edge in group.Operands)
-        //        {
-        //            if (edge.CauseId == causeId)
-        //            {
-        //                group.Operands.Remove(edge);
-        //                return;
-        //            }
-        //        }
-        //    } */
-        //}
-
-        // public static ProbabilityNest HappenedRootNest => new ProbabilityNest(null, 1);
     }
 }
