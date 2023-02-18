@@ -1,4 +1,4 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using System;
 using System.Collections.Generic;
 using System.Linq;

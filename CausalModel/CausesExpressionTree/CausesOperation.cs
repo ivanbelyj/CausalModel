@@ -1,4 +1,4 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +19,9 @@ namespace CausalModel.CausesExpressionTree
         }
 
         public IEnumerable<CausesExpression> Operands { get; set; }
-        public override IEnumerable<ProbabilityEdge> GetEdges()
+        public override IEnumerable<ProbabilityFactor> GetEdges()
         {
-            List<ProbabilityEdge> edges = new List<ProbabilityEdge>();
+            List<ProbabilityFactor> edges = new List<ProbabilityFactor>();
             foreach (CausesExpression operand in Operands)
             {
                 edges.AddRange(operand.GetEdges());
@@ -29,12 +29,12 @@ namespace CausalModel.CausesExpressionTree
             return edges;
         }
 
-        public override bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+        public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
             IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
             => Operation(Operands.Select(expr => expr.Evaluate(factProvider,
                 happenedProvider, fixingValueProvider))
                 .ToArray());
 
-        protected abstract bool Operation(bool[] operands);
+        protected abstract bool? Operation(bool?[] operands);
     }
 }

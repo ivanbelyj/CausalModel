@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Edges
+namespace CausalModel.Factors
 {
     /// <summary>
     /// Представляет причинно-следственное ребро, которое указывает, с какой вероятностью
     /// один из факторов следствия происходит в случае происшествия причины.
     /// </summary>
-    public class ProbabilityEdge : CausalEdge
+    public class ProbabilityFactor : CausalEdge
     {
         private float probability;
         /// <summary>
@@ -57,7 +57,7 @@ namespace CausalModel.Edges
         //    }
         //}
 
-        public ProbabilityEdge(float probability, Guid? causeId = null)
+        public ProbabilityFactor(float probability, Guid? causeId = null)
         {
             Probability = probability;
             CauseId = causeId;

@@ -1,4 +1,4 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
@@ -10,10 +10,10 @@ namespace CausalModel.Nests
 {
     public class WeightNest : Nest
     {
-        private List<WeightEdge> edges { get; } = new List<WeightEdge>();
-        public List<WeightEdge> Weights => edges;
+        private List<WeightFactor> edges { get; } = new List<WeightFactor>();
+        public List<WeightFactor> Weights => edges;
 
-        public WeightNest(params WeightEdge[] edges)
+        public WeightNest(params WeightFactor[] edges)
         {
             this.edges = edges.ToList();
         }
@@ -23,7 +23,7 @@ namespace CausalModel.Nests
         /// </summary>
         public WeightNest(Guid? causeId, double weight = 1)
         {
-            edges.Add(new WeightEdge(weight, causeId));
+            edges.Add(new WeightFactor(weight, causeId));
         }
 
         /// <summary>
@@ -45,8 +45,15 @@ namespace CausalModel.Nests
                 {
                     weightSum += edge.Weight;
                     continue;
-                } else if (happenedProvider.IsHappened(edge.CauseId.Value))
-                    weightSum += edge.Weight;
+                } else
+                {
+                    bool? isHappened = happenedProvider.IsHappened(edge.CauseId.Value);
+                    if (isHappened != null && isHappened.Value)
+                    {
+                        weightSum += edge.Weight;
+                    }
+                }
+                    
             }
 
             return weightSum;

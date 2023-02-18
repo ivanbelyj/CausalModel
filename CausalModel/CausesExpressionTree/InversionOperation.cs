@@ -1,4 +1,4 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +15,16 @@ namespace CausalModel.CausesExpressionTree
             this.expression = expression;
         }
 
-        public override IEnumerable<ProbabilityEdge> GetEdges() => expression.GetEdges();
+        public override IEnumerable<ProbabilityFactor> GetEdges() => expression.GetEdges();
 
-        public override bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+        public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
             IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
-            => !expression.Evaluate(factProvider, happenedProvider, fixingValueProvider);
+        {
+            bool? eval = expression.Evaluate(factProvider, happenedProvider, fixingValueProvider);
+            if (eval == null)
+                return null;
+            else
+                return !eval.Value;
+        }
     }
 }

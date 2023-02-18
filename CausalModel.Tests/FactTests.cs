@@ -1,5 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
-using CausalModel.Edges;
+using CausalModel.Factors;
 using CausalModel.Nests;
 using CausalModel.Nodes;
 using System;
@@ -28,13 +28,13 @@ namespace CausalModel.Tests
         {
             const int TEST_SIZE = 5;
 
-            var edges = new ProbabilityEdge[TEST_SIZE];
+            var edges = new ProbabilityFactor[TEST_SIZE];
             for (int i = 0; i < TEST_SIZE; i++)
-                edges[i] = TestUtils.NewTrueEdge();
+                edges[i] = TestUtils.NewTrueFactor();
 
             var or = Expressions.Or(edges);
             var and = Expressions.And(edges);
-            var not = Expressions.Not(TestUtils.NewFalseEdge());
+            var not = Expressions.Not(TestUtils.NewFalseFactor());
 
             var expr = Expressions.Or(or, and, not);
 

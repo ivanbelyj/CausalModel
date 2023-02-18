@@ -1,5 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
-using CausalModel.Edges;
+using CausalModel.Factors;
 using CausalModel.Nests;
 using System;
 using System.Collections.Generic;
@@ -16,8 +16,8 @@ namespace CausalModel.Nodes
             => new Fact<TNodeValue>(new ProbabilityNest(probability, causeId), value);
 
         private static Fact<TNodeValue> CreateNodeWithOperation<TNodeValue>(
-            TNodeValue value, ProbabilityEdge[] edges,
-            Func<ProbabilityEdge[], CausesOperation> operation)
+            TNodeValue value, ProbabilityFactor[] edges,
+            Func<ProbabilityFactor[], CausesOperation> operation)
             => new Fact<TNodeValue>(new ProbabilityNest(operation(edges)), value);
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace CausalModel.Nodes
         /// логической операцией И
         /// </summary>
         public static Fact<TNodeValue> CreateNodeWithAnd<TNodeValue>(TNodeValue value,
-            params ProbabilityEdge[] edges)
+            params ProbabilityFactor[] edges)
             => CreateNodeWithOperation(value, edges, Expressions.And);
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace CausalModel.Nodes
         /// логической операцией ИЛИ
         /// </summary>
         public static Fact<TNodeValue> CreateNodeWithOr<TNodeValue>(TNodeValue value,
-            params ProbabilityEdge[] edges)
+            params ProbabilityFactor[] edges)
             => CreateNodeWithOperation(value, edges, Expressions.Or);
 
         /// <summary>

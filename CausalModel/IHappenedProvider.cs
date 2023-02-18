@@ -11,6 +11,6 @@ namespace CausalModel
     /// </summary>
     public interface IHappenedProvider
     {
-        public bool IsHappened(Guid factId);
+        public bool? IsHappened(Guid factId);
     }
 }

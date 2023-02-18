@@ -1,4 +1,4 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
@@ -13,26 +13,38 @@ namespace CausalModel.CausesExpressionTree
     /// </summary>
     public class EdgeLeaf : CausesExpression
     {
-        public ProbabilityEdge Edge { get; set; }
+        public ProbabilityFactor Edge { get; set; }
 
-        public override IEnumerable<ProbabilityEdge> GetEdges()
-            => new List<ProbabilityEdge>() { Edge };
+        public override IEnumerable<ProbabilityFactor> GetEdges()
+            => new List<ProbabilityFactor>() { Edge };
 
-        public EdgeLeaf(ProbabilityEdge edge)
+        public EdgeLeaf(ProbabilityFactor edge)
         {
             Edge = edge;
         }
 
-        public override bool Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+        public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
             IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
         {
-            bool probabilityHappened = ProbabilityEdge.IsHappened(Edge.Probability,
+            bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
                 fixingValueProvider.GetFixingValue());
-            // Если причины нет, значит достаточно лишь выполнения самого фактора
+            
+            bool isExistingCauseHappened = false;
+            if (Edge.CauseId != null)
+            {
+                bool? isHappened = happenedProvider.IsHappened(Edge.CauseId.Value);
+                // Если причина есть, но не зафиксирована
+                if (isHappened == null)
+                {
+                    return null;
+                }
+                isExistingCauseHappened = isHappened.Value;
+            }
+
+            // Если причины нет, значит, достаточно лишь выполнения самого фактора
             // на основе вероятности
-            bool isCauseHappened = Edge.CauseId == null
-                || happenedProvider.IsHappened(Edge.CauseId.Value);
-            return probabilityHappened && isCauseHappened;
+            return probabilityHappened &&
+                (Edge.CauseId == null || isExistingCauseHappened);
         }
     }
 }

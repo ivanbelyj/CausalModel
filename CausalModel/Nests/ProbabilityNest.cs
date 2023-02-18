@@ -1,5 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
-using CausalModel.Edges;
+using CausalModel.Factors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +30,7 @@ namespace CausalModel.Nests
         public ProbabilityNest(float probability, Guid? causeId)
         {
 
-            ProbabilityEdge edge = new ProbabilityEdge(probability, causeId);
+            ProbabilityFactor edge = new ProbabilityFactor(probability, causeId);
             CausesExpression = new EdgeLeaf(edge);
         }
 
@@ -42,7 +42,7 @@ namespace CausalModel.Nests
         /// </summary>
         // public bool IsHappened() => CausesExpression.Evaluate();
 
-        public override IEnumerable<ProbabilityEdge> GetEdges()
+        public override IEnumerable<ProbabilityFactor> GetEdges()
             => CausesExpression.GetEdges();
     }
 }

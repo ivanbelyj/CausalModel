@@ -1,4 +1,4 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using CausalModel.Nests;
 using CausalModel.Nodes;
 using System;
@@ -44,8 +44,8 @@ namespace CausalModel.Tests
                 if (node == abstractNode)
                     continue;
                 var nodeEdges = node.GetEdges();
-                var weightEdges = nodeEdges.OfType<WeightEdge>();
-                var probabilityEdges = nodeEdges.OfType<ProbabilityEdge>();
+                var weightEdges = nodeEdges.OfType<WeightFactor>();
+                var probabilityEdges = nodeEdges.OfType<ProbabilityFactor>();
                 Assert.Single(weightEdges);
                 Assert.Single(probabilityEdges);
             }

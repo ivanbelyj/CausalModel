@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Edges
+namespace CausalModel.Factors
 {
     /// <summary>
     /// Весовое ребро делает определенный вариант реализации абстрактной сущности (АС)
     /// более или менее благоприятным для выбора
     /// </summary>
-    public class WeightEdge : CausalEdge
+    public class WeightFactor : CausalEdge
     {
         /// <summary>
         /// Вес, определяющий благоприятность определенного варианта реализации <br/>
@@ -21,7 +21,7 @@ namespace CausalModel.Edges
         /// </summary>
         public double Weight { get; set; }
 
-        public WeightEdge(double weight, Guid? causeId = null)
+        public WeightFactor(double weight, Guid? causeId = null)
         {
             Weight = weight;
             CauseId = causeId;

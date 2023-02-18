@@ -1,7 +1,8 @@
-﻿using CausalModel.Edges;
+﻿using CausalModel.Factors;
 using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,7 @@ namespace CausalModel
             List<Fact<TNodeValue>>> causesAndConsequences;
         private Dictionary<Fact<TNodeValue>,
             List<FactVariant<TNodeValue>>> factsAndVariants;
+        private HashSet<Fact<TNodeValue>> rootNodes;
 
         private Random rnd;
 
@@ -38,10 +40,14 @@ namespace CausalModel
             }
         }
 
-        public bool IsHappened(Guid factId)
-            => factsHappened.ContainsKey(factId) && factsHappened[factId];
+        public bool? IsHappened(Guid factId)
+            => factsHappened.ContainsKey(factId) ? factsHappened[factId] : null;
 
-        public float GetFixingValue() => (float)rnd.NextDouble();
+        public float GetFixingValue()
+        {
+            float res = (float)rnd.NextDouble();
+            return res;
+        }
 
         public void Fixate(Guid factId, bool? factHappened = null)
         {
@@ -71,7 +77,7 @@ namespace CausalModel
             // Для происшествия обычных фактов достаточно условия следования из причин
             if (!(fact is FactVariant<TNodeValue>))
             {
-                factsHappened[fact.Id] = followsFromCauses;
+                FixateFact(fact, followsFromCauses);
 
                 FixateNotFixedConsequences(fact);
             } else {
@@ -84,15 +90,28 @@ namespace CausalModel
                 var selectedVariant = SelectFactVariant(factsAndVariants[abstractFact]);
                 foreach (var factVariant in factsAndVariants[abstractFact])
                 {
-                    factsHappened[factVariant.Id] = ReferenceEquals(factVariant,
-                        selectedVariant);
+                    FixateFact(factVariant, ReferenceEquals(factVariant,
+                        selectedVariant));
+
                     FixateNotFixedConsequences(factVariant);
                 }
             }
         }
 
+        private void FixateFact(Fact<TNodeValue> fact, bool isHappened)
+        {
+            factsHappened[fact.Id] = isHappened;
+            if (isHappened)
+            {
+                FactHappened?.Invoke(fact);
+            }
+        }
+
         private void FixateNotFixedConsequences(Fact<TNodeValue> fact)
         {
+            if (!causesAndConsequences.ContainsKey(fact)) {
+                return;
+            }
             foreach (var consequence in causesAndConsequences[fact])
             {
                 if (!factsHappened.ContainsKey(consequence.Id))
@@ -103,9 +122,29 @@ namespace CausalModel
         private void Initialize()
         {
             causesAndConsequences = new Dictionary<Fact<TNodeValue>,
-                    List<Fact<TNodeValue>>>();
+                List<Fact<TNodeValue>>>();
+            rootNodes = new HashSet<Fact<TNodeValue>>();
+            factsAndVariants = new Dictionary<Fact<TNodeValue>,
+                List<FactVariant<TNodeValue>>>();
+
             foreach (Fact<TNodeValue> fact in causalData.Nodes)
             {
+                if (fact.IsRootNode())
+                    rootNodes.Add(fact);
+
+                if (fact is FactVariant<TNodeValue> variant)
+                {
+                    var abstractFact = causalData.GetFactById(variant.AbstractFactId);
+                    if (!factsAndVariants.ContainsKey(abstractFact))
+                    {
+                        factsAndVariants.Add(abstractFact,
+                            new List<FactVariant<TNodeValue>> { variant });
+                    } else
+                    {
+                        factsAndVariants[abstractFact].Add(variant);
+                    }
+                }
+
                 foreach (var edge in fact.GetEdges())
                 {
                     if (edge.CauseId.HasValue)
@@ -161,6 +200,14 @@ namespace CausalModel
                 choice -= nodesWeights[curNodeIndex].totalWeight;
             }
             return variants[curNodeIndex];
+        }
+
+        public void FixateRoots()
+        {
+            foreach (var root in rootNodes)
+            {
+                Fixate(root.Id);
+            }
         }
     }
 }

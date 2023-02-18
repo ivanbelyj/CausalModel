@@ -10,14 +10,21 @@ namespace CausalModel.CausesExpressionTree
     {
         public ConjunctionOperation(IEnumerable<CausesExpression> operands) : base(operands) { }
 
-        protected override bool Operation(bool[] operands)
+        protected override bool? Operation(bool?[] operands)
         {
-            foreach (bool operand in operands)
+            bool? operand = null;
+            bool returnNull = false;
+            for (int i = 0; i < operands.Length; i++)
             {
-                if (!operand)
+                operand = operands[i];
+                if (operand != null && !operand.Value)
                     return false;
+                if (operand == null)
+                {
+                    returnNull = true;
+                }
             }
-            return true;
+            return returnNull ? null : true;
         }
     }
 }
