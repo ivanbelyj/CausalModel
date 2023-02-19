@@ -1,4 +1,6 @@
-﻿using CausalModel.Factors;
+﻿using CausalModel.FactCollection;
+using CausalModel.Factors;
+using CausalModel.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

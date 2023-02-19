@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel
+namespace CausalModel.Model
 {
     /// <summary>
     /// Предоставляет информацию о том, произошел ли факт с заданным Id

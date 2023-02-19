@@ -1,4 +1,6 @@
-﻿using CausalModel.Factors;
+﻿using CausalModel.Common;
+using CausalModel.FactCollection;
+using CausalModel.Factors;
 using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel
+namespace CausalModel.Model
 {
     public class CausalModel<TNodeValue> : IHappenedProvider, IFixingValueProvider
     {
@@ -25,7 +27,8 @@ namespace CausalModel
 
         private Random rnd;
 
-        public CausalModel(FactCollection<TNodeValue> factCollection, int seed) {
+        public CausalModel(FactCollection<TNodeValue> factCollection, int seed)
+        {
             CausalData = factCollection;
             rnd = new Random(seed);
         }
@@ -61,7 +64,8 @@ namespace CausalModel
             if (factHappened != null)
             {
                 followsFromCauses = factHappened.Value;
-            } else  // Иначе происшествие определяется на основе причин
+            }
+            else  // Иначе происшествие определяется на основе причин
             {
                 bool? isHappened = fact.ProbabilityNest.CausesExpression
                     .Evaluate(causalData, this, this);
@@ -80,7 +84,9 @@ namespace CausalModel
                 FixateFact(fact, followsFromCauses);
 
                 FixateNotFixedConsequences(fact);
-            } else {
+            }
+            else
+            {
                 // Вариант факта происходит только после того, как он будет
                 // выбран в качестве единственной реализации абстрактного факта.
 
@@ -109,7 +115,8 @@ namespace CausalModel
 
         private void FixateNotFixedConsequences(Fact<TNodeValue> fact)
         {
-            if (!causesAndConsequences.ContainsKey(fact)) {
+            if (!causesAndConsequences.ContainsKey(fact))
+            {
                 return;
             }
             foreach (var consequence in causesAndConsequences[fact])
@@ -139,7 +146,8 @@ namespace CausalModel
                     {
                         factsAndVariants.Add(abstractFact,
                             new List<FactVariant<TNodeValue>> { variant });
-                    } else
+                    }
+                    else
                     {
                         factsAndVariants[abstractFact].Add(variant);
                     }

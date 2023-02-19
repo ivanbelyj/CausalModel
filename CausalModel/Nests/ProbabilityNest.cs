@@ -31,7 +31,7 @@ namespace CausalModel.Nests
         {
 
             ProbabilityFactor edge = new ProbabilityFactor(probability, causeId);
-            CausesExpression = new EdgeLeaf(edge);
+            CausesExpression = new FactorLeaf(edge);
         }
 
         /// <summary>

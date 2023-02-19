@@ -1,5 +1,7 @@
 ﻿using CausalModel.CausesExpressionTree;
+using CausalModel.FactCollection;
 using CausalModel.Factors;
+using CausalModel.Model;
 using CausalModel.Nodes;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,9 +22,9 @@ namespace CausalModel.Tests
 
             var nullFactor = TestUtils.NewNullFactor();
 
-            Assert.False(new EdgeLeaf(falseEdge).Evaluate(factCol, model, model));
-            Assert.True(new EdgeLeaf(trueEdge).Evaluate(factCol, model, model));
-            Assert.Null(new EdgeLeaf(nullFactor).Evaluate(factCol, model, model));
+            Assert.False(new FactorLeaf(falseEdge).Evaluate(factCol, model, model));
+            Assert.True(new FactorLeaf(trueEdge).Evaluate(factCol, model, model));
+            Assert.Null(new FactorLeaf(nullFactor).Evaluate(factCol, model, model));
         }
 
         [Fact]

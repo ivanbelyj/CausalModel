@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel
+namespace CausalModel.FactCollection
 {
     public interface IFactProvider<TNodeValue>
     {

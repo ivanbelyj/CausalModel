@@ -1,4 +1,6 @@
-﻿using CausalModel.Factors;
+﻿using CausalModel.FactCollection;
+using CausalModel.Factors;
+using CausalModel.Model;
 using CausalModel.Nodes;
 using System;
 using System.Collections.Generic;
@@ -11,14 +13,14 @@ namespace CausalModel.CausesExpressionTree
     /// <summary>
     /// Элемент логического выражения, который вычисляется на основе причинного ребра
     /// </summary>
-    public class EdgeLeaf : CausesExpression
+    public class FactorLeaf : CausesExpression
     {
         public ProbabilityFactor Edge { get; set; }
 
         public override IEnumerable<ProbabilityFactor> GetEdges()
             => new List<ProbabilityFactor>() { Edge };
 
-        public EdgeLeaf(ProbabilityFactor edge)
+        public FactorLeaf(ProbabilityFactor edge)
         {
             Edge = edge;
         }

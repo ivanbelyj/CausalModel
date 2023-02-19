@@ -1,7 +1,24 @@
 ﻿using CausalModel;
+using CausalModel.FactCollection;
 using CausalModel.Factors;
+using CausalModel.Model;
 using CausalModel.Nodes;
 using System.Diagnostics;
+
+const string FACTS_FILE = "character-facts.json";
+FactCollection<string> factCol;
+if (File.Exists(FACTS_FILE))
+{
+    Console.WriteLine("Найден файл " + FACTS_FILE);
+    factCol = Deserialize(FACTS_FILE);
+} else
+{
+    Console.WriteLine("Коллекция фактов была создана программно");
+    factCol = CreateCharacterFactsCollection();
+}
+
+Serialize(factCol, FACTS_FILE);
+Console.WriteLine("Данные для генерации сохранены в файл " + FACTS_FILE);
 
 while (true)
 {
@@ -11,12 +28,19 @@ while (true)
     if (key.Key == ConsoleKey.Enter)
     {
         Console.WriteLine();
-        Test1();
+        Generate(factCol);
     } else if (key.Key == ConsoleKey.Spacebar)
     {
         Console.WriteLine();
-        Console.WriteLine("\nВведите seed");
-        Test1(int.Parse(Console.ReadLine()));
+        Console.WriteLine("\nВведите seed (целое число)");
+        try
+        {
+            Generate(factCol, int.Parse(Console.ReadLine()));
+        } catch (FormatException)
+        {
+            Console.WriteLine("Ожидалось целое число");
+        }
+        
     } else
     {
         break;
@@ -24,7 +48,46 @@ while (true)
     Console.WriteLine("\n");
 }
 
-void Test1(int? seed = null)
+FactCollection<string>? Deserialize(string fileName)
+{
+    string fileContent = File.ReadAllText(fileName);
+    var serializer = new FactCollectionSerializer();
+    var factCol = serializer.FromJson<string>(fileContent);
+    return factCol;
+}
+
+string Serialize(FactCollection<string> factCollection, string fileName = "fact-collection.json")
+{
+    var serializer = new FactCollectionSerializer();
+    string jsonString = serializer.ToJson(factCollection, true);
+    if (!fileName.EndsWith(".json"))
+    {
+        fileName += ".json";
+    }
+    File.WriteAllText(fileName, jsonString);
+    return jsonString;
+}
+
+void Generate(FactCollection<string> factCollection, int? seed = null)
+{
+    if (seed == null)
+        seed = new Random().Next();
+
+    // Todo: seed 1345190346
+    // 192771235
+    Console.WriteLine("Seed: " + seed);
+    var model = new CausalModel<string>(factCollection, seed.Value);
+    model.FactHappened += OnFactHappened;
+
+    model.FixateRoots();
+}
+
+void OnFactHappened(Fact<string> fact)
+{
+    Console.WriteLine((fact.IsRootNode() ? "" : "\t") + fact.NodeValue);
+}
+
+FactCollection<string> CreateCharacterFactsCollection()
 {
     // Пример простейшей каузальной модели персонажа
     var facts = new List<Fact<string>>();
@@ -77,21 +140,5 @@ void Test1(int? seed = null)
     facts.AddRange(FactUtils.CreateAbstractFact(raceNode,
         "тшэайская", "мэрайская", "мйеурийская", "эвойская", "оанэйская"));
 
-    var factCollection = new FactCollection<string>(facts);
-
-    if (seed == null)
-        seed = new Random().Next();
-    // Todo: seed 1345190346
-    // 192771235
-    Console.WriteLine("Seed: " + seed);
-    var model = new CausalModel<string>(factCollection, seed.Value);
-    model.FactHappened += OnFactHappened;
-
-    model.FixateRoots();
-    // model.Fixate(hobbyRoot.Id);
-}
-
-void OnFactHappened(Fact<string> fact)
-{
-    Console.WriteLine((fact.IsRootNode() ? "" : "\t") + fact.NodeValue);
+    return new FactCollection<string>(facts);
 }
