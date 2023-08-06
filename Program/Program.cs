@@ -4,26 +4,62 @@ using CausalModel.Factors;
 using CausalModel.Model;
 using CausalModel.Nodes;
 using System.Diagnostics;
+using System.Runtime.Serialization;
+
+// Todo:
+// Если CauseId для WeightEdge не указан, выбор реализации абстрактного факта
+// работает некорректно
+// 
+
 
 const string FACTS_FILE = "character-facts.json";
+
+Console.WriteLine($"Enter file name or press Enter to use or create {FACTS_FILE} (example)");
+string? fileName = Console.ReadLine();
+if (string.IsNullOrEmpty(fileName))
+    fileName = FACTS_FILE;
+
+//const bool CREATE_FILE = true;
 FactCollection<string> factCol;
-if (File.Exists(FACTS_FILE))
+try
 {
-    Console.WriteLine("Найден файл " + FACTS_FILE);
-    factCol = Deserialize(FACTS_FILE);
-} else
+    if (/*!CREATE_FILE && */ File.Exists(fileName))
+    {
+        Console.WriteLine("Found " + fileName);
+        factCol = Deserialize(fileName);
+    }
+    else if (fileName != FACTS_FILE && File.Exists(FACTS_FILE))
+    {
+        Console.WriteLine($"File {fileName} not found. Found {FACTS_FILE}, use example");
+        fileName = FACTS_FILE;
+        factCol = Deserialize(fileName);
+    }
+    else
+    {
+        Console.WriteLine($"File {fileName} not found. Create {FACTS_FILE}");
+        factCol = CreateCharacterFactsCollection();
+        Serialize(factCol, fileName);
+        Console.WriteLine("Data used for generation saved to " + fileName);
+
+    }
+} catch (Exception ex)
 {
-    Console.WriteLine("Коллекция фактов была создана программно");
-    factCol = CreateCharacterFactsCollection();
+    var prevColor = Console.ForegroundColor;
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("Exception");
+    Console.ForegroundColor = prevColor;
+
+    Console.WriteLine(ex.ToString());
+    Console.ReadKey(false);
+    return;
 }
 
-Serialize(factCol, FACTS_FILE);
-Console.WriteLine("Данные для генерации сохранены в файл " + FACTS_FILE);
 
 while (true)
 {
     Console.WriteLine();
-    Console.WriteLine("Нажмите Enter, чтобы сгенерировать, или Space, чтобы указать seed");
+    Console.WriteLine("Press Enter to generate, Space to specify a seed"
+        + " or something else to exit");
     var key = Console.ReadKey(false);
     if (key.Key == ConsoleKey.Enter)
     {
@@ -32,13 +68,13 @@ while (true)
     } else if (key.Key == ConsoleKey.Spacebar)
     {
         Console.WriteLine();
-        Console.WriteLine("\nВведите seed (целое число)");
+        Console.WriteLine("\nEnter seed (integer)");
         try
         {
             Generate(factCol, int.Parse(Console.ReadLine()));
         } catch (FormatException)
         {
-            Console.WriteLine("Ожидалось целое число");
+            Console.WriteLine("Integer expected");
         }
         
     } else
@@ -52,7 +88,7 @@ FactCollection<string>? Deserialize(string fileName)
 {
     string fileContent = File.ReadAllText(fileName);
     var serializer = new FactCollectionSerializer();
-    var factCol = serializer.FromJson<string>(fileContent);
+    FactCollection<string>? factCol = serializer.FromJson<string>(fileContent);
     return factCol;
 }
 
@@ -73,8 +109,6 @@ void Generate(FactCollection<string> factCollection, int? seed = null)
     if (seed == null)
         seed = new Random().Next();
 
-    // Todo: seed 1345190346
-    // 192771235
     Console.WriteLine("Seed: " + seed);
     var model = new CausalModel<string>(factCollection, seed.Value);
     model.FactHappened += OnFactHappened;
@@ -89,7 +123,7 @@ void OnFactHappened(Fact<string> fact)
 
 FactCollection<string> CreateCharacterFactsCollection()
 {
-    // Пример простейшей каузальной модели персонажа
+    // Simple character model example
     var facts = new List<Fact<string>>();
     Fact<string> hobbyRoot = FactUtils.CreateNode(0.9f, "Хобби");
     facts.Add(hobbyRoot);
@@ -101,7 +135,7 @@ FactCollection<string> CreateCharacterFactsCollection()
     {
         facts.Add(FactUtils.CreateNode(0.3f, hobbyName, hobbyRoot.Id));
     }
-    foreach (string hobbyName in new string[] { "Worldbuilding", "" })
+    foreach (string hobbyName in new string[] { "Worldbuilding" })
     {
         facts.Add(FactUtils.CreateNode(0.1f, hobbyName, hobbyRoot.Id));
     }

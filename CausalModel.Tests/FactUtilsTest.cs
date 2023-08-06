@@ -1,4 +1,5 @@
-﻿using CausalModel.Factors;
+﻿using CausalModel.FactCollection;
+using CausalModel.Factors;
 using CausalModel.Nests;
 using CausalModel.Nodes;
 using System;
