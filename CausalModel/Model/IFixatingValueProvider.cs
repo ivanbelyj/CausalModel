@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model
 {
-    public interface IFixingValueProvider
+    public interface IFixatingValueProvider
     {
-        public float GetFixingValue();
+        public float GetFixatingValue();
     }
 }

@@ -26,15 +26,15 @@ namespace CausalModel.CausesExpressionTree
         }
 
         public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
-            IHappenedProvider happenedProvider, IFixingValueProvider fixingValueProvider)
+            IFixatedProvider happenedProvider, IFixatingValueProvider fixingValueProvider)
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
-                fixingValueProvider.GetFixingValue());
+                fixingValueProvider.GetFixatingValue());
             
             bool isExistingCauseHappened = false;
             if (Edge.CauseId != null)
             {
-                bool? isHappened = happenedProvider.IsHappened(Edge.CauseId.Value);
+                bool? isHappened = happenedProvider.IsFixated(Edge.CauseId.Value);
                 // Если причина есть, но не зафиксирована
                 if (isHappened == null)
                 {

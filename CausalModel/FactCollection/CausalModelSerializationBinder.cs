@@ -12,7 +12,7 @@ namespace CausalModel.FactCollection
 {
     public class CausalModelSerializationBinder<TNodeValue> : ISerializationBinder
     {
-        private static readonly List<(Type type, string name)> _knownTypeNames
+        private static readonly List<(Type type, string name)> knownTypes
             = new List<(Type, string)>() {
             (typeof(ConjunctionOperation), "and"),
             (typeof(DisjunctionOperation), "or"),
@@ -25,15 +25,15 @@ namespace CausalModel.FactCollection
             //(typeof(CausalModel<TNodeValue>), "causal-model"),
             //(typeof(FactCollection<TNodeValue>), "fact-collection"),
         };
-        public static List<(Type type, string name)> KnownTypeNames => _knownTypeNames;
+        public static List<(Type type, string name)> KnownTypes => knownTypes;
 
         public void BindToName(Type serializedType, out string? assemblyName,
             out string? typeName)
         {
-            typeName = _knownTypeNames.FirstOrDefault(x => x.type == serializedType).name;
-            if (typeName is null)
+            typeName = knownTypes.FirstOrDefault(x => x.type == serializedType).name;
+            if (typeName == null)
             {
-                throw new ArgumentException("Незарегистрированный тип данных для привязки - "
+                throw new ArgumentException("Not registred type for binding: "
                     + serializedType.FullName);
             }
             assemblyName = null;
@@ -41,10 +41,10 @@ namespace CausalModel.FactCollection
 
         public Type BindToType(string? assemblyName, string typeName)
         {
-            Type? type = _knownTypeNames.FirstOrDefault(x => x.name == typeName).type;
-            if (type is null)
+            Type? type = knownTypes.FirstOrDefault(x => x.name == typeName).type;
+            if (type == null)
             {
-                throw new ArgumentException("Некорректное значение типа данных для привязки - "
+                throw new ArgumentException("Incorrect type name for binding: "
                     + typeName);
             }
             return type;

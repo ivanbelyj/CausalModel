@@ -10,212 +10,246 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model
+namespace CausalModel.Model;
+
+public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
 {
-    public class CausalModel<TNodeValue> : IHappenedProvider, IFixingValueProvider
+    // Todo: FactFixated, not FactHappened
+    public event Action<Fact<TNodeValue>>? FactHappened;
+
+    private FactCollection<TNodeValue> facts;
+    private Dictionary<Guid, bool> factsFixated = new Dictionary<Guid, bool>();
+
+    private Dictionary<Fact<TNodeValue>,
+        List<Fact<TNodeValue>>> causesAndConsequences;
+    private Dictionary<Fact<TNodeValue>,
+        List<FactVariant<TNodeValue>>> factsAndVariants;
+    private HashSet<Fact<TNodeValue>> rootNodes;
+
+    private readonly Random random;
+
+    public CausalModel(FactCollection<TNodeValue> factCollection, int seed)
     {
-        public event Action<Fact<TNodeValue>>? FactHappened;
+        CausalData = factCollection;
+        random = new Random(seed);
+    }
 
-        private FactCollection<TNodeValue> causalData;
-        private Dictionary<Guid, bool> factsHappened = new Dictionary<Guid, bool>();
-
-        private Dictionary<Fact<TNodeValue>,
-            List<Fact<TNodeValue>>> causesAndConsequences;
-        private Dictionary<Fact<TNodeValue>,
-            List<FactVariant<TNodeValue>>> factsAndVariants;
-        private HashSet<Fact<TNodeValue>> rootNodes;
-
-        private Random rnd;
-
-        public CausalModel(FactCollection<TNodeValue> factCollection, int seed)
+    public FactCollection<TNodeValue> CausalData
+    {
+        get => facts;
+        private set
         {
-            CausalData = factCollection;
-            rnd = new Random(seed);
+            facts = value;
+            Initialize();
+        }
+    }
+
+    public bool? IsFixated(Guid factId)
+        => factsFixated.ContainsKey(factId) ? factsFixated[factId] : null;
+
+    public float GetFixatingValue()
+    {
+        float res = (float)random.NextDouble();
+        return res;
+    }
+
+    public void Fixate(Guid factId, bool? factHappened = null)
+    {
+        Fact<TNodeValue> fact = facts.GetFactById(factId);
+        // true для выполнения условия следования факта из причин, необходимого,
+        // но не всегда достаточного для происшествия
+        bool followsFromCauses;
+
+        // Если происшествие факта задается явно
+        if (factHappened != null)
+        {
+            followsFromCauses = factHappened.Value;
+        }
+        else  // Иначе происшествие определяется на основе причин
+        {
+            bool? isHappened = fact.ProbabilityNest.CausesExpression
+                .Evaluate(facts, this, this);
+
+            // Случай, когда недостаточно данных (некоторые причины
+            // еще не зафиксированы)
+            if (isHappened == null)
+            {
+                return;
+            }
+            followsFromCauses = isHappened.Value;
         }
 
-        public FactCollection<TNodeValue> CausalData
+        // Для происшествия обычных фактов достаточно условия следования из причин
+        if (!(fact is FactVariant<TNodeValue>))
         {
-            get => causalData;
-            private set
-            {
-                causalData = value;
-                Initialize();
-            }
+            FixateFact(fact, followsFromCauses);
+
+            FixateNotFixatedConsequences(fact);
         }
-
-        public bool? IsHappened(Guid factId)
-            => factsHappened.ContainsKey(factId) ? factsHappened[factId] : null;
-
-        public float GetFixingValue()
+        else
         {
-            float res = (float)rnd.NextDouble();
-            return res;
-        }
+            // Фиксация вариантов реализации абстрактных фактов
 
-        public void Fixate(Guid factId, bool? factHappened = null)
-        {
-            Fact<TNodeValue> fact = causalData.GetFactById(factId);
-            // true для выполнения условия следования факта из причин, необходимого,
-            // но не всегда достаточного для происшествия
-            bool followsFromCauses;
+            var variant = (FactVariant<TNodeValue>)fact;
+            var abstractFact = facts.GetFactById(variant.AbstractFactId);
 
-            // Если происшествие факта задается явно (например, событие уже
-            // произошло в игре)
-            if (factHappened != null)
+            var variantsFollowingFromCauses = factsAndVariants[abstractFact]
+                .Select(variant => {
+                    bool? canHappen = variant.ProbabilityNest.CausesExpression
+                        .Evaluate(facts, this, this);
+
+                    return (canHappen, variant);
+                })
+                .Where(x => x.canHappen != null)
+                .ToList();
+
+            // Если для какого-либо варианта реализации не хватает данных,
+            // выбор единственной реализации откладывается
+            if (variantsFollowingFromCauses.Count
+                < factsAndVariants[abstractFact].Count)
             {
-                followsFromCauses = factHappened.Value;
-            }
-            else  // Иначе происшествие определяется на основе причин
-            {
-                bool? isHappened = fact.ProbabilityNest.CausesExpression
-                    .Evaluate(causalData, this, this);
-                // Случай, когда недостаточно данных (некоторые причины
-                // еще не зафиксированы)
-                if (isHappened == null)
-                {
-                    return;
-                }
-                followsFromCauses = isHappened.Value;
+                return;
             }
 
-            // Для происшествия обычных фактов достаточно условия следования из причин
-            if (!(fact is FactVariant<TNodeValue>))
+            // В дальнейшем реализация выбирается лишь из произошедших кандидатов
+            var variantsCanHappen = variantsFollowingFromCauses
+                .Where(x => x.canHappen == true)
+                .Select(x => x.variant)
+                .ToList();
+
+            //goingToHappen = factsAndVariants[abstractFact];
+
+            var selectedVariant = SelectFactVariant(variantsCanHappen);
+            foreach (var factVariant in variantsFollowingFromCauses
+                .Select(x => x.variant))
             {
-                FixateFact(fact, followsFromCauses);
+                // Фиксируем также те варианты, которые не участвовали в выборе,
+                // т.к. заведомо не произойдут
 
-                FixateNotFixedConsequences(fact);
-            }
-            else
-            {
-                // Вариант факта происходит только после того, как он будет
-                // выбран в качестве единственной реализации абстрактного факта.
-
-                var variant = (FactVariant<TNodeValue>)fact;
-                var abstractFact = causalData.GetFactById(variant.AbstractFactId);
-
-                var selectedVariant = SelectFactVariant(factsAndVariants[abstractFact]);
-                foreach (var factVariant in factsAndVariants[abstractFact])
+                if (IsFixated(factVariant.Id) == null)
                 {
                     FixateFact(factVariant, ReferenceEquals(factVariant,
                         selectedVariant));
 
-                    FixateNotFixedConsequences(factVariant);
+                    FixateNotFixatedConsequences(factVariant);
                 }
             }
         }
+    }
 
-        private void FixateFact(Fact<TNodeValue> fact, bool isHappened)
+    private void FixateFact(Fact<TNodeValue> fact, bool isHappened)
+    {
+        factsFixated[fact.Id] = isHappened;
+        if (isHappened)
         {
-            factsHappened[fact.Id] = isHappened;
-            if (isHappened)
-            {
-                FactHappened?.Invoke(fact);
-            }
+            FactHappened?.Invoke(fact);
         }
+    }
 
-        private void FixateNotFixedConsequences(Fact<TNodeValue> fact)
+    private void FixateNotFixatedConsequences(Fact<TNodeValue> fact)
+    {
+        if (!causesAndConsequences.ContainsKey(fact))
         {
-            if (!causesAndConsequences.ContainsKey(fact))
-            {
-                return;
-            }
-            foreach (var consequence in causesAndConsequences[fact])
-            {
-                if (!factsHappened.ContainsKey(consequence.Id))
-                    Fixate(consequence.Id);
-            }
+            return;
         }
-
-        private void Initialize()
+        foreach (var consequence in causesAndConsequences[fact])
         {
-            causesAndConsequences = new Dictionary<Fact<TNodeValue>,
-                List<Fact<TNodeValue>>>();
-            rootNodes = new HashSet<Fact<TNodeValue>>();
-            factsAndVariants = new Dictionary<Fact<TNodeValue>,
-                List<FactVariant<TNodeValue>>>();
+            if (!factsFixated.ContainsKey(consequence.Id))
+                Fixate(consequence.Id);
+        }
+    }
 
-            foreach (Fact<TNodeValue> fact in causalData.Nodes)
+    private void Initialize()
+    {
+        causesAndConsequences = new Dictionary<Fact<TNodeValue>,
+            List<Fact<TNodeValue>>>();
+        rootNodes = new HashSet<Fact<TNodeValue>>();
+        factsAndVariants = new Dictionary<Fact<TNodeValue>,
+            List<FactVariant<TNodeValue>>>();
+
+        foreach (Fact<TNodeValue> fact in facts.Nodes)
+        {
+            if (fact.IsRootNode())
+                rootNodes.Add(fact);
+
+            if (fact is FactVariant<TNodeValue> variant)
             {
-                if (fact.IsRootNode())
-                    rootNodes.Add(fact);
-
-                if (fact is FactVariant<TNodeValue> variant)
+                var abstractFact = facts.GetFactById(variant.AbstractFactId);
+                if (!factsAndVariants.ContainsKey(abstractFact))
                 {
-                    var abstractFact = causalData.GetFactById(variant.AbstractFactId);
-                    if (!factsAndVariants.ContainsKey(abstractFact))
+                    factsAndVariants.Add(abstractFact,
+                        new List<FactVariant<TNodeValue>> { variant });
+                }
+                else
+                {
+                    factsAndVariants[abstractFact].Add(variant);
+                }
+            }
+
+            foreach (var edge in fact.GetEdges())
+            {
+                if (edge.CauseId.HasValue)
+                {
+                    var cause = facts.GetFactById(edge.CauseId.Value);
+                    if (!causesAndConsequences.ContainsKey(cause))
                     {
-                        factsAndVariants.Add(abstractFact,
-                            new List<FactVariant<TNodeValue>> { variant });
+                        causesAndConsequences.Add(cause,
+                            new List<Fact<TNodeValue>>() { fact });
                     }
                     else
                     {
-                        factsAndVariants[abstractFact].Add(variant);
-                    }
-                }
-
-                foreach (var edge in fact.GetEdges())
-                {
-                    if (edge.CauseId.HasValue)
-                    {
-                        var cause = causalData.GetFactById(edge.CauseId.Value);
-                        if (!causesAndConsequences.ContainsKey(cause))
-                        {
-                            causesAndConsequences.Add(cause,
-                                new List<Fact<TNodeValue>>() { fact });
-                        }
-                        else
-                        {
-                            causesAndConsequences[cause].Add(fact);
-                        }
+                        causesAndConsequences[cause].Add(fact);
                     }
                 }
             }
         }
+    }
 
-        /// <summary>
-        /// Случайно выбирает одну из реализаций факта, учитывая веса вариантов
-        /// </summary>
-        private FactVariant<TNodeValue>? SelectFactVariant(
-            List<FactVariant<TNodeValue>> variants)
+    /// <summary>
+    /// Случайно выбирает одну из реализаций факта, учитывая веса вариантов.
+    /// Данный метод не учитывает, все ли переданные варианты зафиксированы
+    /// и произошли
+    /// </summary>
+    public FactVariant<TNodeValue>? SelectFactVariant(
+        List<FactVariant<TNodeValue>> variants)
+    {
+        // Собрать информацию о узлах и их общих весах, собрать сумму весов,
+        // а также отбросить узлы с нулевыми весами
+        var nodesWeights = new List<(Fact<TNodeValue> node, double totalWeight)>();
+        double weightsSum = 0;
+        foreach (var node in variants)
         {
-            // Собрать информацию о узлах и их общих весах, собрать сумму весов,
-            // а также отбросить узлы с нулевыми весами
-            var nodesWeights = new List<(Fact<TNodeValue> node, double totalWeight)>();
-            double weightsSum = 0;
-            foreach (var node in variants)
+            double totalWeight = node.WeightNest.TotalWeight(this);
+            if (totalWeight >= double.Epsilon)
             {
-                double totalWeight = node.WeightNest.TotalWeight(this);
-                if (totalWeight >= double.Epsilon)
-                {
-                    nodesWeights.Add((node, totalWeight));
-                    weightsSum += totalWeight;
-                }
+                nodesWeights.Add((node, totalWeight));
+                weightsSum += totalWeight;
             }
-            if (weightsSum < double.Epsilon)
-                return null;
-
-            // Определить Id единственной реализации
-            // Алгоритм Roulette wheel selection
-            double choice = rnd.NextDouble(0, weightsSum);
-            int curNodeIndex = -1;
-            while (choice >= 0)
-            {
-                curNodeIndex++;
-                if (curNodeIndex >= variants.Count)
-                    curNodeIndex = 0;
-
-                // choice -= nodes[curNodeIndex].WeightNest.TotalWeight();
-                choice -= nodesWeights[curNodeIndex].totalWeight;
-            }
-            return variants[curNodeIndex];
         }
+        if (weightsSum < double.Epsilon)
+            return null;
 
-        public void FixateRoots()
+        // Определить Id единственной реализации
+        // Алгоритм Roulette wheel selection
+        double choice = random.NextDouble(0, weightsSum);
+        int curNodeIndex = -1;
+        while (choice >= 0)
         {
-            foreach (var root in rootNodes)
-            {
-                Fixate(root.Id);
-            }
+            curNodeIndex++;
+            if (curNodeIndex >= variants.Count)
+                curNodeIndex = 0;
+
+            // choice -= nodes[curNodeIndex].WeightNest.TotalWeight();
+            choice -= nodesWeights[curNodeIndex].totalWeight;
+        }
+        return variants[curNodeIndex];
+    }
+
+    public void FixateRoots()
+    {
+        foreach (var root in rootNodes)
+        {
+            Fixate(root.Id);
         }
     }
 }

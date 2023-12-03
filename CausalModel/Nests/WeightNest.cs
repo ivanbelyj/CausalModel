@@ -32,7 +32,7 @@ namespace CausalModel.Nests
         /// с произошедшими причинными событиями
         /// </summary>
         /// <returns></returns>
-        public double TotalWeight(IHappenedProvider happenedProvider)
+        public double TotalWeight(IFixatedProvider happenedProvider)
         {
             if (edges.Count == 0)
                 throw new InvalidOperationException("Весовое гнездо не имеет ребер");
@@ -48,7 +48,7 @@ namespace CausalModel.Nests
                     continue;
                 } else
                 {
-                    bool? isHappened = happenedProvider.IsHappened(edge.CauseId.Value);
+                    bool? isHappened = happenedProvider.IsFixated(edge.CauseId.Value);
                     if (isHappened != null && isHappened.Value)
                     {
                         weightSum += edge.Weight;
