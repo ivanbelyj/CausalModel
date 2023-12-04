@@ -87,15 +87,13 @@ while (true)
 FactCollection<string>? Deserialize(string fileName)
 {
     string fileContent = File.ReadAllText(fileName);
-    var serializer = new FactCollectionSerializer();
-    FactCollection<string>? factCol = serializer.FromJson<string>(fileContent);
+    var factCol = FactCollectionUtils.Deserialize(fileContent);
     return factCol;
 }
 
 string Serialize(FactCollection<string> factCollection, string fileName = "fact-collection.json")
 {
-    var serializer = new FactCollectionSerializer();
-    string jsonString = serializer.ToJson(factCollection, true);
+    string jsonString = FactCollectionUtils.Serialize(factCollection, fileName);
     if (!fileName.EndsWith(".json"))
     {
         fileName += ".json";
@@ -110,15 +108,19 @@ void Generate(FactCollection<string> factCollection, int? seed = null)
         seed = new Random().Next();
 
     Console.WriteLine("Seed: " + seed);
-    var model = new CausalModel<string>(factCollection, seed.Value);
-    model.FactHappened += OnFactHappened;
+    Fixator<string> fixator = new Fixator<string>();
+    var model = new CausalModel<string>(factCollection, seed.Value, fixator);
+    fixator.FactFixated += OnFactHappened;
 
     model.FixateRoots();
 }
 
-void OnFactHappened(Fact<string> fact)
+void OnFactHappened(object sender, Fact<string> fact, bool isHappened)
 {
-    Console.WriteLine((fact.IsRootNode() ? "" : "\t") + fact.NodeValue);
+    if (isHappened)
+    {
+        Console.WriteLine((fact.IsRootNode() ? "" : "\t") + fact.NodeValue);
+    }
 }
 
 FactCollection<string> CreateCharacterFactsCollection()

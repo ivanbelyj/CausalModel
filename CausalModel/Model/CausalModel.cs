@@ -12,13 +12,9 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model;
 
-public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
+public class CausalModel<TNodeValue> : IFixatingValueProvider
 {
-    // Todo: FactFixated, not FactHappened
-    public event Action<Fact<TNodeValue>>? FactHappened;
-
     private FactCollection<TNodeValue> facts;
-    private Dictionary<Guid, bool> factsFixated = new Dictionary<Guid, bool>();
 
     private Dictionary<Fact<TNodeValue>,
         List<Fact<TNodeValue>>> causesAndConsequences;
@@ -26,15 +22,19 @@ public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
         List<FactVariant<TNodeValue>>> factsAndVariants;
     private HashSet<Fact<TNodeValue>> rootNodes;
 
+    private readonly IFixator<TNodeValue> fixator;
     private readonly Random random;
 
-    public CausalModel(FactCollection<TNodeValue> factCollection, int seed)
+    public CausalModel(FactCollection<TNodeValue> factCollection, int seed,
+        IFixator<TNodeValue> fixator)
     {
-        CausalData = factCollection;
+        Facts = factCollection;
         random = new Random(seed);
+
+        this.fixator = fixator;
     }
 
-    public FactCollection<TNodeValue> CausalData
+    public FactCollection<TNodeValue> Facts
     {
         get => facts;
         private set
@@ -44,45 +44,44 @@ public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
         }
     }
 
-    public bool? IsFixated(Guid factId)
-        => factsFixated.ContainsKey(factId) ? factsFixated[factId] : null;
-
     public float GetFixatingValue()
     {
         float res = (float)random.NextDouble();
         return res;
     }
 
-    public void Fixate(Guid factId, bool? factHappened = null)
+    /// <summary>
+    /// Определены ли причины факта, чтобы можно было говорить о его происшествии?
+    /// </summary>
+    private bool? IsFollowingFromCauses(Fact<TNodeValue> fact)
+        => fact.ProbabilityNest.CausesExpression.Evaluate(facts, fixator, this);
+
+    public void Fixate(Guid factId, bool? isFactHappened = null)
     {
         Fact<TNodeValue> fact = facts.GetFactById(factId);
-        // true для выполнения условия следования факта из причин, необходимого,
-        // но не всегда достаточного для происшествия
-        bool followsFromCauses;
 
-        // Если происшествие факта задается явно
-        if (factHappened != null)
+        // Если происшествие факта не задано явно,
+        // происшествие определяется на основе причин
+        if (isFactHappened == null)  
         {
-            followsFromCauses = factHappened.Value;
-        }
-        else  // Иначе происшествие определяется на основе причин
-        {
-            bool? isHappened = fact.ProbabilityNest.CausesExpression
-                .Evaluate(facts, this, this);
+            bool? isFollowingFromCauses = IsFollowingFromCauses(fact);
 
             // Случай, когда недостаточно данных (некоторые причины
             // еще не зафиксированы)
-            if (isHappened == null)
+            if (isFollowingFromCauses == null)
             {
                 return;
             }
-            followsFromCauses = isHappened.Value;
+
+            isFactHappened = isFollowingFromCauses.Value;
         }
 
-        // Для происшествия обычных фактов достаточно условия следования из причин
+        // Для происшествия обычных фактов достаточно как минимум
+        // условия следования из причин
+        // (как максимум - явного задания факта происшествия)
         if (!(fact is FactVariant<TNodeValue>))
         {
-            FixateFact(fact, followsFromCauses);
+            fixator.FixateFact(fact, isFactHappened.Value);
 
             FixateNotFixatedConsequences(fact);
         }
@@ -95,9 +94,7 @@ public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
 
             var variantsFollowingFromCauses = factsAndVariants[abstractFact]
                 .Select(variant => {
-                    bool? canHappen = variant.ProbabilityNest.CausesExpression
-                        .Evaluate(facts, this, this);
-
+                    bool? canHappen = IsFollowingFromCauses(variant);
                     return (canHappen, variant);
                 })
                 .Where(x => x.canHappen != null)
@@ -126,23 +123,14 @@ public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
                 // Фиксируем также те варианты, которые не участвовали в выборе,
                 // т.к. заведомо не произойдут
 
-                if (IsFixated(factVariant.Id) == null)
+                if (fixator.IsFixated(factVariant.Id) == null)
                 {
-                    FixateFact(factVariant, ReferenceEquals(factVariant,
+                    fixator.FixateFact(factVariant, ReferenceEquals(factVariant,
                         selectedVariant));
 
                     FixateNotFixatedConsequences(factVariant);
                 }
             }
-        }
-    }
-
-    private void FixateFact(Fact<TNodeValue> fact, bool isHappened)
-    {
-        factsFixated[fact.Id] = isHappened;
-        if (isHappened)
-        {
-            FactHappened?.Invoke(fact);
         }
     }
 
@@ -154,7 +142,7 @@ public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
         }
         foreach (var consequence in causesAndConsequences[fact])
         {
-            if (!factsFixated.ContainsKey(consequence.Id))
+            if (fixator.IsFixated(consequence.Id) == null)
                 Fixate(consequence.Id);
         }
     }
@@ -219,7 +207,7 @@ public class CausalModel<TNodeValue> : IFixatedProvider, IFixatingValueProvider
         double weightsSum = 0;
         foreach (var node in variants)
         {
-            double totalWeight = node.WeightNest.TotalWeight(this);
+            double totalWeight = node.WeightNest.TotalWeight(fixator);
             if (totalWeight >= double.Epsilon)
             {
                 nodesWeights.Add((node, totalWeight));
