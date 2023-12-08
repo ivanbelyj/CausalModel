@@ -19,7 +19,7 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            var generator = new CausalGenerator<string>(new FactProvider<string>()
             {
                 Facts = factCol,
             }, 123, fixator);
@@ -43,7 +43,7 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            var generator = new CausalGenerator<string>(new FactProvider<string>()
             {
                 Facts = factCol,
             }, 123, fixator);
@@ -72,7 +72,7 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            var generator = new CausalGenerator<string>(new FactProvider<string>()
             {
                 Facts = factCol,
             }, 123, fixator);
@@ -97,7 +97,7 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            var generator = new CausalGenerator<string>(new FactProvider<string>()
             {
                 Facts = factCol,
             }, 123, fixator);

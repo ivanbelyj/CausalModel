@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Facts
 {
-    public class Fact<TNodeValue> : AbstractFact
+    public class Fact<TFactValue> : FactWithCauses
     {
         private CausesExpression? causesExpression;
         public CausesExpression CausesExpression {
             get => causesExpression ?? GetDefaultCausesExpression();
             set => causesExpression = value;
         }
-        public TNodeValue? NodeValue { get; set; }
+        public TFactValue? NodeValue { get; set; }
 
         public string? AbstractFactId { get; set; }
         public IEnumerable<WeightFactor>? Weights { get; set; }
@@ -29,7 +29,7 @@ namespace CausalModel.Facts
         public override string? ToString() =>
             $"{Id} - " + (NodeValue?.ToString() ?? "null");
 
-        public override IEnumerable<Factor> GetCauses()
+        public override List<Factor> GetCauses()
         {
             var res = new List<Factor>();
             if (CausesExpression != null)

@@ -1,5 +1,4 @@
-﻿using CausalModel.Model;
-using CausalModel.Factors;
+﻿using CausalModel.Factors;
 using CausalModel.Fixation;
 using CausalModel.Facts;
 using System;
@@ -7,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CausalModel.Model.Providers;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -25,7 +25,7 @@ namespace CausalModel.CausesExpressionTree
             Edge = edge;
         }
 
-        public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+        public override bool? Evaluate<TFactValue>(IFactProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,

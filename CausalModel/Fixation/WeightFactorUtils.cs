@@ -47,14 +47,14 @@ internal static class WeightFactorUtils
     /// Данный метод не учитывает, все ли переданные варианты зафиксированы
     /// и произошли
     /// </summary>
-    public static Fact<TNodeValue>? SelectFactVariant<TNodeValue>(
-        List<Fact<TNodeValue>> variants,
+    public static Fact<TFactValue>? SelectFactVariant<TFactValue>(
+        List<Fact<TFactValue>> variants,
         IFixatedProvider fixatedProvider,
         IRandomProvider randomProvider)
     {
         // Собрать информацию о узлах и их общих весах, собрать сумму весов,
         // а также отбросить узлы с нулевыми весами
-        var nodesWeights = new List<(Fact<TNodeValue> node, double totalWeight)>();
+        var nodesWeights = new List<(Fact<TFactValue> node, double totalWeight)>();
         double weightsSum = 0;
         foreach (var fact in variants)
         {

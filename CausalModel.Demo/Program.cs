@@ -3,8 +3,8 @@ using CausalModel.Factors;
 using CausalModel.Fixation;
 using CausalModel.Facts;
 using CausalModel.Model.Serialization;
-using CausalModel.Blocks;
-using CausalModel.Blocks.BlockReferences;
+using CausalModel.Model.Blocks;
+using CausalModel.Model.Providers;
 
 // Todo:
 // Если CauseId для WeightEdge не указан, выбор реализации абстрактного факта
@@ -20,7 +20,7 @@ if (string.IsNullOrEmpty(fileName))
     fileName = FACTS_FILE;
 
 //const bool CREATE_FILE = true;
-CausalModel<string> causalModel;
+ResolvingModelProvider<string> factsProvider;
 try
 {
     //if (/*!CREATE_FILE && */ File.Exists(fileName))
@@ -38,23 +38,7 @@ try
     {
         Console.WriteLine($"File {fileName} not found. Create {FACTS_FILE}");
         var facts = CreateCharacterFactsCollection();
-
-        var referencesList = new[] {
-                "Cause1", "Cause2"
-            }
-            .Select(x => new AbstractReference() {
-                Name = x
-            })
-            .OfType<BlockReference>()
-            .ToList();
-
-        referencesList
-            .Add(new SpecifiedReference()
-            {
-                Id = Guid.NewGuid()
-            });
-
-        causalModel = new CausalModel<string>()
+        var causalModel = new CausalModel<string>()
         {
             Facts = facts,
             BlockConventions = new List<BlockConvention>()
@@ -62,8 +46,14 @@ try
                 new BlockConvention()
                 {
                     Name = "TestConvention",
-                    //Causes = new BlockReference[] { }
-                    Causes = referencesList,
+                    Causes = new Factor[]
+                    {
+                        
+                    },
+                    Consequences = new BaseFact[]
+                    {
+                        
+                    }
                 },
             },
             Blocks = new List<DeclaredBlock>()
@@ -77,7 +67,6 @@ try
         };
         Serialize(causalModel, fileName);
         Console.WriteLine("Data used for generation saved to " + fileName);
-
     }
 } catch (Exception ex)
 {
@@ -101,14 +90,14 @@ while (true)
     if (key.Key == ConsoleKey.Enter)
     {
         Console.WriteLine();
-        Generate(causalModel);
+        Generate(factsProvider);
     } else if (key.Key == ConsoleKey.Spacebar)
     {
         Console.WriteLine();
         Console.WriteLine("\nEnter seed (integer)");
         try
         {
-            Generate(causalModel, int.Parse(Console.ReadLine()));
+            Generate(factsProvider, int.Parse(Console.ReadLine()));
         } catch (FormatException)
         {
             Console.WriteLine("Integer expected");
@@ -139,17 +128,17 @@ string Serialize(CausalModel<string> model, string fileName = "fact-collection.j
     return jsonString;
 }
 
-void Generate(CausalModel<string> model, int? seed = null)
+void Generate(ResolvingModelProvider<string> factsProvider, int? seed = null)
 {
     if (seed == null)
         seed = new Random().Next();
 
     Console.WriteLine("Seed: " + seed);
     Fixator<string> fixator = new Fixator<string>();
-    var generator = new CausalGenerator<string>(model, seed.Value, fixator);
+    var generator = new CausalGenerator<string>(factsProvider, seed.Value, fixator);
     fixator.FactFixated += OnFactHappened;
 
-    generator.FixateRoots();
+    generator.FixateRootCauses();
 }
 
 void OnFactHappened(object sender, Fact<string> fact, bool isHappened)
@@ -160,9 +149,10 @@ void OnFactHappened(object sender, Fact<string> fact, bool isHappened)
     }
 }
 
-FactCollection<string> CreateCharacterFactsCollection()
+List<Fact<string>> CreateCharacterFactsCollection()
 {
     // Simple character model example
+
     var facts = new List<Fact<string>>();
     Fact<string> hobbyRoot = FactsBuilding.CreateFact(0.9f, "Хобби");
     facts.Add(hobbyRoot);
@@ -214,5 +204,5 @@ FactCollection<string> CreateCharacterFactsCollection()
     facts.AddRange(FactsBuilding.CreateAbstractFact(raceNode,
         "тшэайская", "мэрайская", "мйеурийская", "эвойская", "оанэйская"));
 
-    return new FactCollection<string>(facts);
+    return facts;
 }

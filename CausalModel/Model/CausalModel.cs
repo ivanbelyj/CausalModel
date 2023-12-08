@@ -1,6 +1,5 @@
-using CausalModel.Blocks;
-using CausalModel.Model.Serialization;
-using Newtonsoft.Json;
+using CausalModel.Facts;
+using CausalModel.Model.Blocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +7,60 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model;
-public class CausalModel<TNodeValue>
+public class CausalModel<T>
 {
-    public FactCollection<TNodeValue>? Facts { get; set; }
-    public IEnumerable<BlockConvention>? BlockConventions { get; set; }
-    public IEnumerable<DeclaredBlock>? Blocks { get; set; }
+    /// <summary>
+    /// Unresolved facts of the causal model (including blocks)
+    /// </summary>
+    public IEnumerable<Fact<T>> Facts { get; set; } = new List<Fact<T>>();
+
+    public IEnumerable<DeclaredBlock> Blocks { get; set; }
+        = new List<DeclaredBlock>();
+
+    private Dictionary<string, BlockConvention>? conventionByName;
+
+    /// <summary>
+    /// Block conventions that blocks included in the model can use
+    /// </summary>
+    public IEnumerable<BlockConvention>? BlockConventions {
+        get => conventionByName?.Values;
+        set {
+            if (value != null)
+            {
+                conventionByName = new();
+                foreach (var conv in value)
+                {
+                    conventionByName.Add(conv.Name, conv);
+                }
+            } else
+            {
+                conventionByName = null;
+            }
+        }
+    }
+
+    public BlockConvention GetConventionByName(string convName)
+    {
+        if (conventionByName == null)
+            throw new InvalidOperationException("Cannot get convention "
+                + "from model that has no conventions");
+        return conventionByName[convName];
+    }
+
+    public IEnumerable<BlockFact> GetBlockFacts()
+    {
+        return Blocks.Select(block => {
+            var conv = GetConventionByName(block.ConventionName);
+            var res = new BlockFact(block.ConventionName)
+            {
+                Id = block.Name
+            };
+            if (conv.Causes != null)
+                res.Causes = conv.Causes;
+            if (conv.Consequences != null)
+                res.Consequences = conv.Consequences;
+
+            return res;
+        });
+    }
 }

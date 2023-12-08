@@ -7,48 +7,48 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Facts;
-public class FactBuilder<TNodeValue>
+public class FactBuilder<TFactValue>
 {
     private CausesExpression? causesExpression;
-    private TNodeValue? nodeValue;
+    private TFactValue? nodeValue;
     private string? abstractFactId;
     private IEnumerable<WeightFactor>? weights;
     private string? id;
 
-    public FactBuilder<TNodeValue> WithCausesExpression(
+    public FactBuilder<TFactValue> WithCausesExpression(
         CausesExpression? causesExpression)
     {
         this.causesExpression = causesExpression;
         return this;
     }
 
-    public FactBuilder<TNodeValue> WithNodeValue(TNodeValue? nodeValue)
+    public FactBuilder<TFactValue> WithNodeValue(TFactValue? nodeValue)
     {
         this.nodeValue = nodeValue;
         return this;
     }
 
-    public FactBuilder<TNodeValue> WithAbstractFactId(string? abstractFactId)
+    public FactBuilder<TFactValue> WithAbstractFactId(string? abstractFactId)
     {
         this.abstractFactId = abstractFactId;
         return this;
     }
 
-    public FactBuilder<TNodeValue> WithWeights(IEnumerable<WeightFactor>? weights)
+    public FactBuilder<TFactValue> WithWeights(IEnumerable<WeightFactor>? weights)
     {
         this.weights = weights;
         return this;
     }
 
-    public FactBuilder<TNodeValue> WithId(string? id)
+    public FactBuilder<TFactValue> WithId(string? id)
     {
         this.id = id;
         return this;
     }
 
-    public Fact<TNodeValue> Build()
+    public Fact<TFactValue> Build()
     {
-        var res = new Fact<TNodeValue>
+        var res = new Fact<TFactValue>
         {
             CausesExpression = causesExpression,
             NodeValue = nodeValue,

@@ -1,11 +1,11 @@
-﻿using CausalModel.Model;
-using CausalModel.Factors;
+﻿using CausalModel.Factors;
 using CausalModel.Fixation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CausalModel.Model.Providers;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -31,7 +31,7 @@ namespace CausalModel.CausesExpressionTree
             return edges;
         }
 
-        public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+        public override bool? Evaluate<TFactValue>(IFactProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
             => Operation(Operands.Select(expr => expr.Evaluate(factProvider,
                 happenedProvider, fixingValueProvider))

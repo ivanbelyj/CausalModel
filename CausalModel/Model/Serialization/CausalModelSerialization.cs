@@ -10,7 +10,7 @@ namespace CausalModel.Model.Serialization
 {
     public class CausalModelSerialization
     {
-        public static string ToJson<TNodeValue>(CausalModel<TNodeValue> model,
+        public static string ToJson<TFactValue>(CausalModel<TFactValue> model,
             bool writeIndented = false)
         {
             JsonSerializerSettings settings = new JsonSerializerSettings()
@@ -18,20 +18,20 @@ namespace CausalModel.Model.Serialization
                 Formatting = writeIndented ? Formatting.Indented : Formatting.None,
                 NullValueHandling = NullValueHandling.Ignore,
                 TypeNameHandling = TypeNameHandling.Auto,
-                SerializationBinder = new CausalModelSerializationBinder<TNodeValue>()
+                SerializationBinder = new CausalModelSerializationBinder<TFactValue>()
             };
             return JsonConvert.SerializeObject(model, settings);
         }
 
-        public static CausalModel<TNodeValue>? FromJson<TNodeValue>(string jsonString)
+        public static CausalModel<TFactValue>? FromJson<TFactValue>(string jsonString)
         {
             JsonSerializerSettings settings = new JsonSerializerSettings()
             {
                 TypeNameHandling = TypeNameHandling.Auto,
-                SerializationBinder = new CausalModelSerializationBinder<TNodeValue>()
+                SerializationBinder = new CausalModelSerializationBinder<TFactValue>()
             };
 
-            var model = JsonConvert.DeserializeObject<CausalModel<TNodeValue>>(
+            var model = JsonConvert.DeserializeObject<CausalModel<TFactValue>>(
                 jsonString, settings);
             return model;
         }

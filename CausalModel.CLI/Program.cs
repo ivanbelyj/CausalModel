@@ -1,5 +1,4 @@
-﻿using CausalModel.Model;
-using CausalModel.Fixation;
+﻿using CausalModel.Fixation;
 using CausalModel.Facts;
 using System;
 using System.CommandLine;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model.Serialization;
+using CausalModel.Model.Providers;
 
 var rootCommand = new RootCommand
 {
@@ -41,7 +41,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     {
         Console.WriteLine($"Processing file: {input.FullName}");
 
-        CausalModel<string> model = null!;
+        ResolvingModelProvider<string> model = null!;
         Exception? exceptionToExit = null;
         try
         {
@@ -103,7 +103,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     }
 }
 
-static CausalModel<string>? Deserialize(string fileName)
+static ResolvingModelProvider<string>? Deserialize(string fileName)
 {
     string fileContent = File.ReadAllText(fileName);
     var model = CausalModelSerialization.FromJson<string>(fileContent);
@@ -122,7 +122,7 @@ static CausalModel<string>? Deserialize(string fileName)
 //    return jsonString;
 //}
 
-static string Generate(CausalModel<string> model, int? seed = null)
+static string Generate(ResolvingModelProvider<string> model, int? seed = null)
 {
     if (seed == null)
         seed = new Random().Next();
@@ -143,6 +143,6 @@ static string Generate(CausalModel<string> model, int? seed = null)
         }
     };
 
-    generator.FixateRoots();
+    generator.FixateRootCauses();
     return resStringBuilder.ToString();
 }

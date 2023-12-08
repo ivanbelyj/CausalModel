@@ -1,11 +1,11 @@
-﻿using CausalModel.Model;
-using CausalModel.Factors;
+﻿using CausalModel.Factors;
 using CausalModel.Fixation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CausalModel.Model.Providers;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -14,7 +14,7 @@ namespace CausalModel.CausesExpressionTree
     /// </summary>
     public abstract class CausesExpression
     {
-        public abstract bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
+        public abstract bool? Evaluate<TFactValue>(IFactProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider);
 
         /// <summary>

@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Fixation;
 
-public delegate void FactFixatedEventHandler<TNodeValue>(object sender,
-    Fact<TNodeValue> factFixated, bool isHappened);
+public delegate void FactFixatedEventHandler<TFactValue>(object sender,
+    Fact<TFactValue> factFixated, bool isHappened);
 
-public interface IFixator<TNodeValue> : IFixatedProvider
+public interface IFixator<TFactValue> : IFixatedProvider
 {
-    event FactFixatedEventHandler<TNodeValue> FactFixated;
-    void FixateFact(Fact<TNodeValue> fact, bool isHappened);
+    event FactFixatedEventHandler<TFactValue> FactFixated;
+    void FixateFact(Fact<TFactValue> fact, bool isHappened);
 }

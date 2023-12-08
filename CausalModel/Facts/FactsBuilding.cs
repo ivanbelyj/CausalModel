@@ -10,42 +10,42 @@ namespace CausalModel.Facts;
 
 public static class FactsBuilding
 {
-    public static Fact<TNodeValue> CreateFact<TNodeValue>(
-        float probability, TNodeValue? value = default, string? causeId = null)
+    public static Fact<TFactValue> CreateFact<TFactValue>(
+        float probability, TFactValue? value = default, string? causeId = null)
     {
-        return new FactBuilder<TNodeValue>()
+        return new FactBuilder<TFactValue>()
             .WithCausesExpression(new FactorLeaf(
                 new ProbabilityFactor(probability, causeId)))
             .WithNodeValue(value)
             .Build();
     }
 
-    private static Fact<TNodeValue> CreateFactWithOperation<TNodeValue>(
-        TNodeValue value, ProbabilityFactor[] edges,
+    private static Fact<TFactValue> CreateFactWithOperation<TFactValue>(
+        TFactValue value, ProbabilityFactor[] edges,
         Func<ProbabilityFactor[], CausesOperation> operation)
     {
-        return new FactBuilder<TNodeValue>()
+        return new FactBuilder<TFactValue>()
             .WithNodeValue(value)
             .WithCausesExpression(operation(edges))
             .Build();
     }
 
-    public static Fact<TNodeValue> CreateFactWithAnd<TNodeValue>(TNodeValue value,
+    public static Fact<TFactValue> CreateFactWithAnd<TFactValue>(TFactValue value,
         params ProbabilityFactor[] edges)
     {
         return CreateFactWithOperation(value, edges, Expressions.And);
     }
 
-    public static Fact<TNodeValue> CreateFactWithOr<TNodeValue>(TNodeValue value,
+    public static Fact<TFactValue> CreateFactWithOr<TFactValue>(TFactValue value,
         params ProbabilityFactor[] edges)
     {
         return CreateFactWithOperation(value, edges, Expressions.Or);
     }
 
-    public static Fact<TNodeValue> CreateVariant<TNodeValue>(
-        string abstractNodeId, float weight, TNodeValue? value = default)
+    public static Fact<TFactValue> CreateVariant<TFactValue>(
+        string abstractNodeId, float weight, TFactValue? value = default)
     {
-        return new FactBuilder<TNodeValue>()
+        return new FactBuilder<TFactValue>()
             .WithAbstractFactId(abstractNodeId)
             .WithWeights(new List<WeightFactor> {
                 new WeightFactor(weight)
@@ -54,10 +54,10 @@ public static class FactsBuilding
             .Build();
     }
 
-    public static List<Fact<TNodeValue>> CreateAbstractFact<TNodeValue>(
-        Fact<TNodeValue> abstractFact, params TNodeValue[] variants)
+    public static List<Fact<TFactValue>> CreateAbstractFact<TFactValue>(
+        Fact<TFactValue> abstractFact, params TFactValue[] variants)
     {
-        var res = new List<Fact<TNodeValue>>() { abstractFact };
+        var res = new List<Fact<TFactValue>>() { abstractFact };
 
         foreach (var val in variants)
         {

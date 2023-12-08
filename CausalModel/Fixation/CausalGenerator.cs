@@ -1,52 +1,25 @@
 ﻿using CausalModel.Common;
-using CausalModel.Model;
-using CausalModel.Factors;
 using CausalModel.Facts;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CausalModel.CausesExpressionTree;
+using CausalModel.Model.Providers;
 
 namespace CausalModel.Fixation;
 
-public class CausalGenerator<TNodeValue> : IRandomProvider
+public class CausalGenerator<TFactValue> : IRandomProvider
 {
-    private FactCollection<TNodeValue> facts;
-
-    private Dictionary<Fact<TNodeValue>,
-        List<Fact<TNodeValue>>> causesAndConsequences;
-    private Dictionary<Fact<TNodeValue>,
-        List<Fact<TNodeValue>>> factsAndVariants;
-    private HashSet<Fact<TNodeValue>> rootNodes;
-
-    private readonly IFixator<TNodeValue> fixator;
+    private readonly IModelProvider<TFactValue> modelProvider;
+    private readonly IFixator<TFactValue> fixator;
     private readonly Random random;
 
     public CausalGenerator(
-        // FactCollection<TNodeValue> factCollection,
-        CausalModel<TNodeValue> model,
+        IModelProvider<TFactValue> modelProvider,
         int seed,
-        IFixator<TNodeValue> fixator)
+        IFixator<TFactValue> fixator)
     {
-        //Facts = factCollection;
-        Facts = model.Facts;  // Todo
-        random = new Random(seed);
-
+        this.modelProvider = modelProvider;
         this.fixator = fixator;
-    }
 
-    public FactCollection<TNodeValue> Facts
-    {
-        get => facts;
-        private set
-        {
-            facts = value;
-            Initialize();
-        }
+        random = new Random(seed);
     }
 
     public double NextDouble(double min = 0, double max = 1)
@@ -58,11 +31,11 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
     /// Not null, if the causes are determined to evaluate the result
     /// </summary>
     private bool? IsFollowingFromCauses(CausesExpression causesExpression)
-        => causesExpression.Evaluate(facts, fixator, this);
+        => causesExpression.Evaluate(modelProvider, fixator, this);
 
     public void Fixate(string factId, bool? isFactHappened = null)
     {
-        Fact<TNodeValue> fixatingFact = facts.GetFactById(factId);
+        Fact<TFactValue> fixatingFact = modelProvider.GetFact(factId);
 
         // If the fact happening is not explicitly specified,
         // the happening is determined based on the causes
@@ -71,7 +44,7 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
             bool? isFollowingFromCauses = IsFollowingFromCauses(fixatingFact
                 .CausesExpression);
 
-            // Case where there is not enough data (some causes have not been
+            // The case when there is not enough data (some causes have not been
             // fixated yet)
             if (isFollowingFromCauses == null)
             {
@@ -94,9 +67,10 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
         {
             // Фиксация вариантов реализации абстрактных фактов
 
-            var abstractFact = facts.GetFactById(fixatingFact.AbstractFactId);
+            var abstractFact = modelProvider.GetFact(fixatingFact.AbstractFactId);
 
-            var variantsFollowingFromCauses = factsAndVariants[abstractFact]
+            var variantsFollowingFromCauses = modelProvider
+                .GetAbstractFactVariants(abstractFact)
                 .Select(variant => {
                     bool? canHappen = IsFollowingFromCauses(variant.CausesExpression);
                     return (canHappen, variant);
@@ -107,7 +81,7 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
             // Если для какого-либо варианта реализации не хватает данных,
             // выбор единственной реализации откладывается
             if (variantsFollowingFromCauses.Count
-                < factsAndVariants[abstractFact].Count)
+                < modelProvider.GetAbstractFactVariants(abstractFact).Count())
             {
                 return;
             }
@@ -139,68 +113,18 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
         }
     }
 
-    private void FixateNotFixatedConsequences(Fact<TNodeValue> fixatingFact)
+    private void FixateNotFixatedConsequences(Fact<TFactValue> fixatingFact)
     {
-        if (!causesAndConsequences.ContainsKey(fixatingFact))
-        {
-            return;
-        }
-        foreach (var consequence in causesAndConsequences[fixatingFact])
+        foreach (var consequence in modelProvider.GetConsequences(fixatingFact))
         {
             if (fixator.IsFixated(consequence.Id) == null)
                 Fixate(consequence.Id);
         }
     }
 
-    private void Initialize()
+    public void FixateRootCauses()
     {
-        causesAndConsequences = new Dictionary<Fact<TNodeValue>,
-            List<Fact<TNodeValue>>>();
-        rootNodes = new HashSet<Fact<TNodeValue>>();
-        factsAndVariants = new Dictionary<Fact<TNodeValue>,
-            List<Fact<TNodeValue>>>();
-
-        foreach (Fact<TNodeValue> fact in facts)
-        {
-            if (fact.IsRootCause())
-                rootNodes.Add(fact);
-
-            if (fact.AbstractFactId != null)
-            {
-                var abstractFact = facts.GetFactById(fact.AbstractFactId);
-                if (!factsAndVariants.ContainsKey(abstractFact))
-                {
-                    factsAndVariants.Add(abstractFact,
-                        new List<Fact<TNodeValue>> { fact });
-                }
-                else
-                {
-                    factsAndVariants[abstractFact].Add(fact);
-                }
-            }
-
-            foreach (var edge in fact.GetCauses())
-            {
-                if (edge.CauseId != null)
-                {
-                    var cause = facts.GetFactById(edge.CauseId);
-                    if (!causesAndConsequences.ContainsKey(cause))
-                    {
-                        causesAndConsequences.Add(cause,
-                            new List<Fact<TNodeValue>>() { fact });
-                    }
-                    else
-                    {
-                        causesAndConsequences[cause].Add(fact);
-                    }
-                }
-            }
-        }
-    }
-
-    public void FixateRoots()
-    {
-        foreach (var root in rootNodes)
+        foreach (var root in modelProvider.GetRootCauses())
         {
             Fixate(root.Id);
         }

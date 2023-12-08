@@ -1,10 +1,9 @@
-﻿using CausalModel.Blocks.BlockReferences;
-using CausalModel.CausesExpressionTree;
+﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Facts;
 using Newtonsoft.Json.Serialization;
 
 namespace CausalModel.Model.Serialization;
-public class CausalModelSerializationBinder<TNodeValue> : ISerializationBinder
+public class CausalModelSerializationBinder<TFactValue> : ISerializationBinder
 {
     // Polymorphic serialization/deserialization is required for
     // CausesExpression => And, Or, FactorLeaf, Not
@@ -19,15 +18,10 @@ public class CausalModelSerializationBinder<TNodeValue> : ISerializationBinder
         (typeof(FactorLeaf), "factor"),
         (typeof(InversionOperation), "not"),
 
-        (typeof(Fact<TNodeValue>), "fact"),
-        (typeof(Fact<TNodeValue>), "variant"),
+        //(typeof(Fact<TFactValue>), "fact"),
 
-        //(typeof(BlockReference[]), "reference[]"),
-        (typeof(AbstractReference), "abstract"),
-        (typeof(SpecifiedReference), "specified"),
-
-        //(typeof(CausalModel<TNodeValue>), "causal-model"),
-        //(typeof(FactCollection<TNodeValue>), "fact-collection"),
+        //(typeof(CausalModel<TFactValue>), "causal-model"),
+        //(typeof(FactCollection<TFactValue>), "fact-collection"),
     };
     //public static List<(Type type, string name)> KnownTypes => knownTypes;
 
