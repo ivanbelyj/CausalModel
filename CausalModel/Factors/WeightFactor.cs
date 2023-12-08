@@ -10,7 +10,7 @@ namespace CausalModel.Factors
     /// Весовое ребро делает определенный вариант реализации абстрактной сущности (АС)
     /// более или менее благоприятным для выбора
     /// </summary>
-    public class WeightFactor : CausalEdge
+    public class WeightFactor : Factor
     {
         /// <summary>
         /// Вес, определяющий благоприятность определенного варианта реализации <br/>
@@ -21,7 +21,7 @@ namespace CausalModel.Factors
         /// </summary>
         public double Weight { get; set; }
 
-        public WeightFactor(double weight, Guid? causeId = null)
+        public WeightFactor(double weight, string? causeId = null)
         {
             Weight = weight;
             CauseId = causeId;

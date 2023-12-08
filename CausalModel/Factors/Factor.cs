@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Factors
 {
-    public class CausalEdge
+    public class Factor
     {
         /// <summary>
-        /// Guid узла, представляющего причину. null для корневых узлов
+        /// Id of the fact that is the cause. Null for the root facts
+        /// that have no causes from the point of view of the model
         /// </summary>
-        public Guid? CauseId { get; set; }
+        public string? CauseId { get; set; }
     }
 }

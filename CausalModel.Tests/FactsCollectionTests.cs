@@ -1,7 +1,7 @@
-﻿using CausalModel.FactCollection;
+﻿using CausalModel.Model;
 using CausalModel.Factors;
 using CausalModel.Nests;
-using CausalModel.Nodes;
+using CausalModel.Facts;
 using System.Linq;
 
 namespace CausalModel.Tests
@@ -15,17 +15,17 @@ namespace CausalModel.Tests
             var facts = new List<Fact<string>>();
             for (int i = 0; i < 5; i++)
             {
-                facts.Add(FactUtils.CreateNode(1, "Root node " + i, null));
+                facts.Add(FactsBuilding.CreateNode(1, "Root node " + i, null));
             }
             string lastVal = "last fact";
-            var lastFact = FactUtils.CreateNode(1, lastVal, null);
+            var lastFact = FactsBuilding.CreateNode(1, lastVal, null);
             facts.Add(lastFact);
 
             // Act
             var collection = new FactCollection<string>(facts);
 
             // Assert
-            Assert.Equal(facts.Count, collection.Nodes.Count());
+            Assert.Equal(facts.Count, collection.Count());
             Assert.Equal(lastFact.NodeValue,
                 collection.GetFactById(lastFact.Id).NodeValue);
         }

@@ -1,7 +1,7 @@
-﻿using CausalModel.FactCollection;
+﻿using CausalModel.Model;
 using CausalModel.Factors;
-using CausalModel.Model;
-using CausalModel.Nodes;
+using CausalModel.Fixation;
+using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,15 +26,15 @@ namespace CausalModel.CausesExpressionTree
         }
 
         public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
-            IFixatedProvider happenedProvider, IFixatingValueProvider fixingValueProvider)
+            IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
-                fixingValueProvider.GetFixatingValue());
+                (float)fixingValueProvider.NextDouble());
             
             bool isExistingCauseHappened = false;
             if (Edge.CauseId != null)
             {
-                bool? isHappened = happenedProvider.IsFixated(Edge.CauseId.Value);
+                bool? isHappened = happenedProvider.IsFixated(Edge.CauseId);
                 // Если причина есть, но не зафиксирована
                 if (isHappened == null)
                 {

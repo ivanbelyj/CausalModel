@@ -1,6 +1,6 @@
-﻿using CausalModel.FactCollection;
+﻿using CausalModel.Model;
 using CausalModel.Factors;
-using CausalModel.Model;
+using CausalModel.Fixation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,7 @@ namespace CausalModel.CausesExpressionTree
     public abstract class CausesExpression
     {
         public abstract bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
-            IFixatedProvider happenedProvider, IFixatingValueProvider fixingValueProvider);
+            IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider);
 
         /// <summary>
         /// Ребра, включенные в логическое выражение

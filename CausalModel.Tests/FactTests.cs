@@ -1,7 +1,7 @@
 ﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Factors;
 using CausalModel.Nests;
-using CausalModel.Nodes;
+using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +16,8 @@ namespace CausalModel.Tests
         [Fact]
         public void IsRootNodeTest()
         {
-            var rootNode = new Fact<string>(TestUtils.NewRootNest(), "root");
-            var notRootNode = new Fact<string>(TestUtils.NewNotRootNest(), "not root");
+            var rootNode = new ProbabilityFact<string>(TestUtils.NewRootNest(), "root");
+            var notRootNode = new ProbabilityFact<string>(TestUtils.NewNotRootNest(), "not root");
 
             Assert.True(rootNode.IsRootNode());
             Assert.False(notRootNode.IsRootNode());
@@ -38,9 +38,9 @@ namespace CausalModel.Tests
 
             var expr = Expressions.Or(or, and, not);
 
-            Fact<string> node = new Fact<string>(new ProbabilityNest(expr),
+            Fact<string> node = new ProbabilityFact<string>(new ProbabilityNest(expr),
                 "root");
-            Assert.Equal(TEST_SIZE * 2 + 1, node.GetEdges().Count());
+            Assert.Equal(TEST_SIZE * 2 + 1, node.GetCauses().Count());
         }
     }
 }

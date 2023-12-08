@@ -26,7 +26,7 @@ namespace CausalModel.CausesExpressionTree
 
         public static FactorLeaf Edge(ProbabilityFactor edge)
             => new FactorLeaf(edge);
-        public static FactorLeaf Edge(float probability, Guid? causeId = null)
+        public static FactorLeaf Edge(float probability, string? causeId = null)
             => new FactorLeaf(new ProbabilityFactor(probability, causeId));
     }
 }

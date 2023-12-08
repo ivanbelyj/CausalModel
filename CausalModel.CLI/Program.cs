@@ -1,6 +1,6 @@
-﻿using CausalModel.FactCollection;
-using CausalModel.Model;
-using CausalModel.Nodes;
+﻿using CausalModel.Model;
+using CausalModel.Fixation;
+using CausalModel.Facts;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -8,7 +8,7 @@ using System.CommandLine.NamingConventionBinder;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-
+using CausalModel.Model.Serialization;
 
 var rootCommand = new RootCommand
 {
@@ -41,7 +41,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     {
         Console.WriteLine($"Processing file: {input.FullName}");
 
-        FactCollection<string> factCol = null!;
+        CausalModel<string> model = null!;
         Exception? exceptionToExit = null;
         try
         {
@@ -49,7 +49,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
             if (deserializationRes == null)
                 throw new NullReferenceException(input.FullName);
             else
-                factCol = deserializationRes;
+                model = deserializationRes;
 
         } catch (NullReferenceException ex)
         {
@@ -77,7 +77,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
         }
 
         // Generate facts
-        string genOutput = Generate(factCol, seed);
+        string genOutput = Generate(model, seed);
 
         // If an output file is specified, write the results to the file
         if (output != null)
@@ -103,11 +103,11 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     }
 }
 
-static FactCollection<string>? Deserialize(string fileName)
+static CausalModel<string>? Deserialize(string fileName)
 {
     string fileContent = File.ReadAllText(fileName);
-    var factCol = FactCollectionUtils.Deserialize(fileContent);
-    return factCol;
+    var model = CausalModelSerialization.FromJson<string>(fileContent);
+    return model;
 }
 
 //static string Serialize(FactCollection<string> factCollection,
@@ -122,14 +122,14 @@ static FactCollection<string>? Deserialize(string fileName)
 //    return jsonString;
 //}
 
-static string Generate(FactCollection<string> factCollection, int? seed = null)
+static string Generate(CausalModel<string> model, int? seed = null)
 {
     if (seed == null)
         seed = new Random().Next();
 
     Console.WriteLine("Seed: " + seed);
     Fixator<string> fixator = new Fixator<string>();
-    var model = new CausalModel<string>(factCollection, seed.Value, fixator);
+    var generator = new CausalGenerator<string>(model, seed.Value, fixator);
 
     var resStringBuilder = new StringBuilder();
     resStringBuilder.AppendLine("Seed: " + seed);
@@ -137,12 +137,12 @@ static string Generate(FactCollection<string> factCollection, int? seed = null)
     {
         if (isHappened)
         {
-            string newLine = (fact.IsRootNode() ? "" : "\t") + fact.NodeValue;
+            string newLine = (fact.IsRootCause() ? "" : "\t") + fact.NodeValue;
             Console.WriteLine(newLine);
             resStringBuilder.AppendLine(newLine);
         }
     };
 
-    model.FixateRoots();
+    generator.FixateRoots();
     return resStringBuilder.ToString();
 }

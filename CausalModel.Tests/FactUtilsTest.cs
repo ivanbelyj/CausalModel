@@ -1,7 +1,7 @@
-﻿using CausalModel.FactCollection;
+﻿using CausalModel.Model;
 using CausalModel.Factors;
 using CausalModel.Nests;
-using CausalModel.Nodes;
+using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +17,11 @@ namespace CausalModel.Tests
         public void CreateNodeTest()
         {
             string val = "Root node";
-            var node = FactUtils.CreateNode(1, val, null);
+            var node = FactsBuilding.CreateNode(1, val, null);
             Assert.NotEqual(node.Id, default);
             Assert.Equal(val, node.NodeValue);
-            Assert.Single(node.ProbabilityNest.GetEdges());
-            Assert.Equal(1f, node.ProbabilityNest.GetEdges().ElementAt(0).Probability);
+            Assert.Single(node.CausesExpression.GetEdges());
+            Assert.Equal(1f, node.CausesExpression.GetEdges().ElementAt(0).Probability);
         }
 
         [Fact]
@@ -29,22 +29,22 @@ namespace CausalModel.Tests
         {
             // Arrange
             var model = new FactCollection<string>();
-            var abstractNode = new Fact<string>(new ProbabilityNest(1, null),
+            var abstractNode = new ProbabilityFact<string>(new ProbabilityNest(1, null),
                 "Kemsh (race)");
             var races = new string[] {"Cheaymea", "Emera", "Evoymea",
                 "Myeuramea", "Oanei" };
 
             // Act
-            var facts = FactUtils.CreateAbstractFact(abstractNode, races);
+            var facts = FactsBuilding.CreateAbstractFact(abstractNode, races);
 
             // Assert
             Assert.Equal(races.Length + 1, facts.Count);
 
-            foreach (var node in model.Nodes)
+            foreach (var node in model)
             {
                 if (node == abstractNode)
                     continue;
-                var nodeEdges = node.GetEdges();
+                var nodeEdges = node.GetCauses();
                 var weightEdges = nodeEdges.OfType<WeightFactor>();
                 var probabilityEdges = nodeEdges.OfType<ProbabilityFactor>();
                 Assert.Single(weightEdges);

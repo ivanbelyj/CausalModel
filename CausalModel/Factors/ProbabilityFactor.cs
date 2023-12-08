@@ -10,7 +10,7 @@ namespace CausalModel.Factors
     /// Представляет причинно-следственное ребро, которое указывает, с какой вероятностью
     /// один из факторов следствия происходит в случае происшествия причины.
     /// </summary>
-    public class ProbabilityFactor : CausalEdge
+    public class ProbabilityFactor : Factor
     {
         private float probability;
         /// <summary>
@@ -29,39 +29,15 @@ namespace CausalModel.Factors
                     probability = value;
                 }
                 else
-                    throw new ArgumentOutOfRangeException("",
-                        "Некорректное значение вероятности");
+                    throw new ArgumentOutOfRangeException(nameof(Probability),
+                        "Incorrect probability value. It must be in [0, 1]");
             }
         }
 
-        //private double? fixingValue;
-        /// <summary>
-        /// Значение, фиксирующее вероятность и определяющее, повлекла ли
-        /// причинно-следственная связь за собой фактор события в текущей генерации.
-        /// Значение больше или равно 0 (фактор происходит при любой ненулевой вероятности)
-        /// и строго меньше 1.0
-        /// Может принимать значение null, например, до генерации
-        /// </summary>
-        //public double? FixingValue
-        //{
-        //    get => fixingValue;
-        //    set
-        //    {
-        //        if (value is null || value >= 0 && value < 1.0)
-        //        {
-        //            fixingValue = value;
-        //        }
-        //        else
-        //            throw new ArgumentOutOfRangeException("",
-        //                "Некорректное фиксирующее значение");
-        //    }
-        //}
-
-        public ProbabilityFactor(float probability, Guid? causeId = null)
+        public ProbabilityFactor(float probability, string? causeId = null)
         {
             Probability = probability;
             CauseId = causeId;
-            //FixingValue = actualProbability;
         }
 
         public override string ToString()

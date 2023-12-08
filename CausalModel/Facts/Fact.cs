@@ -1,4 +1,5 @@
-﻿using CausalModel.Factors;
+﻿using CausalModel.CausesExpressionTree;
+using CausalModel.Factors;
 using CausalModel.Nests;
 using System;
 using System.Collections.Generic;
@@ -6,43 +7,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Nodes
+namespace CausalModel.Facts
 {
-    public class Fact<TNodeValue>
+    public class Fact<TNodeValue> : AbstractFact
     {
-        public Guid Id { get; set; }
-        
-        public ProbabilityNest ProbabilityNest { get; set; }
-
-        /// <summary>
-        /// Если null, то данное звено – только связующее
-        /// </summary>
+        public CausesExpression? CausesExpression { get; set; }
         public TNodeValue? NodeValue { get; set; }
 
-        // Для десериализации
-        public Fact() : this(new ProbabilityNest(), default) { }
-        public Fact(Guid id, ProbabilityNest probabilityNest,
-            TNodeValue? nodeValue)
+        public string? AbstractFactId { get; set; }
+        public IEnumerable<WeightFactor>? Weights { get; set; }
+
+        public override string? ToString() =>
+            $"{Id} - " + (NodeValue?.ToString() ?? "null");
+
+        public override IEnumerable<Factor> GetCauses()
         {
-            Id = id;
-            NodeValue = nodeValue;
-            ProbabilityNest = probabilityNest;
-        }
-        public Fact(ProbabilityNest probabilityNest, TNodeValue? value)
-            : this(Guid.NewGuid(), probabilityNest, value) { }
+            var res = new List<Factor>();
+            if (CausesExpression != null)
+                res.AddRange(CausesExpression.GetEdges());
+            if (Weights != null)
+                res.AddRange(Weights);
 
-        /// <summary>
-        /// Все исходящие причинные ребра. В подклассах могут добавиться другие гнезда,
-        /// поэтому метод можно переопределять
-        /// </summary>
-        public virtual IEnumerable<CausalEdge> GetEdges() => ProbabilityNest.GetEdges();
-        public virtual bool IsRootNode() => ProbabilityNest.IsRootNest();
-
-        public override string? ToString() => $"{Id} - " + (NodeValue?.ToString() ?? "null");
-
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
+            return res;
         }
     }
 }

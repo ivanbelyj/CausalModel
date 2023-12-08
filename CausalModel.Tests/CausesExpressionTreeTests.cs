@@ -1,8 +1,8 @@
 ﻿using CausalModel.CausesExpressionTree;
-using CausalModel.FactCollection;
-using CausalModel.Factors;
 using CausalModel.Model;
-using CausalModel.Nodes;
+using CausalModel.Factors;
+using CausalModel.Fixation;
+using CausalModel.Facts;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -19,13 +19,16 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var model = new CausalModel<string>(factCol, 123, fixator);
+            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            {
+                Facts = factCol,
+            }, 123, fixator);
 
             var nullFactor = TestUtils.NewNullFactor();
 
-            Assert.False(new FactorLeaf(falseEdge).Evaluate(factCol, fixator, model));
-            Assert.True(new FactorLeaf(trueEdge).Evaluate(factCol, fixator, model));
-            Assert.Null(new FactorLeaf(nullFactor).Evaluate(factCol, fixator, model));
+            Assert.False(new FactorLeaf(falseEdge).Evaluate(factCol, fixator, generator));
+            Assert.True(new FactorLeaf(trueEdge).Evaluate(factCol, fixator, generator));
+            Assert.Null(new FactorLeaf(nullFactor).Evaluate(factCol, fixator, generator));
         }
 
         [Fact]
@@ -40,18 +43,21 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var model = new CausalModel<string>(factCol, 123, fixator);
+            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            {
+                Facts = factCol,
+            }, 123, fixator);
 
-            Assert.False(Expressions.And(falseEdge, falseEdge1).Evaluate(factCol, fixator, model));
-            Assert.False(Expressions.And(falseEdge, trueEdge).Evaluate(factCol, fixator, model));
-            Assert.False(Expressions.And(trueEdge, falseEdge1).Evaluate(factCol, fixator, model));
-            Assert.True(Expressions.And(trueEdge, trueEdge1).Evaluate(factCol, fixator, model));
+            Assert.False(Expressions.And(falseEdge, falseEdge1).Evaluate(factCol, fixator, generator));
+            Assert.False(Expressions.And(falseEdge, trueEdge).Evaluate(factCol, fixator, generator));
+            Assert.False(Expressions.And(trueEdge, falseEdge1).Evaluate(factCol, fixator, generator));
+            Assert.True(Expressions.And(trueEdge, trueEdge1).Evaluate(factCol, fixator, generator));
 
-            Assert.False(Expressions.And(nullFactor, falseEdge1).Evaluate(factCol, fixator, model));
-            Assert.False(Expressions.And(falseEdge, nullFactor).Evaluate(factCol, fixator, model));
-            Assert.Null(Expressions.And(nullFactor, trueEdge1).Evaluate(factCol, fixator, model));
-            Assert.Null(Expressions.And(trueEdge, nullFactor).Evaluate(factCol, fixator, model));
-            Assert.Null(Expressions.And(nullFactor, nullFactor).Evaluate(factCol, fixator, model));
+            Assert.False(Expressions.And(nullFactor, falseEdge1).Evaluate(factCol, fixator, generator));
+            Assert.False(Expressions.And(falseEdge, nullFactor).Evaluate(factCol, fixator, generator));
+            Assert.Null(Expressions.And(nullFactor, trueEdge1).Evaluate(factCol, fixator, generator));
+            Assert.Null(Expressions.And(trueEdge, nullFactor).Evaluate(factCol, fixator, generator));
+            Assert.Null(Expressions.And(nullFactor, nullFactor).Evaluate(factCol, fixator, generator));
         }
 
         [Fact]
@@ -66,18 +72,21 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var model = new CausalModel<string>(factCol, 123, fixator);
+            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            {
+                Facts = factCol,
+            }, 123, fixator);
 
-            Assert.False(Expressions.Or(falseEdge, falseEdge1).Evaluate(factCol, fixator, model));
-            Assert.True(Expressions.Or(falseEdge, trueEdge).Evaluate(factCol, fixator, model));
-            Assert.True(Expressions.Or(trueEdge, falseEdge1).Evaluate(factCol, fixator, model));
-            Assert.True(Expressions.Or(trueEdge, trueEdge1).Evaluate(factCol, fixator, model));
+            Assert.False(Expressions.Or(falseEdge, falseEdge1).Evaluate(factCol, fixator, generator));
+            Assert.True(Expressions.Or(falseEdge, trueEdge).Evaluate(factCol, fixator, generator));
+            Assert.True(Expressions.Or(trueEdge, falseEdge1).Evaluate(factCol, fixator, generator));
+            Assert.True(Expressions.Or(trueEdge, trueEdge1).Evaluate(factCol, fixator, generator));
 
-            Assert.Null(Expressions.Or(nullFactor, falseEdge1).Evaluate(factCol, fixator, model));
-            Assert.Null(Expressions.Or(falseEdge, nullFactor).Evaluate(factCol, fixator, model));
-            Assert.True(Expressions.Or(nullFactor, trueEdge1).Evaluate(factCol, fixator, model));
-            Assert.True(Expressions.Or(trueEdge, nullFactor).Evaluate(factCol, fixator, model));
-            Assert.Null(Expressions.Or(nullFactor, nullFactor).Evaluate(factCol, fixator, model));
+            Assert.Null(Expressions.Or(nullFactor, falseEdge1).Evaluate(factCol, fixator, generator));
+            Assert.Null(Expressions.Or(falseEdge, nullFactor).Evaluate(factCol, fixator, generator));
+            Assert.True(Expressions.Or(nullFactor, trueEdge1).Evaluate(factCol, fixator, generator));
+            Assert.True(Expressions.Or(trueEdge, nullFactor).Evaluate(factCol, fixator, generator));
+            Assert.Null(Expressions.Or(nullFactor, nullFactor).Evaluate(factCol, fixator, generator));
         }
 
         [Fact]
@@ -88,15 +97,18 @@ namespace CausalModel.Tests
 
             var factCol = new FactCollection<string>();
             var fixator = new Fixator<string>();
-            var model = new CausalModel<string>(factCol, 123, fixator);
+            var generator = new CausalGenerator<string>(new CausalModel<string>()
+            {
+                Facts = factCol,
+            }, 123, fixator);
 
             var nullFactor = TestUtils.NewNullFactor();
 
-            Assert.True(Expressions.Not(falseEdge).Evaluate(factCol, fixator, model));
-            Assert.False(Expressions.Not(trueEdge).Evaluate(factCol, fixator, model));
-            Assert.False(Expressions.Not(trueEdge).Evaluate(factCol, fixator, model));
+            Assert.True(Expressions.Not(falseEdge).Evaluate(factCol, fixator, generator));
+            Assert.False(Expressions.Not(trueEdge).Evaluate(factCol, fixator, generator));
+            Assert.False(Expressions.Not(trueEdge).Evaluate(factCol, fixator, generator));
 
-            Assert.Null(Expressions.Not(nullFactor).Evaluate(factCol, fixator, model));
+            Assert.Null(Expressions.Not(nullFactor).Evaluate(factCol, fixator, generator));
         }
 
         [Fact]
