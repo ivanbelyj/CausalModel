@@ -1,6 +1,5 @@
 ﻿using CausalModel.Model;
 using CausalModel.Factors;
-using CausalModel.Nests;
 using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
@@ -17,9 +16,10 @@ namespace CausalModel.Tests
         public void CreateNodeTest()
         {
             string val = "Root node";
-            var node = FactsBuilding.CreateNode(1, val, null);
-            Assert.NotEqual(node.Id, default);
+            var node = FactsBuilding.CreateFact(1, val, null);
+            Assert.NotEqual(default, node.Id);
             Assert.Equal(val, node.NodeValue);
+            Assert.NotNull(node.CausesExpression);
             Assert.Single(node.CausesExpression.GetEdges());
             Assert.Equal(1f, node.CausesExpression.GetEdges().ElementAt(0).Probability);
         }
@@ -29,10 +29,9 @@ namespace CausalModel.Tests
         {
             // Arrange
             var model = new FactCollection<string>();
-            var abstractNode = new ProbabilityFact<string>(new ProbabilityNest(1, null),
-                "Kemsh (race)");
+            var abstractNode = FactsBuilding.CreateFact(1, "Kemsh (race)", null);
             var races = new string[] {"Cheaymea", "Emera", "Evoymea",
-                "Myeuramea", "Oanei" };
+                "Myeuramea", "Oanai" };
 
             // Act
             var facts = FactsBuilding.CreateAbstractFact(abstractNode, races);

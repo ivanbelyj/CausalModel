@@ -1,5 +1,4 @@
 using CausalModel.Factors;
-using CausalModel.Nests;
 using System;
 using System.Collections.Generic;
 using System.Linq;

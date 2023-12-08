@@ -1,6 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Factors;
-using CausalModel.Nests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Facts;
 
-public static class FactUtils
+public static class FactsBuilding
 {
-    public static Fact<TNodeValue> CreateNode<TNodeValue>(
+    public static Fact<TNodeValue> CreateFact<TNodeValue>(
         float probability, TNodeValue? value = default, string? causeId = null)
     {
         return new FactBuilder<TNodeValue>()
@@ -21,7 +20,7 @@ public static class FactUtils
             .Build();
     }
 
-    private static Fact<TNodeValue> CreateNodeWithOperation<TNodeValue>(
+    private static Fact<TNodeValue> CreateFactWithOperation<TNodeValue>(
         TNodeValue value, ProbabilityFactor[] edges,
         Func<ProbabilityFactor[], CausesOperation> operation)
     {
@@ -31,19 +30,19 @@ public static class FactUtils
             .Build();
     }
 
-    public static Fact<TNodeValue> CreateNodeWithAnd<TNodeValue>(TNodeValue value,
+    public static Fact<TNodeValue> CreateFactWithAnd<TNodeValue>(TNodeValue value,
         params ProbabilityFactor[] edges)
     {
-        return CreateNodeWithOperation(value, edges, Expressions.And);
+        return CreateFactWithOperation(value, edges, Expressions.And);
     }
 
-    public static Fact<TNodeValue> CreateNodeWithOr<TNodeValue>(TNodeValue value,
+    public static Fact<TNodeValue> CreateFactWithOr<TNodeValue>(TNodeValue value,
         params ProbabilityFactor[] edges)
     {
-        return CreateNodeWithOperation(value, edges, Expressions.Or);
+        return CreateFactWithOperation(value, edges, Expressions.Or);
     }
 
-    private static Fact<TNodeValue> CreateVariant<TNodeValue>(
+    public static Fact<TNodeValue> CreateVariant<TNodeValue>(
         string abstractNodeId, float weight, TNodeValue? value = default)
     {
         return new FactBuilder<TNodeValue>()
@@ -69,4 +68,3 @@ public static class FactUtils
         return res;
     }
 }
-

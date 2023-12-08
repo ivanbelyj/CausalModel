@@ -53,7 +53,7 @@ public class FactBuilder<TNodeValue>
             CausesExpression = causesExpression,
             NodeValue = nodeValue,
             AbstractFactId = abstractFactId,
-            Weights = weights
+            Weights = weights,
         };
 
         if (id != null) {

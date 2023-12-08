@@ -1,6 +1,5 @@
 ﻿using CausalModel.Model;
 using CausalModel.Factors;
-using CausalModel.Nests;
 using CausalModel.Facts;
 using System.Linq;
 
@@ -15,10 +14,10 @@ namespace CausalModel.Tests
             var facts = new List<Fact<string>>();
             for (int i = 0; i < 5; i++)
             {
-                facts.Add(FactsBuilding.CreateNode(1, "Root node " + i, null));
+                facts.Add(FactsBuilding.CreateFact(1, "Root node " + i, null));
             }
             string lastVal = "last fact";
-            var lastFact = FactsBuilding.CreateNode(1, lastVal, null);
+            var lastFact = FactsBuilding.CreateFact(1, lastVal, null);
             facts.Add(lastFact);
 
             // Act

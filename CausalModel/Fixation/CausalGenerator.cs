@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CausalModel.CausesExpressionTree;
 
 namespace CausalModel.Fixation;
 
@@ -54,23 +55,24 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
     }
 
     /// <summary>
-    /// Определены ли причины факта, чтобы можно было говорить о его происшествии?
+    /// Not null, if the causes are determined to evaluate the result
     /// </summary>
-    private bool? IsFollowingFromCauses(Fact<TNodeValue> fact)
-        => fact.CausesExpression.Evaluate(facts, fixator, this);
+    private bool? IsFollowingFromCauses(CausesExpression causesExpression)
+        => causesExpression.Evaluate(facts, fixator, this);
 
     public void Fixate(string factId, bool? isFactHappened = null)
     {
         Fact<TNodeValue> fixatingFact = facts.GetFactById(factId);
 
-        // Если происшествие факта не задано явно,
-        // происшествие определяется на основе причин
+        // If the fact happening is not explicitly specified,
+        // the happening is determined based on the causes
         if (isFactHappened == null)  
         {
-            bool? isFollowingFromCauses = IsFollowingFromCauses(fixatingFact);
+            bool? isFollowingFromCauses = IsFollowingFromCauses(fixatingFact
+                .CausesExpression);
 
-            // Случай, когда недостаточно данных (некоторые причины
-            // еще не зафиксированы)
+            // Case where there is not enough data (some causes have not been
+            // fixated yet)
             if (isFollowingFromCauses == null)
             {
                 return;
@@ -82,7 +84,7 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
         // Для происшествия обычных фактов достаточно как минимум
         // условия следования из причин
         // (как максимум - явного задания факта происшествия)
-        if (!(fixatingFact is Fact<TNodeValue>))
+        if (fixatingFact.AbstractFactId == null)
         {
             fixator.FixateFact(fixatingFact, isFactHappened.Value);
 
@@ -96,7 +98,7 @@ public class CausalGenerator<TNodeValue> : IRandomProvider
 
             var variantsFollowingFromCauses = factsAndVariants[abstractFact]
                 .Select(variant => {
-                    bool? canHappen = IsFollowingFromCauses(variant);
+                    bool? canHappen = IsFollowingFromCauses(variant.CausesExpression);
                     return (canHappen, variant);
                 })
                 .Where(x => x.canHappen != null)

@@ -1,6 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Factors;
-using CausalModel.Nests;
 using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ namespace CausalModel.Tests
         public static ProbabilityFactor NewTrueFactor() => new ProbabilityFactor(1, null);
         public static ProbabilityFactor NewNullFactor()
         {
-            var notFixedNode = FactsBuilding.CreateNode(1,
+            var notFixedNode = FactsBuilding.CreateFact(1,
                 "Пока не известно, произошло, или нет", null);
             // Причина неопределена (ее нет в factCollection),
             // поэтому операции будут работать с троичной логикой и иногда выдавать
@@ -28,25 +27,25 @@ namespace CausalModel.Tests
         // public static ProbabilityEdge NewRootEdge() => new ProbabilityEdge(1, null, 0.5);
         public static ProbabilityFactor NewNotRootEdge()
         {
-            var rootNode = FactsBuilding.CreateNode(1, "root node", null);
+            var rootNode = FactsBuilding.CreateFact(1, "root node", null);
             return new ProbabilityFactor(1, rootNode.Id);
         }
 
-        public static ProbabilityNest NewRootNest()
+        public static CausesExpression NewCausesExpression()
         {
             var expression = Expressions.Or(new ProbabilityFactor(1, null),
                 new ProbabilityFactor(1, null));
-            return new ProbabilityNest(expression);
+            return expression;
         }
 
-        public static ProbabilityNest NewNotRootNest()
+        public static CausesExpression NewNotRootCausesExpression()
         {
-            var rootNode = FactsBuilding.CreateNode(1, "root", null);
+            var rootNode = FactsBuilding.CreateFact(1, "root", null);
 
             var notRootEdge = new ProbabilityFactor(1, rootNode.Id);
 
             var expression1 = Expressions.Or(notRootEdge, new ProbabilityFactor(1, null));
-            return new ProbabilityNest(expression1);
+            return expression1;
         }
     }
 }

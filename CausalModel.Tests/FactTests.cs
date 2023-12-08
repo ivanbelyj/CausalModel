@@ -1,6 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Factors;
-using CausalModel.Nests;
 using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
@@ -14,17 +13,25 @@ namespace CausalModel.Tests
     public class FactTests
     {
         [Fact]
-        public void IsRootNodeTest()
+        public void IsRootCauseTest()
         {
-            var rootNode = new ProbabilityFact<string>(TestUtils.NewRootNest(), "root");
-            var notRootNode = new ProbabilityFact<string>(TestUtils.NewNotRootNest(), "not root");
+            var rootNode = new Fact<string>()
+            {
+                CausesExpression = TestUtils.NewCausesExpression(),
+                NodeValue = "root"
+            };
+            var notRootNode = new Fact<string>()
+            {
+                CausesExpression = TestUtils.NewNotRootCausesExpression(),
+                NodeValue = "not root"
+            };
 
-            Assert.True(rootNode.IsRootNode());
-            Assert.False(notRootNode.IsRootNode());
+            Assert.True(rootNode.IsRootCause());
+            Assert.False(notRootNode.IsRootCause());
         }
 
         [Fact]
-        public void GetEdgesTest()
+        public void GetCausesTest()
         {
             const int TEST_SIZE = 5;
 
@@ -38,8 +45,10 @@ namespace CausalModel.Tests
 
             var expr = Expressions.Or(or, and, not);
 
-            Fact<string> node = new ProbabilityFact<string>(new ProbabilityNest(expr),
-                "root");
+            Fact<string> node = new Fact<string>()
+            {
+                CausesExpression = expr, NodeValue = "root"
+            };
             Assert.Equal(TEST_SIZE * 2 + 1, node.GetCauses().Count());
         }
     }
