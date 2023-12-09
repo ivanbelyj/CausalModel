@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Blocks;
-public class ConventionsMap<TFactValue>
+public class BlockConventionMap<TFactValue>
 {
     public Dictionary<string, CausalModel<TFactValue>> ModelsByConventionName
     {

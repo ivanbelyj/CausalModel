@@ -1,4 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
+using CausalModel.Factors;
 using CausalModel.Facts;
 using Newtonsoft.Json.Serialization;
 
@@ -15,13 +16,8 @@ public class CausalModelSerializationBinder<TFactValue> : ISerializationBinder
         = new List<(Type, string)>() {
         (typeof(ConjunctionOperation), "and"),
         (typeof(DisjunctionOperation), "or"),
-        (typeof(FactorLeaf), "factor"),
+        (typeof(FactorLeaf), "factor"), 
         (typeof(InversionOperation), "not"),
-
-        //(typeof(Fact<TFactValue>), "fact"),
-
-        //(typeof(CausalModel<TFactValue>), "causal-model"),
-        //(typeof(FactCollection<TFactValue>), "fact-collection"),
     };
     //public static List<(Type type, string name)> KnownTypes => knownTypes;
 
@@ -32,7 +28,7 @@ public class CausalModelSerializationBinder<TFactValue> : ISerializationBinder
         if (typeName == null)
         {
             throw new ArgumentException("Not registred type for binding: "
-                + serializedType.FullName);
+                + serializedType.Name);
         }
         assemblyName = null;
     }

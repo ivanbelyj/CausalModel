@@ -17,7 +17,7 @@ public class CausalModelWrapper<TFactValue>
         { get; private set; } = new();
     public Dictionary<Fact<TFactValue>, List<Fact<TFactValue>>> FactsAndVariants
         { get; private set; } = new();
-    public HashSet<Fact<TFactValue>> RootNodes
+    public HashSet<Fact<TFactValue>> RootCauses
         { get; private set; } = new();
 
     public CausalModelWrapper(CausalModel<TFactValue> causalModel)
@@ -35,7 +35,7 @@ public class CausalModelWrapper<TFactValue>
         foreach (Fact<TFactValue> fact in causalModel.Facts)
         {
             if (fact.IsRootCause())
-                RootNodes.Add(fact);
+                RootCauses.Add(fact);
 
             if (fact.AbstractFactId != null)
             {

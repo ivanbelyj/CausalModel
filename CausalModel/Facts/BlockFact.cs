@@ -9,6 +9,8 @@ namespace CausalModel.Facts;
 public class BlockFact : FactWithCauses
 {
     public string ConventionName { get; set; }
+
+    // Todo: should these be here?
     public IEnumerable<Factor> Causes { get; set; } = new List<Factor>();
     public IEnumerable<BaseFact> Consequences { get; set; }
         = new List<BaseFact>();

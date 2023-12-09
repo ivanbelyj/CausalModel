@@ -18,12 +18,12 @@ namespace CausalModel.Tests
             var rootNode = new Fact<string>()
             {
                 CausesExpression = TestUtils.NewCausesExpression(),
-                NodeValue = "root"
+                FactValue = "root"
             };
             var notRootNode = new Fact<string>()
             {
                 CausesExpression = TestUtils.NewNotRootCausesExpression(),
-                NodeValue = "not root"
+                FactValue = "not root"
             };
 
             Assert.True(rootNode.IsRootCause());
@@ -47,7 +47,7 @@ namespace CausalModel.Tests
 
             Fact<string> node = new Fact<string>()
             {
-                CausesExpression = expr, NodeValue = "root"
+                CausesExpression = expr, FactValue = "root"
             };
             Assert.Equal(TEST_SIZE * 2 + 1, node.GetCauses().Count());
         }

@@ -72,16 +72,17 @@ public class ResolvingModelProvider<TFactValue> : IModelProvider<TFactValue>
     public IEnumerable<Fact<TFactValue>> GetAbstractFactVariants(
         Fact<TFactValue> abstractFact)
     {
-        throw new NotImplementedException();
+        return modelWrapper.FactsAndVariants[abstractFact];
     }
 
-    public IEnumerable<Fact<TFactValue>> GetConsequences(Fact<TFactValue> fact)
+    public IEnumerable<Fact<TFactValue>>? TryGetConsequences(Fact<TFactValue> fact)
     {
-        throw new NotImplementedException();
+        modelWrapper.CausesAndConsequences.TryGetValue(fact, out var consequences);
+        return consequences;
     }
 
     public IEnumerable<Fact<TFactValue>> GetRootCauses()
     {
-        throw new NotImplementedException();
+        return modelWrapper.RootCauses;
     }
 }

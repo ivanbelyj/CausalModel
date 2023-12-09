@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace CausalModel.Model.Blocks;
 public class BlockResolver<TFactValue>
 {
-    private readonly ConventionsMap<TFactValue> conventionsMap;
+    private readonly BlockConventionMap<TFactValue> conventionsMap;
 
-    public BlockResolver(ConventionsMap<TFactValue> conventionsMap)
+    public BlockResolver(BlockConventionMap<TFactValue> conventionsMap)
     {
         this.conventionsMap = conventionsMap;
     }

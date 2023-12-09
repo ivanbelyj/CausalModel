@@ -17,7 +17,7 @@ namespace CausalModel.Model.Blocks;
 /// </summary>
 public class BlockConvention
 {
-    public string Name { get; set; }
-    public IEnumerable<Factor>? Causes { get; set; }
-    public IEnumerable<BaseFact>? Consequences { get; set; }
+    public string? Name { get; set; }
+    public List<Factor>? Causes { get; set; }
+    public List<BaseFact>? Consequences { get; set; }
 }

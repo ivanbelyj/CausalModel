@@ -7,14 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model;
-public class CausalModel<T>
+public class CausalModel<TFactValue>
 {
     /// <summary>
     /// Unresolved facts of the causal model (including blocks)
     /// </summary>
-    public IEnumerable<Fact<T>> Facts { get; set; } = new List<Fact<T>>();
+    public List<Fact<TFactValue>> Facts { get; set; }
+        = new List<Fact<TFactValue>>();
 
-    public IEnumerable<DeclaredBlock> Blocks { get; set; }
+    public List<DeclaredBlock> Blocks { get; set; }
         = new List<DeclaredBlock>();
 
     private Dictionary<string, BlockConvention>? conventionByName;
@@ -23,13 +24,16 @@ public class CausalModel<T>
     /// Block conventions that blocks included in the model can use
     /// </summary>
     public IEnumerable<BlockConvention>? BlockConventions {
-        get => conventionByName?.Values;
+        get => conventionByName?.Values.ToList(); // Todo: remove ToList()?
         set {
             if (value != null)
             {
                 conventionByName = new();
                 foreach (var conv in value)
                 {
+                    if (conv.Name == null)
+                        throw new ArgumentException("Block convention name "
+                            + "is required.");
                     conventionByName.Add(conv.Name, conv);
                 }
             } else
@@ -50,8 +54,8 @@ public class CausalModel<T>
     public IEnumerable<BlockFact> GetBlockFacts()
     {
         return Blocks.Select(block => {
-            var conv = GetConventionByName(block.ConventionName);
-            var res = new BlockFact(block.ConventionName)
+            var conv = GetConventionByName(block.Convention);
+            var res = new BlockFact(block.Convention)
             {
                 Id = block.Name
             };

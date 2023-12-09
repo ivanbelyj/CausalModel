@@ -9,6 +9,6 @@ namespace CausalModel.Model.Providers;
 public interface IModelProvider<TFactValue> : IFactProvider<TFactValue>
 {
     IEnumerable<Fact<TFactValue>> GetAbstractFactVariants(Fact<TFactValue> abstractFact);
-    IEnumerable<Fact<TFactValue>> GetConsequences(Fact<TFactValue> fact);
+    IEnumerable<Fact<TFactValue>>? TryGetConsequences(Fact<TFactValue> fact);
     IEnumerable<Fact<TFactValue>> GetRootCauses();
 }

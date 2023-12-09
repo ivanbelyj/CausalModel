@@ -50,14 +50,17 @@ public class FactBuilder<TFactValue>
     {
         var res = new Fact<TFactValue>
         {
-            CausesExpression = causesExpression,
-            NodeValue = nodeValue,
+            FactValue = nodeValue,
             AbstractFactId = abstractFactId,
             Weights = weights,
         };
 
         if (id != null) {
             res.Id = id;
+        }
+        if (causesExpression != null)
+        {
+            res.CausesExpression = causesExpression;
         }
 
         return res;

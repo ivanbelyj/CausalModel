@@ -1,5 +1,6 @@
 ﻿using CausalModel.CausesExpressionTree;
 using CausalModel.Factors;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +11,17 @@ namespace CausalModel.Facts
 {
     public class Fact<TFactValue> : FactWithCauses
     {
-        private CausesExpression? causesExpression;
-        public CausesExpression CausesExpression {
-            get => causesExpression ?? GetDefaultCausesExpression();
-            set => causesExpression = value;
-        }
-        public TFactValue? NodeValue { get; set; }
+        public CausesExpression CausesExpression { get; set; }
+
+        public TFactValue? FactValue { get; set; }
 
         public string? AbstractFactId { get; set; }
         public IEnumerable<WeightFactor>? Weights { get; set; }
+
+        public Fact()
+        {
+            CausesExpression = GetDefaultCausesExpression();
+        }
 
         private CausesExpression GetDefaultCausesExpression()
         {
@@ -27,7 +30,7 @@ namespace CausalModel.Facts
         }
 
         public override string? ToString() =>
-            $"{Id} - " + (NodeValue?.ToString() ?? "null");
+            $"{Id} - " + (FactValue?.ToString() ?? "null");
 
         public override List<Factor> GetCauses()
         {

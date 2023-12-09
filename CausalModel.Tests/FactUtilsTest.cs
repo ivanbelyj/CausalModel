@@ -18,7 +18,7 @@ namespace CausalModel.Tests
             string val = "Root node";
             var node = FactsBuilding.CreateFact(1, val, null);
             Assert.NotEqual(default, node.Id);
-            Assert.Equal(val, node.NodeValue);
+            Assert.Equal(val, node.FactValue);
             Assert.NotNull(node.CausesExpression);
             Assert.Single(node.CausesExpression.GetEdges());
             Assert.Equal(1f, node.CausesExpression.GetEdges().ElementAt(0).Probability);
@@ -28,7 +28,6 @@ namespace CausalModel.Tests
         public void CreateAbstractFactTest()
         {
             // Arrange
-            var model = new FactCollection<string>();
             var abstractNode = FactsBuilding.CreateFact(1, "Kemsh (race)", null);
             var races = new string[] {"Cheaymea", "Emera", "Evoymea",
                 "Myeuramea", "Oanai" };
@@ -39,7 +38,7 @@ namespace CausalModel.Tests
             // Assert
             Assert.Equal(races.Length + 1, facts.Count);
 
-            foreach (var node in model)
+            foreach (var node in facts)
             {
                 if (node == abstractNode)
                     continue;

@@ -8,5 +8,5 @@ namespace CausalModel.Model.Blocks;
 public class DeclaredBlock
 {
     public string Name { get; set; }
-    public string ConventionName { get; set; }
+    public string Convention { get; set; }
 }

@@ -20,6 +20,7 @@ namespace CausalModel.Model.Serialization
                 TypeNameHandling = TypeNameHandling.Auto,
                 SerializationBinder = new CausalModelSerializationBinder<TFactValue>()
             };
+
             return JsonConvert.SerializeObject(model, settings);
         }
 
@@ -31,8 +32,9 @@ namespace CausalModel.Model.Serialization
                 SerializationBinder = new CausalModelSerializationBinder<TFactValue>()
             };
 
-            var model = JsonConvert.DeserializeObject<CausalModel<TFactValue>>(
-                jsonString, settings);
+            var model = JsonConvert
+                .DeserializeObject<CausalModel<TFactValue>>(
+                    jsonString, settings);
             return model;
         }
     }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model.Serialization;
 using CausalModel.Model.Providers;
+using CausalModel.Model.Blocks;
 
 var rootCommand = new RootCommand
 {
@@ -41,15 +42,27 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     {
         Console.WriteLine($"Processing file: {input.FullName}");
 
-        ResolvingModelProvider<string> model = null!;
+        ResolvingModelProvider<string> modelProvider = null!;
         Exception? exceptionToExit = null;
+
+        // Todo: blocks resolving CLI support
+        BlockConventionMap<string> conventions = new BlockConventionMap<string>()
+        {
+            ModelsByConventionName = new()
+            {
+                // Todo:
+            }
+        };
+        BlockResolver<string> resolver = new BlockResolver<string>(conventions);
+
         try
         {
             var deserializationRes = Deserialize(input.FullName);
             if (deserializationRes == null)
                 throw new NullReferenceException(input.FullName);
             else
-                model = deserializationRes;
+                modelProvider = new ResolvingModelProvider<string>(deserializationRes,
+                    resolver);
 
         } catch (NullReferenceException ex)
         {
@@ -77,7 +90,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
         }
 
         // Generate facts
-        string genOutput = Generate(model, seed);
+        string genOutput = Generate(modelProvider, seed);
 
         // If an output file is specified, write the results to the file
         if (output != null)
@@ -103,7 +116,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     }
 }
 
-static ResolvingModelProvider<string>? Deserialize(string fileName)
+static CausalModel.Model.CausalModel<string>? Deserialize(string fileName)
 {
     string fileContent = File.ReadAllText(fileName);
     var model = CausalModelSerialization.FromJson<string>(fileContent);
@@ -129,7 +142,7 @@ static string Generate(ResolvingModelProvider<string> model, int? seed = null)
 
     Console.WriteLine("Seed: " + seed);
     Fixator<string> fixator = new Fixator<string>();
-    var generator = new CausalGenerator<string>(model, seed.Value, fixator);
+    var generator = new CausalGenerator<string>(model, fixator, seed.Value);
 
     var resStringBuilder = new StringBuilder();
     resStringBuilder.AppendLine("Seed: " + seed);
@@ -137,7 +150,7 @@ static string Generate(ResolvingModelProvider<string> model, int? seed = null)
     {
         if (isHappened)
         {
-            string newLine = (fact.IsRootCause() ? "" : "\t") + fact.NodeValue;
+            string newLine = (fact.IsRootCause() ? "" : "\t") + fact.FactValue;
             Console.WriteLine(newLine);
             resStringBuilder.AppendLine(newLine);
         }

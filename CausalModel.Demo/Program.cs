@@ -5,6 +5,7 @@ using CausalModel.Facts;
 using CausalModel.Model.Serialization;
 using CausalModel.Model.Blocks;
 using CausalModel.Model.Providers;
+using CausalModel.Demo;
 
 // Todo:
 // Если CauseId для WeightEdge не указан, выбор реализации абстрактного факта
@@ -20,51 +21,29 @@ if (string.IsNullOrEmpty(fileName))
     fileName = FACTS_FILE;
 
 //const bool CREATE_FILE = true;
-ResolvingModelProvider<string> factsProvider;
+CausalModel<string> causalModel;
 try
 {
-    //if (/*!CREATE_FILE && */ File.Exists(fileName))
-    //{
-    //    Console.WriteLine("Found " + fileName);
-    //    causalModel = Deserialize(fileName);
-    //}
-    //else if (fileName != FACTS_FILE && File.Exists(FACTS_FILE))
-    //{
-    //    Console.WriteLine($"File {fileName} not found. Found {FACTS_FILE}, use example");
-    //    fileName = FACTS_FILE;
-    //    causalModel = Deserialize(fileName);
-    //}
-    //else
+    if (/*!CREATE_FILE && */ File.Exists(fileName))
+    {
+        Console.WriteLine("Found " + fileName);
+        causalModel = Deserialize(fileName)
+            ?? throw new NullReferenceException("Deserialized model is null");
+    }
+    else if (fileName != FACTS_FILE && File.Exists(FACTS_FILE))
+    {
+        Console.WriteLine($"File {fileName} not found. Found {FACTS_FILE}, use example");
+        fileName = FACTS_FILE;
+        causalModel = Deserialize(fileName)
+            ?? throw new NullReferenceException("Deserialized model is null");
+    }
+    else
     {
         Console.WriteLine($"File {fileName} not found. Create {FACTS_FILE}");
-        var facts = CreateCharacterFactsCollection();
-        var causalModel = new CausalModel<string>()
-        {
-            Facts = facts,
-            BlockConventions = new List<BlockConvention>()
-            {
-                new BlockConvention()
-                {
-                    Name = "TestConvention",
-                    Causes = new Factor[]
-                    {
-                        
-                    },
-                    Consequences = new BaseFact[]
-                    {
-                        
-                    }
-                },
-            },
-            Blocks = new List<DeclaredBlock>()
-            {
-                new DeclaredBlock()
-                {
-                    ConventionName = "TestConvention",
-                    Name = "block1"
-                }
-            }
-        };
+
+        causalModel = DemoBuilding.CreateDemoCausalModel();
+        
+
         Serialize(causalModel, fileName);
         Console.WriteLine("Data used for generation saved to " + fileName);
     }
@@ -72,14 +51,15 @@ try
 {
     var prevColor = Console.ForegroundColor;
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("Exception");
+    Console.WriteLine("An error occured during the model opening.");
     Console.ForegroundColor = prevColor;
 
     Console.WriteLine(ex.ToString());
     Console.ReadKey(false);
     return;
 }
-
+ResolvingModelProvider<string> factsProvider = DemoBuilding
+    .CreateModelProvider(causalModel, DemoBuilding.CreateDemoConventionMap());
 
 while (true)
 {
@@ -97,7 +77,7 @@ while (true)
         Console.WriteLine("\nEnter seed (integer)");
         try
         {
-            Generate(factsProvider, int.Parse(Console.ReadLine()));
+            Generate(factsProvider, int.Parse(Console.ReadLine()!));
         } catch (FormatException)
         {
             Console.WriteLine("Integer expected");
@@ -135,7 +115,7 @@ void Generate(ResolvingModelProvider<string> factsProvider, int? seed = null)
 
     Console.WriteLine("Seed: " + seed);
     Fixator<string> fixator = new Fixator<string>();
-    var generator = new CausalGenerator<string>(factsProvider, seed.Value, fixator);
+    var generator = new CausalGenerator<string>(factsProvider, fixator, seed.Value);
     fixator.FactFixated += OnFactHappened;
 
     generator.FixateRootCauses();
@@ -145,64 +125,7 @@ void OnFactHappened(object sender, Fact<string> fact, bool isHappened)
 {
     if (isHappened)
     {
-        Console.WriteLine((fact.IsRootCause() ? "" : "\t") + fact.NodeValue);
+        Console.WriteLine((fact.IsRootCause() ? "" : "\t") + fact.FactValue);
     }
 }
 
-List<Fact<string>> CreateCharacterFactsCollection()
-{
-    // Simple character model example
-
-    var facts = new List<Fact<string>>();
-    Fact<string> hobbyRoot = FactsBuilding.CreateFact(0.9f, "Хобби");
-    facts.Add(hobbyRoot);
-
-    foreach (string hobbyName in new string[] { "Рисование",
-        "Гитара", "Программирование", "Gamedev",
-        "Писательство", "Спорт", "Role play",
-        "3d моделирование"})
-    {
-        facts.Add(FactsBuilding.CreateFact(0.3f, hobbyName, hobbyRoot.Id));
-    }
-    foreach (string hobbyName in new string[] { "Worldbuilding" })
-    {
-        facts.Add(FactsBuilding.CreateFact(0.1f, hobbyName, hobbyRoot.Id));
-    }
-
-    var educationNode = FactsBuilding.CreateFact(1, "Образование", null);
-    facts.AddRange(FactsBuilding.CreateAbstractFact(educationNode,
-        "Компьютерные науки", "История", "Математика"));
-    var linguisticsNode = FactsBuilding.CreateVariant(educationNode.Id,
-        20, "лингвистика");
-    facts.Add(linguisticsNode);
-
-    var conlangHobby = FactsBuilding.CreateFact(0.1f, "Создание языков", hobbyRoot.Id);
-    facts.Add(conlangHobby);
-
-    // Причиной того, что персонаж понимает несколько языков, может быть как
-    // создание языков, так и образование.
-    // Других причин в данной модели не предполагается
-    var linguisticsEdge = new ProbabilityFactor(0.9f, linguisticsNode.Id);
-    var conlangEdge = new ProbabilityFactor(0.3f, conlangHobby.Id);
-    var languages = FactsBuilding.CreateFactWithOr("Понимает несколько языков",
-        linguisticsEdge, conlangEdge);
-    // Todo: если оба ребра имеют ненулевую вероятность, то все зависит от conlangEdge
-    // (первое не учитывается). Если есть только одно ребро - учитывается только оно
-    facts.Add(languages);
-
-    // Персонаж с лингвистическим образованием будет разбираться в лингвистике
-    // почти гарантированно, а тот, кто создает языки - 20%
-    var linguisticsPro = FactsBuilding.CreateFactWithOr("Разбирается в лингвистике",
-        new ProbabilityFactor(0.95f, linguisticsNode.Id),
-        new ProbabilityFactor(0.2f, conlangHobby.Id)
-        );
-    facts.Add(linguisticsPro);
-
-    // Раса напрямую связана с бытием существа.
-    // Факт наличия расы реализуется одним из конкретных вариантов
-    Fact<string> raceNode = FactsBuilding.CreateFact(1, "Раса", null);
-    facts.AddRange(FactsBuilding.CreateAbstractFact(raceNode,
-        "тшэайская", "мэрайская", "мйеурийская", "эвойская", "оанэйская"));
-
-    return facts;
-}

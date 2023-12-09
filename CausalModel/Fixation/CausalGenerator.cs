@@ -13,13 +13,13 @@ public class CausalGenerator<TFactValue> : IRandomProvider
 
     public CausalGenerator(
         IModelProvider<TFactValue> modelProvider,
-        int seed,
-        IFixator<TFactValue> fixator)
+        IFixator<TFactValue> fixator,
+        int? seed = null)
     {
         this.modelProvider = modelProvider;
         this.fixator = fixator;
 
-        random = new Random(seed);
+        random = seed == null ? new Random() : new Random(seed.Value);
     }
 
     public double NextDouble(double min = 0, double max = 1)
@@ -115,7 +115,11 @@ public class CausalGenerator<TFactValue> : IRandomProvider
 
     private void FixateNotFixatedConsequences(Fact<TFactValue> fixatingFact)
     {
-        foreach (var consequence in modelProvider.GetConsequences(fixatingFact))
+        var consequences = modelProvider.TryGetConsequences(fixatingFact);
+        if (consequences == null)
+            return;
+
+        foreach (var consequence in consequences)
         {
             if (fixator.IsFixated(consequence.Id) == null)
                 Fixate(consequence.Id);
