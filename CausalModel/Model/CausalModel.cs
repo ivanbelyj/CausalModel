@@ -1,5 +1,6 @@
 using CausalModel.Facts;
 using CausalModel.Model.Blocks;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model;
+
+/// <summary>
+/// Representing causal model including blocks
+/// </summary>
 public class CausalModel<TFactValue>
 {
     /// <summary>
-    /// Unresolved facts of the causal model (including blocks)
+    /// The facts of the causal model except for children
     /// </summary>
     public List<Fact<TFactValue>> Facts { get; set; }
         = new List<Fact<TFactValue>>();
@@ -19,12 +24,22 @@ public class CausalModel<TFactValue>
         = new List<DeclaredBlock>();
 
     private Dictionary<string, BlockConvention>? conventionByName;
+    private Dictionary<string, BlockFact>? blockFactByName;
+
+    public BlockConvention GetConventionByName(string convName)
+    {
+        if (conventionByName == null)
+            throw new InvalidOperationException("Cannot get convention "
+                + "from model that has no conventions");
+        return conventionByName[convName];
+    }
 
     /// <summary>
     /// Block conventions that blocks included in the model can use
     /// </summary>
     public IEnumerable<BlockConvention>? BlockConventions {
-        get => conventionByName?.Values.ToList(); // Todo: remove ToList()?
+        get => conventionByName?.Values.ToList();
+        // Casting to list for correct serialization
         set {
             if (value != null)
             {
@@ -43,28 +58,26 @@ public class CausalModel<TFactValue>
         }
     }
 
-    public BlockConvention GetConventionByName(string convName)
+    [JsonIgnore]
+    public IEnumerable<BlockFact> BlockFacts
     {
-        if (conventionByName == null)
-            throw new InvalidOperationException("Cannot get convention "
-                + "from model that has no conventions");
-        return conventionByName[convName];
-    }
-
-    public IEnumerable<BlockFact> GetBlockFacts()
-    {
-        return Blocks.Select(block => {
-            var conv = GetConventionByName(block.Convention);
-            var res = new BlockFact(block.Convention)
+        get
+        {
+            if (blockFactByName == null)
             {
-                Id = block.Name
-            };
-            if (conv.Causes != null)
-                res.Causes = conv.Causes;
-            if (conv.Consequences != null)
-                res.Consequences = conv.Consequences;
+                blockFactByName = new();
+                foreach (var block in Blocks)
+                {
+                    var conv = GetConventionByName(block.Convention);
 
-            return res;
-        });
+                    var blockFact = new BlockFact(conv);
+                    blockFact.Id = block.Id;
+
+                    blockFactByName.Add(block.Id, blockFact);
+                }
+            }
+
+            return blockFactByName.Values;
+        }
     }
 }

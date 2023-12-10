@@ -52,17 +52,17 @@ internal static class TestUtils
     }
 
     public static (ResolvingModelProvider<TFactValue> provider,
-        BlockResolver<TFactValue> resolver) CreateModelProvider<TFactValue>(
+        BlockImplementationResolver<TFactValue> resolver) CreateModelProvider<TFactValue>(
         CausalModel<TFactValue> model,
         BlockConventionMap<TFactValue> conventions)
     {
-        var resolver = new BlockResolver<TFactValue>(conventions);
+        var resolver = new BlockImplementationResolver<TFactValue>(conventions);
         var provider = new ResolvingModelProvider<TFactValue>(model, resolver);
         return (provider, resolver);
     }
 
     public static CausalModel<TFactValue> CreateMockCausalModel<TFactValue>(
-        IEnumerable<Fact<TFactValue>>? facts = null)
+        List<Fact<TFactValue>>? facts = null)
     {
         var res = new CausalModel<TFactValue>();
         if (facts != null)
@@ -74,8 +74,8 @@ internal static class TestUtils
         (CausalGenerator<TFactValue> generator,
         Fixator<TFactValue> fixator,
         ResolvingModelProvider<TFactValue> provider,
-        BlockResolver<TFactValue> resolver)
-        CreateMockGenerator<TFactValue>(IEnumerable<Fact<TFactValue>>? facts = null)
+        BlockImplementationResolver<TFactValue> resolver)
+        CreateMockGenerator<TFactValue>(List<Fact<TFactValue>>? facts = null)
     {
         var fixator = new Fixator<TFactValue>();
         var (provider, resolver) = CreateModelProvider(CreateMockCausalModel(facts),

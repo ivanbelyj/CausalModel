@@ -11,12 +11,14 @@ namespace CausalModel.Facts;
 public static class FactsBuilding
 {
     public static Fact<TFactValue> CreateFact<TFactValue>(
-        float probability, TFactValue? value = default, string? causeId = null)
+        float probability, TFactValue? value = default, string? causeId = null,
+        string? id = null)
     {
         return new FactBuilder<TFactValue>()
             .WithCausesExpression(new FactorLeaf(
                 new ProbabilityFactor(probability, causeId)))
             .WithNodeValue(value)
+            .WithId(id)
             .Build();
     }
 

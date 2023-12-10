@@ -53,7 +53,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
                 // Todo:
             }
         };
-        BlockResolver<string> resolver = new BlockResolver<string>(conventions);
+        BlockImplementationResolver<string> resolver = new BlockImplementationResolver<string>(conventions);
 
         try
         {

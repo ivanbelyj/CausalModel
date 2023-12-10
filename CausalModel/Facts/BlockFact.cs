@@ -1,4 +1,5 @@
 using CausalModel.Factors;
+using CausalModel.Model.Blocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,25 +7,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Facts;
+
+/// <summary>
+/// Block declared in a causal model and implemented during generation
+/// </summary>
 public class BlockFact : FactWithCauses
 {
-    public string ConventionName { get; set; }
+    private readonly BlockConvention convention;
 
-    // Todo: should these be here?
-    public IEnumerable<Factor> Causes { get; set; } = new List<Factor>();
-    public IEnumerable<BaseFact> Consequences { get; set; }
-        = new List<BaseFact>();
+    public string ConventionName => convention.Name;
+    public IEnumerable<Factor>? Causes => convention.Causes;
+    public IEnumerable<BaseFact>? Consequences => convention.Consequences;
 
-    public BlockFact(string conventionName)
+    public BlockFact(BlockConvention convention)
     {
-        ConventionName = conventionName;
+        this.convention = convention;
     }
 
     public override IEnumerable<Factor> GetCauses()
     {
-        //var baseCauses = base.GetCauses();
-        //baseCauses.AddRange(Causes);
-        //return baseCauses;
-        return Causes;
+        return Causes ?? new Factor[0];
     }
 }

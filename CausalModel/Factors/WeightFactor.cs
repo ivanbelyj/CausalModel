@@ -7,21 +7,22 @@ using System.Threading.Tasks;
 namespace CausalModel.Factors
 {
     /// <summary>
-    /// Весовое ребро делает определенный вариант реализации абстрактной сущности (АС)
-    /// более или менее благоприятным для выбора
+    /// A weighted edge makes a certain implementation of an abstract entity
+    /// more favorable for selection
     /// </summary>
     public class WeightFactor : Factor
     {
         /// <summary>
-        /// Вес, определяющий благоприятность определенного варианта реализации <br/>
-        /// абстрактной сущности для выбора. <br/>
-        /// Значение больше или равно 0, устанавливается перед генерацией относительно <br />
-        /// весов других реализаций. При 0 весовое ребро не учитывается, при отрицательных
-        /// значениях поведение не определено
+        /// The weight that determines the favorability of a certain implementation
+        /// of the abstract entity for selection.
+        /// The value is greater than or equal to 0, 
+        /// set relative to the weights of other implementations.
+        /// At 0, the weighted edge is not considered,
+        /// and the behavior is not defined for negative values
         /// </summary>
-        public double Weight { get; set; }
+        public float Weight { get; set; }
 
-        public WeightFactor(double weight, string? causeId = null)
+        public WeightFactor(float weight, string? causeId = null)
         {
             Weight = weight;
             CauseId = causeId;

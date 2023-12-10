@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Factors
 {
+    /// <summary>
+    /// Abstract component of the cause-consequential relationship between facts
+    /// </summary>
     public class Factor
     {
         /// <summary>

@@ -5,6 +5,10 @@ using CausalModel.Model.Providers;
 
 namespace CausalModel.Fixation;
 
+/// <summary>
+/// Performs causal model fixation traverse
+/// </summary>
+/// <typeparam name="TFactValue">The type of the causal model fact value</typeparam>
 public class CausalGenerator<TFactValue> : IRandomProvider
 {
     private readonly IModelProvider<TFactValue> modelProvider;
@@ -22,9 +26,9 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         random = seed == null ? new Random() : new Random(seed.Value);
     }
 
-    public double NextDouble(double min = 0, double max = 1)
+    public float NextDouble(float min = 0, float max = 1)
     {
-        return random.NextDouble(min, max);
+        return (float)random.NextDouble(min, max);
     }
 
     /// <summary>

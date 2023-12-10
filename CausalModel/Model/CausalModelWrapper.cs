@@ -27,7 +27,7 @@ public class CausalModelWrapper<TFactValue>
             FactsById.Add(fact.Id, fact);
         }
 
-        foreach (var blockFact in causalModel.GetBlockFacts())
+        foreach (var blockFact in causalModel.BlockFacts)
         {
             BlocksById.Add(blockFact.Id, blockFact);
         }

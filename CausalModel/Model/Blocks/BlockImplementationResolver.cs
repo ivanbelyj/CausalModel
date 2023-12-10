@@ -7,11 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Blocks;
-public class BlockResolver<TFactValue>
+public class BlockImplementationResolver<TFactValue>
 {
     private readonly BlockConventionMap<TFactValue> conventionsMap;
 
-    public BlockResolver(BlockConventionMap<TFactValue> conventionsMap)
+    public BlockImplementationResolver(BlockConventionMap<TFactValue> conventionsMap)
     {
         this.conventionsMap = conventionsMap;
     }

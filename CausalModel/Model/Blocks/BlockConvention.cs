@@ -1,5 +1,6 @@
 using CausalModel.Factors;
 using CausalModel.Facts;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,20 @@ namespace CausalModel.Model.Blocks;
 /// </summary>
 public class BlockConvention
 {
-    public string? Name { get; set; }
+    [JsonProperty(Required = Required.Always)]
+    public string Name { get; set; }
+
     public List<Factor>? Causes { get; set; }
     public List<BaseFact>? Consequences { get; set; }
+
+    public BlockConvention(string name)
+    {
+        Name = name;
+    }
+
+    // Should be used for deserialization
+    private BlockConvention() : this(null!)
+    {
+
+    }
 }

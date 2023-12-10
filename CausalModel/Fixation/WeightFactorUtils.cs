@@ -12,13 +12,13 @@ internal static class WeightFactorUtils
     /// <summary>
     /// Calculates the total weight based of the given weight factors
     /// </summary>
-    public static double TotalWeight(IEnumerable<WeightFactor> factors,
+    public static float TotalWeight(IEnumerable<WeightFactor> factors,
         IFixatedProvider happenedProvider)
     {
         if (factors.Count() == 0)
             throw new InvalidOperationException("Cannot calculate the total weight on empty weights");
 
-        double weightSum = 0;
+        float weightSum = 0;
 
         foreach (var edge in factors)
         {
@@ -43,34 +43,35 @@ internal static class WeightFactorUtils
     }
 
     /// <summary>
-    /// Случайно выбирает одну из реализаций факта, учитывая веса вариантов.
-    /// Данный метод не учитывает, все ли переданные варианты зафиксированы
-    /// и произошли
+    /// Randomly selects one of the fact variants, taking into account
+    /// the weights of the variants.
+    /// This method does not consider whether all passed variants are fixed
+    /// and have happened
     /// </summary>
     public static Fact<TFactValue>? SelectFactVariant<TFactValue>(
         List<Fact<TFactValue>> variants,
         IFixatedProvider fixatedProvider,
         IRandomProvider randomProvider)
     {
-        // Собрать информацию о узлах и их общих весах, собрать сумму весов,
-        // а также отбросить узлы с нулевыми весами
-        var nodesWeights = new List<(Fact<TFactValue> node, double totalWeight)>();
-        double weightsSum = 0;
+        const float EPSILON = 0.000001f;
+
+        var factsAndWeights = new List<(Fact<TFactValue> fact, float totalWeight)>();
+        float weightsSum = 0;
         foreach (var fact in variants)
         {
-            double totalWeight = WeightFactorUtils.TotalWeight(fact.Weights!,
+            float totalWeight = WeightFactorUtils.TotalWeight(fact.Weights!,
                 fixatedProvider);
-            if (totalWeight >= double.Epsilon)
+            if (totalWeight >= EPSILON)
             {
-                nodesWeights.Add((fact, totalWeight));
+                factsAndWeights.Add((fact, totalWeight));
                 weightsSum += totalWeight;
             }
         }
         if (weightsSum < double.Epsilon)
             return null;
 
-        // Определить Id единственной реализации
-        // Алгоритм Roulette wheel selection
+        // Define the Id of the single implementation
+        // Roulette wheel selection algorithm
         double choice = randomProvider.NextDouble(0, weightsSum);
         int curNodeIndex = -1;
         while (choice >= 0)
@@ -79,8 +80,7 @@ internal static class WeightFactorUtils
             if (curNodeIndex >= variants.Count)
                 curNodeIndex = 0;
 
-            // choice -= nodes[curNodeIndex].WeightNest.TotalWeight();
-            choice -= nodesWeights[curNodeIndex].totalWeight;
+            choice -= factsAndWeights[curNodeIndex].totalWeight;
         }
         return variants[curNodeIndex];
     }

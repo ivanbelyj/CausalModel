@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Fixation
 {
+    /// <summary>
+    /// A component generating random values for causal model fixation purposes
+    /// </summary>
     public interface IRandomProvider
     {
         /// <summary>
-        /// Next double in [min, max)
+        /// Next random float from min (inclusive) and max (exclusive)
         /// </summary>
-        public double NextDouble(double min = 0, double max = 1);
+        public float NextDouble(float min = 0, float max = 1);
     }
 }

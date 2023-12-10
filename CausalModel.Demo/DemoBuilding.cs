@@ -23,7 +23,7 @@ public class DemoBuilding
     {
         return new ResolvingModelProvider<string>(
             model,
-            new BlockResolver<string>(conventions));
+            new BlockImplementationResolver<string>(conventions));
     }
 
     public static BlockConventionMap<string> CreateDemoConventionMap()
@@ -32,7 +32,7 @@ public class DemoBuilding
         {
             ModelsByConventionName = new Dictionary<string, CausalModel<string>>()
             {
-                { "TestConvention", null! }
+                { "TestConvention", CreateConventionAndImplementation().model }
             }
         };
     }
@@ -40,40 +40,58 @@ public class DemoBuilding
     public static CausalModel<string> CreateDemoCausalModel()
     {
         var facts = CreateCharacterFacts();
+
         var causalModel = new CausalModel<string>()
         {
             Facts = facts,
             BlockConventions = new List<BlockConvention>()
             {
-                new BlockConvention()
-                {
-                    Name = "TestConvention",
-                    Causes = new()
-                    {
-                        new Factor()
-                        {
-                            CauseId = "BlockCause"
-                        }
-                    },
-                    Consequences = new()
-                    {
-                        new BaseFact()
-                        {
-                            Id = "BlockConsequence"
-                        }
-                    }
-                },
+                CreateConventionAndImplementation().convention
             },
             Blocks = new List<DeclaredBlock>()
             {
-                new DeclaredBlock()
-                {
-                    Convention = "TestConvention",
-                    Name = "block1"
-                }
+                new DeclaredBlock("block1", "TestConvention")
             }
         };
         return causalModel;
+    }
+
+    private static (BlockConvention convention, CausalModel<string> model)
+        CreateConventionAndImplementation()
+    {
+        var conv = new BlockConvention("TestConvention")
+        {
+            Causes = new()
+                {
+                    new Factor()
+                    {
+                        CauseId = "BlockCause"
+                    }
+                },
+            Consequences = new()
+                {
+                    new BaseFact()
+                    {
+                        Id = "BlockConsequence"
+                    }
+                }
+        };
+
+        var fact1 = FactsBuilding.CreateFact(1, "Inner fact 1", null);
+        var fact2 = FactsBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
+        var impl = new CausalModel<string>()
+        {
+            
+            Facts = new()
+            {
+                fact1,
+                fact2,
+                FactsBuilding.CreateFact(1, "Inner fact 3", null),
+                FactsBuilding.CreateFact(1, "Inner fact 4", fact2.Id,
+                    "BlockConsequence"),
+            }
+        };
+        return (conv, impl);
     }
 
     private static List<Fact<string>> CreateCharacterFacts()
