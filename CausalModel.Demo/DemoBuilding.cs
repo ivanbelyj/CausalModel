@@ -1,7 +1,8 @@
+using CausalModel.Blocks;
+using CausalModel.Blocks.Resolving;
 using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Model;
-using CausalModel.Model.Blocks;
 using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -19,16 +20,16 @@ public class DemoBuilding
 
     public static ResolvingModelProvider<string> CreateModelProvider(
          CausalModel<string> model, 
-         BlockConventionMap<string> conventions)
+         BlockResolvingMap<string> conventions)
     {
         return new ResolvingModelProvider<string>(
             model,
-            new BlockImplementationResolver<string>(conventions));
+            new BlockResolver<string>(conventions));
     }
 
-    public static BlockConventionMap<string> CreateDemoConventionMap()
+    public static BlockResolvingMap<string> CreateDemoConventionMap()
     {
-        return new BlockConventionMap<string>()
+        return new BlockResolvingMap<string>()
         {
             ModelsByConventionName = new Dictionary<string, CausalModel<string>>()
             {
@@ -40,6 +41,9 @@ public class DemoBuilding
     public static CausalModel<string> CreateDemoCausalModel()
     {
         var facts = CreateCharacterFacts();
+
+        // Required for the declared block
+        facts.Add(FactsBuilding.CreateFact(0.9f, "Block cause", null, "BlockCause"));
 
         var causalModel = new CausalModel<string>()
         {
@@ -65,6 +69,7 @@ public class DemoBuilding
                 {
                     new Factor()
                     {
+                        // Cause from the parent model required for the block
                         CauseId = "BlockCause"
                     }
                 },

@@ -7,14 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Blocks;
+namespace CausalModel.Blocks;
 
 /// <summary>
-/// The block defines the convention (block convention) - a set of inputs and outputs,
-/// references (block references). Inputs refer to external facts for the block,
+/// The block defines the block convention - a set of inputs and outputs,
+/// block references. Inputs refer to external facts for the block,
 /// outputs become factors for facts that follow from the block.
-/// Any CM can be the potential implementation of the block (block implementation),
-/// satisfying its convention.
+/// Any CM can be the potential implementation of the block,
+/// if it is satisfying its convention.
 /// </summary>
 public class BlockConvention
 {

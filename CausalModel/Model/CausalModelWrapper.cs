@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model;
+
+/// <summary>
+/// Provides useful data from the causal model in more optimized way
+/// </summary>
 public class CausalModelWrapper<TFactValue>
 {
     public Dictionary<string, Fact<TFactValue>> FactsById { get; private set; } = new();
@@ -20,7 +24,16 @@ public class CausalModelWrapper<TFactValue>
     public HashSet<Fact<TFactValue>> RootCauses
         { get; private set; } = new();
 
+    private readonly CausalModel<TFactValue> model;
+
     public CausalModelWrapper(CausalModel<TFactValue> causalModel)
+    {
+        model = causalModel;
+
+        Initialize(model);
+    }
+
+    private void Initialize(CausalModel<TFactValue> causalModel)
     {
         foreach (var fact in causalModel.Facts)
         {

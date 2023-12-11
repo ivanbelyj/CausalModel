@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model.Serialization;
 using CausalModel.Model.Providers;
-using CausalModel.Model.Blocks;
+using CausalModel.Blocks.Resolving;
 
 var rootCommand = new RootCommand
 {
@@ -46,14 +46,14 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
         Exception? exceptionToExit = null;
 
         // Todo: blocks resolving CLI support
-        BlockConventionMap<string> conventions = new BlockConventionMap<string>()
+        BlockResolvingMap<string> conventions = new BlockResolvingMap<string>()
         {
             ModelsByConventionName = new()
             {
                 // Todo:
             }
         };
-        BlockImplementationResolver<string> resolver = new BlockImplementationResolver<string>(conventions);
+        BlockResolver<string> resolver = new BlockResolver<string>(conventions);
 
         try
         {

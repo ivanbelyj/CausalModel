@@ -6,7 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Providers;
-public interface IModelProvider<TFactValue> : IFactProvider<TFactValue>
+
+/// <summary>
+/// Provides some causal model data
+/// </summary>
+public interface ICausalModelProvider<TFactValue> : IFactProvider<TFactValue>
 {
     IEnumerable<Fact<TFactValue>> GetAbstractFactVariants(Fact<TFactValue> abstractFact);
     IEnumerable<Fact<TFactValue>>? TryGetConsequences(Fact<TFactValue> fact);

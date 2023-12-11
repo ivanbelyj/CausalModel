@@ -11,12 +11,12 @@ namespace CausalModel.Fixation;
 /// <typeparam name="TFactValue">The type of the causal model fact value</typeparam>
 public class CausalGenerator<TFactValue> : IRandomProvider
 {
-    private readonly IModelProvider<TFactValue> modelProvider;
+    private readonly ICausalModelProvider<TFactValue> modelProvider;
     private readonly IFixator<TFactValue> fixator;
     private readonly Random random;
 
     public CausalGenerator(
-        IModelProvider<TFactValue> modelProvider,
+        ICausalModelProvider<TFactValue> modelProvider,
         IFixator<TFactValue> fixator,
         int? seed = null)
     {
@@ -26,6 +26,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         random = seed == null ? new Random() : new Random(seed.Value);
     }
 
+    // Todo: make seed not sensitive to fixation order?
     public float NextDouble(float min = 0, float max = 1)
     {
         return (float)random.NextDouble(min, max);

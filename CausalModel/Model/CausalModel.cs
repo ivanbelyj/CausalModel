@@ -1,5 +1,5 @@
+using CausalModel.Blocks;
 using CausalModel.Facts;
-using CausalModel.Model.Blocks;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CausalModel.Model;
 
 /// <summary>
-/// Representing causal model including blocks
+/// Representing not resolved causal model including blocks
 /// </summary>
 public class CausalModel<TFactValue>
 {
@@ -59,7 +59,7 @@ public class CausalModel<TFactValue>
     }
 
     [JsonIgnore]
-    public IEnumerable<BlockFact> BlockFacts
+    internal IEnumerable<BlockFact> BlockFacts
     {
         get
         {
@@ -68,9 +68,10 @@ public class CausalModel<TFactValue>
                 blockFactByName = new();
                 foreach (var block in Blocks)
                 {
-                    var conv = GetConventionByName(block.Convention);
+                    var conv = block.Convention == null ? null
+                        : GetConventionByName(block.Convention);
 
-                    var blockFact = new BlockFact(conv);
+                    var blockFact = new BlockFact(block, conv);
                     blockFact.Id = block.Id;
 
                     blockFactByName.Add(block.Id, blockFact);

@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Common
 {
-    internal static class Extensions
+    internal static class RandomExtensions
     {
         /// <summary>
-        /// Генерирует случайное число от 0 до max (не включительно)
+        /// Generates a random double from min (inclusive) to max (exclusive)
         /// </summary>
-        /// <returns></returns>
         public static double NextDouble(this Random random, double min, double max)
             => (max - min) * random.NextDouble() + min;
     }

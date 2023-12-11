@@ -3,7 +3,7 @@ using CausalModel.Factors;
 using CausalModel.Fixation;
 using CausalModel.Facts;
 using CausalModel.Model.Serialization;
-using CausalModel.Model.Blocks;
+using CausalModel.Blocks;
 using CausalModel.Model.Providers;
 using CausalModel.Demo;
 

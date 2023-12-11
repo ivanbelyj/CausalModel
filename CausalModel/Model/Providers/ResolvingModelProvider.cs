@@ -1,23 +1,33 @@
+using CausalModel.Blocks.Resolving;
 using CausalModel.Facts;
-using CausalModel.Model.Blocks;
 
 namespace CausalModel.Model.Providers;
-public class ResolvingModelProvider<TFactValue> : IModelProvider<TFactValue>
+
+/// <summary>
+/// Resolving blocks and provides causal model data
+/// </summary>
+public class ResolvingModelProvider<TFactValue> : ICausalModelProvider<TFactValue>
 {
-    private readonly BlockImplementationResolver<TFactValue> resolver;
+    private readonly IBlockResolver<TFactValue> resolver;
     private List<ResolvingModelProvider<TFactValue>>? resolvedBlocks;
 
-    private CausalModelWrapper<TFactValue> modelWrapper;
-    //private CausalModel<TFactValue> model;
+    private readonly CausalModelWrapper<TFactValue> modelWrapper;
+
+    // Todo: Should use model ?
+    private readonly CausalModel<TFactValue> rootModel;
 
     public ResolvingModelProvider(CausalModel<TFactValue> causalModel,
-        BlockImplementationResolver<TFactValue> blockResolver)
+        IBlockResolver<TFactValue> blockResolver)
     {
         modelWrapper = new CausalModelWrapper<TFactValue>(causalModel);
+        this.rootModel = causalModel;
         resolver = blockResolver;
     }
 
-    private T? Traverse<T>(Func<ResolvingModelProvider<TFactValue>, T?> func)
+    /// <summary>
+    /// Finds something via function in the provider and its blocks (not recursively)
+    /// </summary>
+    private T? Find<T>(Func<ResolvingModelProvider<TFactValue>, T?> func)
         where T : class
     {
         T? res = func(this);
@@ -28,7 +38,7 @@ public class ResolvingModelProvider<TFactValue> : IModelProvider<TFactValue>
         {
             // Todo: should resolve here?
             if (resolvedBlocks == null)
-                resolvedBlocks = GetResolved();
+                resolvedBlocks = GetResolvedBlocks();
 
             foreach (var resolvedBlock in resolvedBlocks)
             {
@@ -49,11 +59,16 @@ public class ResolvingModelProvider<TFactValue> : IModelProvider<TFactValue>
         return res;
     }
 
+    public Fact<TFactValue>? TryGetFactInRootModel(string id)
+    {
+        return modelWrapper.TryGetFact(id);
+    }
+
     public Fact<TFactValue>? TryGetFact(string id)
     {
-        return Traverse((provider) =>
+        return Find((provider) =>
         {
-            return provider.modelWrapper.TryGetFact(id);
+            return provider.TryGetFactInRootModel(id);
         });
     }
 
@@ -63,13 +78,15 @@ public class ResolvingModelProvider<TFactValue> : IModelProvider<TFactValue>
     /// <summary>
     /// Returns resolved blocks of the causal model (not recursive resolving)
     /// </summary>
-    public List<ResolvingModelProvider<TFactValue>> GetResolved()
+    public List<ResolvingModelProvider<TFactValue>> GetResolvedBlocks()
     {
         var resolvedBlocks = new List<ResolvingModelProvider<TFactValue>>();
         foreach (BlockFact block in modelWrapper.Blocks)
         {
-            ResolvingModelProvider<TFactValue> resolvedBlock = resolver.Resolve(block);
-            resolvedBlocks.Add(resolvedBlock);
+            CausalModel<TFactValue> resolvedBlock =
+                resolver.Resolve(block.Block, rootModel);
+            resolvedBlocks.Add(new ResolvingModelProvider<TFactValue>(resolvedBlock,
+                resolver));
         }
         return resolvedBlocks;
     }
@@ -82,14 +99,15 @@ public class ResolvingModelProvider<TFactValue> : IModelProvider<TFactValue>
 
     public IEnumerable<Fact<TFactValue>>? TryGetConsequences(Fact<TFactValue> fact)
     {
-        modelWrapper.CausesAndConsequences.TryGetValue(fact, out var consequences);
+        modelWrapper.CausesAndConsequences.TryGetValue(Resolve(fact),
+            out var consequences);
         return consequences;
     }
 
     public IEnumerable<Fact<TFactValue>> GetRootCauses()
     {
         if (resolvedBlocks == null)
-            resolvedBlocks = GetResolved();
+            resolvedBlocks = GetResolvedBlocks();
 
         return resolvedBlocks
             .SelectMany(provider => provider.GetRootCauses())

@@ -1,5 +1,5 @@
+using CausalModel.Blocks;
 using CausalModel.Factors;
-using CausalModel.Model.Blocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,15 +13,18 @@ namespace CausalModel.Facts;
 /// </summary>
 public class BlockFact : FactWithCauses
 {
-    private readonly BlockConvention convention;
+    private readonly BlockConvention? convention;
 
-    public string ConventionName => convention.Name;
-    public IEnumerable<Factor>? Causes => convention.Causes;
-    public IEnumerable<BaseFact>? Consequences => convention.Consequences;
+    public string? ConventionName => convention?.Name;
+    public IEnumerable<Factor>? Causes => convention?.Causes;
+    public IEnumerable<BaseFact>? Consequences => convention?.Consequences;
 
-    public BlockFact(BlockConvention convention)
+    public DeclaredBlock Block { get; private set; }
+
+    public BlockFact(DeclaredBlock block, BlockConvention? convention)
     {
         this.convention = convention;
+        Block = block;
     }
 
     public override IEnumerable<Factor> GetCauses()
