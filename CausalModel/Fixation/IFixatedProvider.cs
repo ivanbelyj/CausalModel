@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CausalModel.Model.Instance;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,6 @@ namespace CausalModel.Fixation
     /// </summary>
     public interface IFixatedProvider
     {
-        public bool? IsFixated(string factId);
+        public bool? IsFixated(InstanceFactId factId);
     }
 }

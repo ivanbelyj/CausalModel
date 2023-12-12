@@ -3,6 +3,7 @@ using CausalModel.Blocks.Resolving;
 using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Model;
+using CausalModel.Model.Instance;
 using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -22,9 +23,15 @@ public class DemoBuilding
          CausalModel<string> model, 
          BlockResolvingMap<string> conventions)
     {
-        return new ResolvingModelProvider<string>(
-            model,
-            new BlockResolver<string>(conventions));
+        var resolver = new BlockResolver<string>(conventions);
+        resolver.BlockImplemented += (sender, block, convention, implementation) =>
+        {
+            Console.WriteLine($"// Block implemented: {block.Id}");
+        };
+
+        // Todo: should create instance here?
+        return new ResolvingModelProvider<string>(new ModelInstance<string>(model),
+            resolver);
     }
 
     public static BlockResolvingMap<string> CreateDemoConventionMap()

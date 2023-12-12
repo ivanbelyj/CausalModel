@@ -1,5 +1,8 @@
 using CausalModel.Factors;
 using CausalModel.Facts;
+using CausalModel.Model;
+using CausalModel.Model.Instance;
+using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +15,12 @@ internal static class WeightFactorUtils
     /// <summary>
     /// Calculates the total weight based of the given weight factors
     /// </summary>
-    public static float TotalWeight(IEnumerable<WeightFactor> factors,
-        IFixatedProvider happenedProvider)
+    public static float TotalWeight<TFactValue>(IEnumerable<WeightFactor> factors,
+        IFixatedProvider fixatedProvider,
+        IFactProvider<TFactValue> factProvider)
+        //IResolvedModelProvider<TFactValue> modelProvider)
     {
-        if (factors.Count() == 0)
+        if (!factors.Any())
             throw new InvalidOperationException("Cannot calculate the total weight on empty weights");
 
         float weightSum = 0;
@@ -31,8 +36,12 @@ internal static class WeightFactorUtils
             }
             else
             {
-                bool? isHappened = happenedProvider.IsFixated(edge.CauseId);
-                if (isHappened != null && isHappened.Value)
+                // Todo: should it be calculated if some weights are not fixated?
+                bool? isFixated = fixatedProvider
+                    .IsFixated(factProvider
+                        .GetInstanceFact(edge.CauseId)
+                        .InstanceFactId);
+                if (isFixated != null && isFixated.Value)
                 {
                     weightSum += edge.Weight;
                 }
@@ -48,19 +57,23 @@ internal static class WeightFactorUtils
     /// This method does not consider whether all passed variants are fixed
     /// and have happened
     /// </summary>
-    public static Fact<TFactValue>? SelectFactVariant<TFactValue>(
-        List<Fact<TFactValue>> variants,
+    public static InstanceFact<TFactValue>? SelectFactVariant<TFactValue>(
+        List<InstanceFact<TFactValue>> variants,
         IFixatedProvider fixatedProvider,
-        IRandomProvider randomProvider)
+        IRandomProvider randomProvider,
+        IFactProvider<TFactValue> factProvider
+        //IResolvedModelProvider<TFactValue> modelProvider
+        )
     {
         const float EPSILON = 0.000001f;
 
-        var factsAndWeights = new List<(Fact<TFactValue> fact, float totalWeight)>();
+        var factsAndWeights = new List<(InstanceFact<TFactValue> fact,
+            float totalWeight)>();
         float weightsSum = 0;
         foreach (var fact in variants)
         {
-            float totalWeight = WeightFactorUtils.TotalWeight(fact.Weights!,
-                fixatedProvider);
+            float totalWeight = WeightFactorUtils.TotalWeight(fact.Fact.Weights!,
+                fixatedProvider, factProvider);
             if (totalWeight >= EPSILON)
             {
                 factsAndWeights.Add((fact, totalWeight));

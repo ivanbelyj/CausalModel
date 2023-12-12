@@ -1,5 +1,5 @@
 using CausalModel.Facts;
-using CausalModel.Model;
+using CausalModel.Model.Instance;
 using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -13,8 +13,7 @@ public delegate void BlockImplementedEventHandler<TFactValue>(
     object sender,
     DeclaredBlock block,
     BlockConvention? convention,
-    //ICausalModelProvider<TFactValue> implementation
-    CausalModel<TFactValue> implementation);
+    ModelInstance<TFactValue> implementation);
 
 /// <summary>
 /// A component responsible for resolving blocks that occure during the fixation
@@ -24,6 +23,6 @@ public delegate void BlockImplementedEventHandler<TFactValue>(
 public interface IBlockResolver<TFactValue>
 {
     event BlockImplementedEventHandler<TFactValue> BlockImplemented;
-    CausalModel<TFactValue> Resolve(DeclaredBlock block,
-        CausalModel<TFactValue> parentModel);
+    ModelInstance<TFactValue> Resolve(DeclaredBlock block,
+        ModelInstance<TFactValue> parentInstance);
 }

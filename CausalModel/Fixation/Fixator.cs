@@ -1,4 +1,5 @@
 using CausalModel.Facts;
+using CausalModel.Model.Instance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +9,19 @@ using System.Threading.Tasks;
 namespace CausalModel.Fixation;
 public class Fixator<TFactValue> : IFixator<TFactValue>
 {
-    private Dictionary<string, bool> factsFixated = new Dictionary<string, bool>();
+    private readonly Dictionary<InstanceFactId, bool> factIdsFixated = new();
 
     public event FactFixatedEventHandler<TFactValue>? FactFixated;
 
-    public bool? IsFixated(string factId)
-        => factsFixated.ContainsKey(factId) ? factsFixated[factId] : null;
-
-    public virtual void FixateFact(Fact<TFactValue> fact, bool isHappened)
+    public bool? IsFixated(InstanceFactId id)
     {
-        factsFixated[fact.Id] = isHappened;
-        FactFixated?.Invoke(this, fact, isHappened);
+        bool isInDict = factIdsFixated.TryGetValue(id, out var isHappened);
+        return isInDict ? isHappened : null;
+    }
+
+    public virtual void FixateFact(InstanceFactId factId, bool isHappened)
+    {
+        factIdsFixated[factId] = isHappened;
+        FactFixated?.Invoke(this, factId, isHappened);
     }
 }

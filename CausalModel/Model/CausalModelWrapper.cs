@@ -17,9 +17,9 @@ public class CausalModelWrapper<TFactValue>
 
     public IEnumerable<BlockFact> Blocks => BlocksById.Values;
 
-    public Dictionary<Fact<TFactValue>, List<Fact<TFactValue>>> CausesAndConsequences
+    public Dictionary<string, List<Fact<TFactValue>>> ConsequencesByCauseIds
         { get; private set; } = new();
-    public Dictionary<Fact<TFactValue>, List<Fact<TFactValue>>> FactsAndVariants
+    public Dictionary<string, List<Fact<TFactValue>>> VariantsByAbstractFactIds
         { get; private set; } = new();
     public HashSet<Fact<TFactValue>> RootCauses
         { get; private set; } = new();
@@ -53,14 +53,14 @@ public class CausalModelWrapper<TFactValue>
             if (fact.AbstractFactId != null)
             {
                 var abstractFact = GetFact(fact.AbstractFactId);
-                if (!FactsAndVariants.ContainsKey(abstractFact))
+                if (!VariantsByAbstractFactIds.ContainsKey(abstractFact.Id))
                 {
-                    FactsAndVariants.Add(abstractFact,
+                    VariantsByAbstractFactIds.Add(abstractFact.Id,
                         new List<Fact<TFactValue>> { fact });
                 }
                 else
                 {
-                    FactsAndVariants[abstractFact].Add(fact);
+                    VariantsByAbstractFactIds[abstractFact.Id].Add(fact);
                 }
             }
 
@@ -69,14 +69,14 @@ public class CausalModelWrapper<TFactValue>
                 if (edge.CauseId != null)
                 {
                     var cause = GetFact(edge.CauseId);
-                    if (!CausesAndConsequences.ContainsKey(cause))
+                    if (!ConsequencesByCauseIds.ContainsKey(cause.Id))
                     {
-                        CausesAndConsequences.Add(cause,
+                        ConsequencesByCauseIds.Add(cause.Id,
                             new List<Fact<TFactValue>>() { fact });
                     }
                     else
                     {
-                        CausesAndConsequences[cause].Add(fact);
+                        ConsequencesByCauseIds[cause.Id].Add(fact);
                     }
                 }
             }

@@ -1,6 +1,7 @@
 using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Model;
+using CausalModel.Model.Instance;
 using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
     public event BlockImplementedEventHandler<TFactValue>? BlockImplemented;
 
     protected virtual void CheckConvention(BlockConvention convention,
-        CausalModel<TFactValue> model, CausalModel<TFactValue> parent)
+        CausalModel<TFactValue> model, ModelInstance<TFactValue> parent)
     {
         List<Factor>? notImplementedCauses = new();
         List<BaseFact>? notImplementedConsequences = new();
@@ -35,7 +36,7 @@ public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
         {
             foreach (var cause in convention.Causes)
             {
-                var fact = parent.Facts.Find(fact => fact.Id == cause.CauseId);
+                var fact = parent.Model.Facts.Find(fact => fact.Id == cause.CauseId);
                 if (fact == null)
                 {
                     notImplementedCauses.Add(cause);
@@ -59,19 +60,21 @@ public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
         DeclaredBlock block,
         BlockConvention? convention);
 
-    public CausalModel<TFactValue> Resolve(DeclaredBlock block,
-        CausalModel<TFactValue> parentModel)
+    public ModelInstance<TFactValue> Resolve(DeclaredBlock block,
+        ModelInstance<TFactValue> parentInstance)
     {
         string? convName = block.Convention;
         BlockConvention? convention = convName == null ? null
-            : parentModel.GetConventionByName(convName);
+            : parentInstance.Model.GetConventionByName(convName);
 
         var model = GetConventionImplementation(block, convention);
 
         if (convention != null)
-            CheckConvention(convention, model, parentModel);
+            CheckConvention(convention, model, parentInstance);
 
-        BlockImplemented?.Invoke(this, block, convention, model);
-        return model;
+        var instance = new ModelInstance<TFactValue>(model);
+
+        BlockImplemented?.Invoke(this, block, convention, instance);
+        return instance;
     }
 }

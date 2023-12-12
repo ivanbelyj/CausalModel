@@ -1,57 +1,85 @@
 using CausalModel.Blocks.Resolving;
 using CausalModel.Facts;
+using CausalModel.Model.Instance;
+using System.Linq;
 
 namespace CausalModel.Model.Providers;
 
 /// <summary>
 /// Resolving blocks and provides causal model data
 /// </summary>
-public class ResolvingModelProvider<TFactValue> : ICausalModelProvider<TFactValue>
+public class ResolvingModelProvider<TFactValue> : IResolvedModelProvider<TFactValue>
 {
     private readonly IBlockResolver<TFactValue> resolver;
-    private List<ResolvingModelProvider<TFactValue>>? resolvedBlocks;
+    private readonly Lazy<Dictionary<string, ResolvingModelProvider<TFactValue>>>
+        resolvedBlocksByInstanceId;
 
+    private readonly ModelInstance<TFactValue> rootInstance;
+
+    // For more optimized accessing to the root model instance
     private readonly CausalModelWrapper<TFactValue> modelWrapper;
 
-    // Todo: Should use model ?
-    private readonly CausalModel<TFactValue> rootModel;
-
-    public ResolvingModelProvider(CausalModel<TFactValue> causalModel,
+    public ResolvingModelProvider(ModelInstance<TFactValue> causalInstance,
         IBlockResolver<TFactValue> blockResolver)
     {
-        modelWrapper = new CausalModelWrapper<TFactValue>(causalModel);
-        this.rootModel = causalModel;
         resolver = blockResolver;
+        resolvedBlocksByInstanceId = new(GetResolvedBlocks);
+
+        rootInstance = causalInstance;
+        modelWrapper = new CausalModelWrapper<TFactValue>(causalInstance.Model);
     }
+
+    public string RootModelInstanceId => rootInstance.InstanceId;
 
     /// <summary>
-    /// Finds something via function in the provider and its blocks (not recursively)
+    /// Returns a dictionary of resolved blocks of the causal model
+    /// (not recursive resolving)
     /// </summary>
-    private T? Find<T>(Func<ResolvingModelProvider<TFactValue>, T?> func)
-        where T : class
+    /// <returns>Resolving model providers by ids</returns>
+    private Dictionary<string, ResolvingModelProvider<TFactValue>> GetResolvedBlocks()
     {
-        T? res = func(this);
+        var resolvedBlocks
+            = new Dictionary<string, ResolvingModelProvider<TFactValue>>();
 
-        if (res != null)
-            return res;
-        else
+        foreach (BlockFact block in modelWrapper.Blocks)
         {
-            // Todo: should resolve here?
-            if (resolvedBlocks == null)
-                resolvedBlocks = GetResolvedBlocks();
+            ModelInstance<TFactValue> resolvedBlock =
+                resolver.Resolve(block.Block, rootInstance);
 
-            foreach (var resolvedBlock in resolvedBlocks)
-            {
-                var resInBlock = func(resolvedBlock);
-                if (resInBlock != null)
-                    return resInBlock;
-            }
+            resolvedBlocks.Add(resolvedBlock.InstanceId,
+                new ResolvingModelProvider<TFactValue>(resolvedBlock, resolver));
         }
-
-        return null;
+        return resolvedBlocks;
     }
 
-    public Fact<TFactValue> GetFact(string id)
+    ///// <summary>
+    ///// Finds something via function in the provider and its blocks (not recursively)
+    ///// </summary>
+    //private T? Find<T>(Func<ResolvingModelProvider<TFactValue>, T?> func)
+    //    where T : class
+    //{
+    //    T? res = func(this);
+
+    //    if (res != null)
+    //        return res;
+    //    else
+    //    {
+    //        // Todo: should resolve here?
+    //        if (resolvedBlocksByInstanceId == null)
+    //            resolvedBlocksByInstanceId = GetResolvedBlocks();
+
+    //        foreach (var resolvedBlock in resolvedBlocksByInstanceId.Values)
+    //        {
+    //            var resInBlock = func(resolvedBlock);
+    //            if (resInBlock != null)
+    //                return resInBlock;
+    //        }
+    //    }
+
+    //    return null;
+    //}
+
+    public InstanceFact<TFactValue> GetFact(InstanceFactId id)
     {
         var res = TryGetFact(id);
         if (res == null)
@@ -59,58 +87,91 @@ public class ResolvingModelProvider<TFactValue> : ICausalModelProvider<TFactValu
         return res;
     }
 
-    public Fact<TFactValue>? TryGetFactInRootModel(string id)
+    public InstanceFact<TFactValue>? TryGetFactInRootModel(string factLocalId)
     {
-        return modelWrapper.TryGetFact(id);
+        var fact = modelWrapper.TryGetFact(factLocalId);
+        return fact == null ? null : ToInstanceFact(fact);
     }
 
-    public Fact<TFactValue>? TryGetFact(string id)
+    private T? TryGetInRootAndChildren<T>(
+        Func<ResolvingModelProvider<TFactValue>, T?> func,
+        string causalInstanceId)
     {
-        return Find((provider) =>
+        if (causalInstanceId == rootInstance.InstanceId)
+            return func(this);
+
+        return func(resolvedBlocksByInstanceId
+            .Value[causalInstanceId]);
+    }
+
+    private T GetInRootAndChildren<T>(
+        Func<ResolvingModelProvider<TFactValue>, T?> func,
+        string causalInstanceId)
+    {
+        var res = TryGetInRootAndChildren(func, causalInstanceId);
+        if (res == null)
+            throw new InvalidOperationException($"Required item was not found in "
+                + $"causal model instance (id: {causalInstanceId}) "
+                + $"or this instance does not exist.");
+        return res;
+    }
+
+    public InstanceFact<TFactValue>? TryGetFact(InstanceFactId id)
+    {
+        return TryGetInRootAndChildren((provider) =>
         {
-            return provider.TryGetFactInRootModel(id);
-        });
+            return provider.TryGetFactInRootModel(id.FactId);
+        }, id.CausalInstanceId);
     }
 
-    private Fact<TFactValue> Resolve(Fact<TFactValue> fact)
-        => GetFact(fact.Id);
-
-    /// <summary>
-    /// Returns resolved blocks of the causal model (not recursive resolving)
-    /// </summary>
-    public List<ResolvingModelProvider<TFactValue>> GetResolvedBlocks()
+    private InstanceFact<TFactValue> ToInstanceFact(Fact<TFactValue> fact)
     {
-        var resolvedBlocks = new List<ResolvingModelProvider<TFactValue>>();
-        foreach (BlockFact block in modelWrapper.Blocks)
+        return new InstanceFact<TFactValue>(fact, rootInstance.InstanceId);
+    }
+
+    private IEnumerable<InstanceFact<TFactValue>> ToInstanceFacts(
+        IEnumerable<Fact<TFactValue>> facts)
+    {
+        return facts.Select(ToInstanceFact);
+    }
+
+    public IEnumerable<InstanceFact<TFactValue>> GetAbstractFactVariants(
+        InstanceFactId abstractFactId)
+    {
+        return GetInRootAndChildren((provider) =>
         {
-            CausalModel<TFactValue> resolvedBlock =
-                resolver.Resolve(block.Block, rootModel);
-            resolvedBlocks.Add(new ResolvingModelProvider<TFactValue>(resolvedBlock,
-                resolver));
-        }
-        return resolvedBlocks;
+            var variants = provider
+                .modelWrapper
+                .VariantsByAbstractFactIds[abstractFactId.FactId];
+            return provider.ToInstanceFacts(variants);
+        }, abstractFactId.CausalInstanceId);
+        //return modelWrapper.FactsAndVariants[abstractFactId.FactId];
     }
 
-    public IEnumerable<Fact<TFactValue>> GetAbstractFactVariants(
-        Fact<TFactValue> abstractFact)
+    public IEnumerable<InstanceFact<TFactValue>>? TryGetConsequences(
+        InstanceFactId causeId)
     {
-        return modelWrapper.FactsAndVariants[Resolve(abstractFact)];
+        return TryGetInRootAndChildren((provider) =>
+        {
+            provider
+                .modelWrapper
+                .ConsequencesByCauseIds
+                .TryGetValue(causeId.FactId, out var consequences);
+
+            if (consequences == null)
+                return null;
+            else
+                return provider.ToInstanceFacts(consequences);
+        }, causeId.CausalInstanceId);
     }
-
-    public IEnumerable<Fact<TFactValue>>? TryGetConsequences(Fact<TFactValue> fact)
+    
+    public IEnumerable<InstanceFact<TFactValue>> GetRootCauses()
     {
-        modelWrapper.CausesAndConsequences.TryGetValue(Resolve(fact),
-            out var consequences);
-        return consequences;
-    }
-
-    public IEnumerable<Fact<TFactValue>> GetRootCauses()
-    {
-        if (resolvedBlocks == null)
-            resolvedBlocks = GetResolvedBlocks();
-
-        return resolvedBlocks
-            .SelectMany(provider => provider.GetRootCauses())
-            .Concat(modelWrapper.RootCauses.ToList());
+        return resolvedBlocksByInstanceId
+            .Value
+            .Values
+            .SelectMany(provider =>
+                provider.ToInstanceFacts(provider.modelWrapper.RootCauses))
+            .Concat(ToInstanceFacts(modelWrapper.RootCauses));
     }
 }
