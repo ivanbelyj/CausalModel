@@ -1,7 +1,7 @@
 using CausalModel.Fixation;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving;
 using CausalModel.Model.Serialization;
 using System;
 using System.Collections.Generic;

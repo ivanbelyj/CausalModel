@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Blocks.Resolving;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving.Providers;
 
 namespace CausalModel.Tests;
 internal static class TestUtils

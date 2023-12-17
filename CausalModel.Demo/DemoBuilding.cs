@@ -4,7 +4,7 @@ using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,13 +1,12 @@
 using CausalModel.Blocks.Resolving;
 using CausalModel.Model.Instance;
-using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.ResolvingModelProvider;
+namespace CausalModel.Model.Resolving;
 public class ResolvedModelWithCausesTree<TFactValue>
     : ResolvedModelProvider<TFactValue>
 {
@@ -25,7 +24,7 @@ public class ResolvedModelWithCausesTree<TFactValue>
         IBlockResolver<TFactValue> blockResolver)
         : this(modelInstance, blockResolver, new CausesTree<TFactValue>(), null)
     {
-        
+
     }
 
     protected override ResolvedModelProvider<TFactValue> CreateResolvedBlock(

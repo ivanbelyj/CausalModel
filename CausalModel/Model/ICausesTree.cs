@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Providers;
+namespace CausalModel.Model;
 public interface ICausesTree<TFactValue>
 {
     IEnumerable<InstanceFact<TFactValue>> GetAbstractFactVariants(

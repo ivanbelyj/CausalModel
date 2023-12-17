@@ -1,12 +1,12 @@
 using CausalModel.Model.Instance;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Providers;
+namespace CausalModel.Model.Resolving;
 
 public class ModelProvider<TFactValue> : IModelProvider<TFactValue>
 {
@@ -16,7 +16,7 @@ public class ModelProvider<TFactValue> : IModelProvider<TFactValue>
     public ModelProvider(IResolvedModelProvider<TFactValue> modelProvider,
         string modelInstanceId)
     {
-        this.resolvedModelProvider = modelProvider;
+        resolvedModelProvider = modelProvider;
         this.modelInstanceId = modelInstanceId;
     }
 

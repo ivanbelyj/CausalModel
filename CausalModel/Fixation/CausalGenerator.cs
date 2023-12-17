@@ -1,10 +1,9 @@
 ﻿using CausalModel.Common;
 using CausalModel.Facts;
 using CausalModel.CausesExpressionTree;
-using CausalModel.Model.Providers;
 using CausalModel.Model.Instance;
 using CausalModel.Model;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving;
 
 namespace CausalModel.Fixation;
 

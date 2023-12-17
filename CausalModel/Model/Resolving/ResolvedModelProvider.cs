@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.ResolvingModelProvider;
+namespace CausalModel.Model.Resolving;
 public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactValue>
 {
     private readonly RootModelDecorator<TFactValue> rootModel;
@@ -33,7 +33,7 @@ public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactVal
         IBlockResolver<TFactValue> blockResolver)
         : this(modelInstance, blockResolver, null)
     {
-        
+
     }
 
     /// <summary>

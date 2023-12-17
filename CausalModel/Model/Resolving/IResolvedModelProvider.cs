@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.ResolvingModelProvider;
+namespace CausalModel.Model.Resolving;
 
 /// <summary>
 /// Provides resolved causal model instance data.

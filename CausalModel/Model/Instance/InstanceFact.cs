@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model;
+namespace CausalModel.Model.Instance;
 
 /// <summary>
 /// Represents a fact from the causal model instance

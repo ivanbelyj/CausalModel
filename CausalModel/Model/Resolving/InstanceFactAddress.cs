@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Instance;
+namespace CausalModel.Model.Resolving;
 public class InstanceFactAddress
 {
     public string FactId { get; }

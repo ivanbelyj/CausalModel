@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model.Serialization;
 using CausalModel.Blocks.Resolving;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving.Providers;
 
 var rootCommand = new RootCommand
 {

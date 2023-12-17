@@ -1,6 +1,5 @@
 using CausalModel.Factors;
 using CausalModel.Facts;
-using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;

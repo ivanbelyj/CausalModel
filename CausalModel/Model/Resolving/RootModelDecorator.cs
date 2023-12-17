@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.ResolvingModelProvider;
+namespace CausalModel.Model.Resolving;
 internal class RootModelDecorator<TFactValue>
 {
     private readonly ModelInstance<TFactValue> modelInstance;

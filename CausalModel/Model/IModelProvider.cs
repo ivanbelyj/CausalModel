@@ -1,10 +1,11 @@
-﻿using System;
+﻿using CausalModel.Model.Instance;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Providers;
+namespace CausalModel.Model;
 
 /// <summary>
 /// Provides facts available as a part of the single defined causal model instance.

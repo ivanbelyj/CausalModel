@@ -1,15 +1,15 @@
 using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
-using CausalModel.Fixation;
+using CausalModel.Model;
 using CausalModel.Model.Instance;
-using CausalModel.Model.ResolvingModelProvider;
+using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model;
+namespace CausalModel.Fixation;
 public class CausalGeneratorBuilder<TFactValue>
 {
     private readonly CausalModel<TFactValue> model;
@@ -20,7 +20,7 @@ public class CausalGeneratorBuilder<TFactValue>
     private readonly int? seed;
 
     public ResolvedModelWithCausesTree<TFactValue>? ResolvedModelProvider
-        { get; private set; }
+    { get; private set; }
 
     public CausalGeneratorBuilder(CausalModel<TFactValue> model, int? seed = null)
     {
