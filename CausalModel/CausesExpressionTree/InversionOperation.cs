@@ -20,7 +20,7 @@ namespace CausalModel.CausesExpressionTree
         public override IEnumerable<ProbabilityFactor> GetEdges() => expression.GetEdges();
 
         public override bool? Evaluate<TFactValue>(
-            IFactProvider<TFactValue> factProvider,
+            IModelProvider<TFactValue> factProvider,
             //IInstanceFactProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
         {

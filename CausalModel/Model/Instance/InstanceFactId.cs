@@ -5,19 +5,30 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Instance;
+
+/// <summary>
+/// The unique identifier of the fact in the resolved causal model.
+/// If the fact is used in several model instances via blocks mechanism,
+/// the id should reference to the actual instance from where we can get it
+/// directly
+/// </summary>
 public class InstanceFactId : IEquatable<InstanceFactId>
 {
     public string FactId { get; }
-    public string CausalInstanceId { get; }
+
+    /// <summary>
+    /// Id of the model instance where the fact is located.
+    /// </summary>
+    public string ModelInstanceId { get; }
     public InstanceFactId(string factId, string causalInstanceId)
     {
         FactId = factId;
-        CausalInstanceId = causalInstanceId;
+        ModelInstanceId = causalInstanceId;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(FactId, CausalInstanceId);
+        return HashCode.Combine(FactId, ModelInstanceId);
     }
 
     public override bool Equals(object? obj)
@@ -33,7 +44,7 @@ public class InstanceFactId : IEquatable<InstanceFactId>
     public bool Equals(InstanceFactId? other)
     {
         if (other == null) return false;
-        return other.CausalInstanceId == CausalInstanceId
+        return other.ModelInstanceId == ModelInstanceId
             && other.FactId == FactId;
     }
 
@@ -49,6 +60,6 @@ public class InstanceFactId : IEquatable<InstanceFactId>
 
     public override string ToString()
     {
-        return $"InstanceId: {CausalInstanceId}, FactId: {FactId}";
+        return $"InstanceId: {ModelInstanceId}, FactId: {FactId}";
     }
 }

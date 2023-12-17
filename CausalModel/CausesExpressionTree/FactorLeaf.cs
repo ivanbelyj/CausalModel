@@ -26,7 +26,7 @@ namespace CausalModel.CausesExpressionTree
         }
 
         public override bool? Evaluate<TFactValue>(
-            IFactProvider<TFactValue> factProvider,
+            IModelProvider<TFactValue> factProvider,
             //IInstanceFactProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
         {
@@ -37,7 +37,7 @@ namespace CausalModel.CausesExpressionTree
             if (Edge.CauseId != null)
             {
                 var causeId = factProvider
-                    .GetInstanceFact(Edge.CauseId)
+                    .GetModelFact(Edge.CauseId)
                     .InstanceFactId;
                 bool? isHappened = happenedProvider.IsFixated(causeId);
                 // Если причина есть, но не зафиксирована

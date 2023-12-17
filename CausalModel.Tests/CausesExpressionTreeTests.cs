@@ -6,7 +6,6 @@ using CausalModel.Facts;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using CausalModel.Model.Blocks;
 using CausalModel.Model.Providers;
 
 namespace CausalModel.Tests

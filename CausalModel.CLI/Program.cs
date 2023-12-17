@@ -8,8 +8,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model.Serialization;
-using CausalModel.Model.Providers;
 using CausalModel.Blocks.Resolving;
+using CausalModel.Model.ResolvingModelProvider;
 
 var rootCommand = new RootCommand
 {
@@ -42,7 +42,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     {
         Console.WriteLine($"Processing file: {input.FullName}");
 
-        ResolvingModelProvider<string> modelProvider = null!;
+        ResolvedModelProvider<string> modelProvider = null!;
         Exception? exceptionToExit = null;
 
         // Todo: blocks resolving CLI support
@@ -135,7 +135,7 @@ static CausalModel.Model.CausalModel<string>? Deserialize(string fileName)
 //    return jsonString;
 //}
 
-static string Generate(ResolvingModelProvider<string> model, int? seed = null)
+static string Generate(ResolvedModelProvider<string> model, int? seed = null)
 {
     if (seed == null)
         seed = new Random().Next();

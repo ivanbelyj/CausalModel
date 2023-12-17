@@ -15,7 +15,7 @@ namespace CausalModel.CausesExpressionTree
     public abstract class CausesExpression
     {
         public abstract bool? Evaluate<TFactValue>(
-            IFactProvider<TFactValue> factProvider,
+            IModelProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider);
 
         /// <summary>

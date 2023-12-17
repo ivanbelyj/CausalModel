@@ -21,4 +21,9 @@ public class InstanceFact<TFactValue>
         Fact = fact;
         InstanceFactId = new InstanceFactId(fact.Id, modelInstanceId);
     }
+
+    public override string ToString()
+    {
+        return Fact.ToString() + " " + InstanceFactId.ToString();
+    }
 }

@@ -1,7 +1,7 @@
 using CausalModel.Fixation;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
-using CausalModel.Model.Providers;
+using CausalModel.Model.ResolvingModelProvider;
 using CausalModel.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -119,10 +119,13 @@ public class CausalModelManager
         Fixator<string> fixator = new();
         fixator.FactFixated += OnFactHappened;
 
-        modelProvider = DemoBuilding
-            .CreateModelProvider(causalModel, DemoBuilding.CreateDemoConventionMap());
+        var generatorBuilder = new CausalGeneratorBuilder<string>(causalModel,
+            seed.Value)
+            .WithFixator(fixator)
+            .WithConventions(DemoBuilding.CreateDemoConventionMap());
 
-        var generator = new CausalGenerator<string>(modelProvider, fixator, seed.Value);
+        var generator = generatorBuilder.Build();
+        this.modelProvider = generatorBuilder.ResolvedModelProvider;
 
         generator.FixateRootCauses();
     }

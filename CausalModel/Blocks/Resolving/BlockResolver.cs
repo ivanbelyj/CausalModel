@@ -1,5 +1,6 @@
 using CausalModel.Facts;
 using CausalModel.Model;
+using CausalModel.Model.Instance;
 using CausalModel.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,9 @@ public class BlockResolver<TFactValue> : BlockResolverBase<TFactValue>
 {
     private readonly BlockResolvingMap<TFactValue> conventionsMap;
 
-    public BlockResolver(BlockResolvingMap<TFactValue> conventionsMap)
+    public BlockResolver(BlockResolvingMap<TFactValue> conventionsMap,
+        ModelInstanceFactory<TFactValue> modelInstanceFactory)
+        : base(modelInstanceFactory)
     {
         this.conventionsMap = conventionsMap;
     }

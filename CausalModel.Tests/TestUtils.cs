@@ -2,7 +2,6 @@
 using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Fixation;
-using CausalModel.Model.Providers;
 using CausalModel.Model;
 using System;
 using System.Collections.Generic;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Blocks.Resolving;
+using CausalModel.Model.ResolvingModelProvider;
 
 namespace CausalModel.Tests;
 internal static class TestUtils
@@ -51,7 +51,7 @@ internal static class TestUtils
         return expression1;
     }
 
-    public static (ResolvingModelProvider<TFactValue> provider,
+    public static (ResolvedModelProvider<TFactValue> provider,
         BlockResolver<TFactValue> resolver) CreateModelProvider<TFactValue>(
         CausalModel<TFactValue> model,
         BlockResolvingMap<TFactValue> conventions)
@@ -73,7 +73,7 @@ internal static class TestUtils
     public static 
         (CausalGenerator<TFactValue> generator,
         Fixator<TFactValue> fixator,
-        ResolvingModelProvider<TFactValue> provider,
+        ResolvedModelProvider<TFactValue> provider,
         BlockResolver<TFactValue> resolver)
         CreateMockGenerator<TFactValue>(List<Fact<TFactValue>>? facts = null)
     {

@@ -4,7 +4,7 @@ using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
-using CausalModel.Model.Providers;
+using CausalModel.Model.ResolvingModelProvider;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,24 +14,30 @@ using System.Threading.Tasks;
 namespace CausalModel.Demo;
 public class DemoBuilding
 {
-    public static ResolvingModelProvider<string> CreateDemoModelProvider()
+    public static ResolvedModelProvider<string> CreateDemoModelProvider()
     {
         return CreateModelProvider(CreateDemoCausalModel(), CreateDemoConventionMap());
     }
 
-    public static ResolvingModelProvider<string> CreateModelProvider(
+    public static ResolvedModelProvider<string> CreateModelProvider(
          CausalModel<string> model, 
          BlockResolvingMap<string> conventions)
     {
-        var resolver = new BlockResolver<string>(conventions);
+        var modelInstanceFactory = new ModelInstanceFactory<string>();
+        modelInstanceFactory.ModelInstanceCreated += (sender, ModelInstance) =>
+        {
+            Console.WriteLine($"// Model instanced: {ModelInstance.InstanceId}");
+        };
+
+        var resolver = new BlockResolver<string>(conventions, modelInstanceFactory);
         resolver.BlockImplemented += (sender, block, convention, implementation) =>
         {
             Console.WriteLine($"// Block implemented: {block.Id}");
         };
 
-        // Todo: should create instance here?
-        return new ResolvingModelProvider<string>(new ModelInstance<string>(model),
-            resolver);
+        var modelInstance = modelInstanceFactory.InstantiateModel(model);
+        
+        return new ResolvedModelProvider<string>(modelInstance, resolver);
     }
 
     public static BlockResolvingMap<string> CreateDemoConventionMap()
@@ -50,7 +56,16 @@ public class DemoBuilding
         var facts = CreateCharacterFacts();
 
         // Required for the declared block
-        facts.Add(FactsBuilding.CreateFact(0.9f, "Block cause", null, "BlockCause"));
+        facts.Add(FactsBuilding.CreateFact(
+            0.9f,
+            value: "Block cause",
+            causeId: null,
+            id: "BlockCause"));
+
+        // Add fact using block consequence
+        facts.Add(FactsBuilding.CreateFact(1f,
+            value: "Fact using block consequence",
+            causeId: "BlockConsequence"));
 
         var causalModel = new CausalModel<string>()
         {
@@ -93,14 +108,19 @@ public class DemoBuilding
         var fact2 = FactsBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
         var impl = new CausalModel<string>()
         {
-            
             Facts = new()
             {
                 fact1,
                 fact2,
                 FactsBuilding.CreateFact(1, "Inner fact 3", null),
-                FactsBuilding.CreateFact(1, "Inner fact 4", fact2.Id,
+                FactsBuilding.CreateFact(1,
+                    "Block consequence (can be used in the parent model)",
+                    fact2.Id,
                     "BlockConsequence"),
+                //FactsBuilding.CreateFact(
+                //    probability: 1,
+                //    value: "! Fact using external cause",
+                //    causeId: "BlockCause"),
             }
         };
         return (conv, impl);
@@ -163,5 +183,4 @@ public class DemoBuilding
 
         return facts;
     }
-
 }

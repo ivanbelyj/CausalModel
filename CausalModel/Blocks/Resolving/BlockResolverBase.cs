@@ -12,7 +12,14 @@ using System.Threading.Tasks;
 namespace CausalModel.Blocks.Resolving;
 public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
 {
+    private readonly ModelInstanceFactory<TFactValue> modelInstanceFactory;
+
     public event BlockImplementedEventHandler<TFactValue>? BlockImplemented;
+
+    public BlockResolverBase(ModelInstanceFactory<TFactValue> modelInstanceFactory)
+    {
+        this.modelInstanceFactory = modelInstanceFactory;
+    }
 
     protected virtual void CheckConvention(BlockConvention convention,
         CausalModel<TFactValue> model, ModelInstance<TFactValue> parent)
@@ -72,7 +79,7 @@ public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
         if (convention != null)
             CheckConvention(convention, model, parentInstance);
 
-        var instance = new ModelInstance<TFactValue>(model);
+        var instance = modelInstanceFactory.InstantiateModel(model);
 
         BlockImplemented?.Invoke(this, block, convention, instance);
         return instance;

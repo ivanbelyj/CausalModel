@@ -32,7 +32,7 @@ namespace CausalModel.CausesExpressionTree
         }
 
         public override bool? Evaluate<TFactValue>(
-            IFactProvider<TFactValue> factProvider,
+            IModelProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
             => Operation(Operands.Select(expr => expr.Evaluate(factProvider,
                 happenedProvider, fixingValueProvider))

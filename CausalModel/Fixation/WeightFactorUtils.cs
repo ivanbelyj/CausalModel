@@ -17,7 +17,7 @@ internal static class WeightFactorUtils
     /// </summary>
     public static float TotalWeight<TFactValue>(IEnumerable<WeightFactor> factors,
         IFixatedProvider fixatedProvider,
-        IFactProvider<TFactValue> factProvider)
+        IModelProvider<TFactValue> factProvider)
         //IResolvedModelProvider<TFactValue> modelProvider)
     {
         if (!factors.Any())
@@ -39,7 +39,7 @@ internal static class WeightFactorUtils
                 // Todo: should it be calculated if some weights are not fixated?
                 bool? isFixated = fixatedProvider
                     .IsFixated(factProvider
-                        .GetInstanceFact(edge.CauseId)
+                        .GetModelFact(edge.CauseId)
                         .InstanceFactId);
                 if (isFixated != null && isFixated.Value)
                 {
@@ -61,7 +61,7 @@ internal static class WeightFactorUtils
         List<InstanceFact<TFactValue>> variants,
         IFixatedProvider fixatedProvider,
         IRandomProvider randomProvider,
-        IFactProvider<TFactValue> factProvider
+        IModelProvider<TFactValue> factProvider
         //IResolvedModelProvider<TFactValue> modelProvider
         )
     {

@@ -4,6 +4,7 @@ using CausalModel.CausesExpressionTree;
 using CausalModel.Model.Providers;
 using CausalModel.Model.Instance;
 using CausalModel.Model;
+using CausalModel.Model.ResolvingModelProvider;
 
 namespace CausalModel.Fixation;
 
@@ -14,15 +15,20 @@ namespace CausalModel.Fixation;
 public class CausalGenerator<TFactValue> : IRandomProvider
 {
     private readonly IResolvedModelProvider<TFactValue> modelProvider;
+    private readonly ICausesTree<TFactValue> causesTree;
+
     private readonly IFixator<TFactValue> fixator;
     private readonly Random random;
 
     public CausalGenerator(
         IResolvedModelProvider<TFactValue> modelProvider,
+        ICausesTree<TFactValue> causesTree,
         IFixator<TFactValue> fixator,
         int? seed = null)
     {
         this.modelProvider = modelProvider;
+        this.causesTree = causesTree;
+
         this.fixator = fixator;
 
         random = seed == null ? new Random() : new Random(seed.Value);
@@ -34,13 +40,13 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         return (float)random.NextDouble(min, max);
     }
 
-    private readonly Dictionary<string, FactProvider<TFactValue>>
+    private readonly Dictionary<string, ModelProvider<TFactValue>>
         factProviderByInstanceId = new();
-    private FactProvider<TFactValue> GetFactProviderByInstanceId(string instanceId)
+    private ModelProvider<TFactValue> GetFactProviderByInstanceId(string instanceId)
     {
         if (!factProviderByInstanceId.ContainsKey(instanceId))
         {
-            var factProvider = new FactProvider<TFactValue>(modelProvider,
+            var factProvider = new ModelProvider<TFactValue>(modelProvider,
                 instanceId);
             factProviderByInstanceId.Add(instanceId, factProvider);
         }
@@ -56,23 +62,17 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         => causesExpression.Evaluate(GetFactProviderByInstanceId(modelInstanceId),
             fixator, this);
 
-    //public void Fixate(string factId, bool? isFactHappened = null)
-    //{
-    //    Fixate(new InstanceFactId(factId, modelProvider.RootModelInstanceId),
-    //        isFactHappened);
-    //}
-
     public void Fixate(InstanceFactId factId, bool? isFactHappened = null)
     {
         InstanceFact<TFactValue> fixatingFact = modelProvider.GetFact(factId);
-        string modelInstanceId = fixatingFact.InstanceFactId.CausalInstanceId;
+        string modelInstanceId = fixatingFact.InstanceFactId.ModelInstanceId;
 
         // If the fact happening is not explicitly specified,
         // the happening is determined based on the causes
         if (isFactHappened == null)
         {
             bool? isFollowingFromCauses = IsFollowingFromCauses(
-                factId.CausalInstanceId,
+                factId.ModelInstanceId,
                 fixatingFact.Fact.CausesExpression);
 
             // The case when there is not enough data (some causes have not been
@@ -85,9 +85,9 @@ public class CausalGenerator<TFactValue> : IRandomProvider
             isFactHappened = isFollowingFromCauses.Value;
         }
 
-        // Для происшествия обычных фактов достаточно как минимум
-        // условия следования из причин
-        // (как максимум - явного задания факта происшествия)
+        // For the happening of ordinary facts, at least
+        // the condition of following from the causes is sufficient
+        // (as the most, an explicit defined the fact of happening)
         if (fixatingFact.Fact.AbstractFactId == null)
         {
             fixator.FixateFact(fixatingFact.InstanceFactId, isFactHappened.Value);
@@ -108,7 +108,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
                 new InstanceFactId(fixatingFact.Fact.AbstractFactId,
                     modelInstanceId));
 
-            var variantsFollowingFromCauses = modelProvider
+            var variantsFollowingFromCauses = causesTree
                 .GetAbstractFactVariants(abstractFact.InstanceFactId)
                 .Select(variant => {
                     bool? canHappen = IsFollowingFromCauses(modelInstanceId,
@@ -118,16 +118,17 @@ public class CausalGenerator<TFactValue> : IRandomProvider
                 .Where(x => x.canHappen != null)
                 .ToList();
 
-            // Если для какого-либо варианта реализации не хватает данных,
-            // выбор единственной реализации откладывается
-            if (variantsFollowingFromCauses.Count < modelProvider
+            // If there is not enough data for any implementation variant,
+            // the selection of a single implementation is postponed
+            if (variantsFollowingFromCauses.Count < causesTree
                 .GetAbstractFactVariants(abstractFact.InstanceFactId)
                 .Count())
             {
                 return;
             }
 
-            // В дальнейшем реализация выбирается лишь из произошедших кандидатов
+            // In the future, the implementation is selected only
+            // from the candidates that have happened
             var variantsCanHappen = variantsFollowingFromCauses
                 .Where(x => x.canHappen == true)
                 .Select(x => x.variant)
@@ -141,8 +142,9 @@ public class CausalGenerator<TFactValue> : IRandomProvider
             foreach (var factVariant in variantsFollowingFromCauses
                 .Select(x => x.variant))
             {
-                // Фиксируем также те варианты, которые не участвовали в выборе,
-                // т.к. заведомо не произойдут
+
+                // Also fixating variants not participated in the selection
+                // because they obviously won't happen
 
                 if (fixator.IsFixated(factVariant.InstanceFactId) == null)
                 {
@@ -157,7 +159,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
 
     private void FixateNotFixatedConsequences(InstanceFact<TFactValue> fixatingFact)
     {
-        var consequences = modelProvider
+        var consequences = causesTree
             .TryGetConsequences(fixatingFact.InstanceFactId);
         if (consequences == null)
             return;
@@ -169,9 +171,16 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         }
     }
 
+    private IEnumerable<InstanceFact<TFactValue>> GetRootFacts()
+    {
+        return modelProvider
+            .GetResolvedFacts()
+            .Where(instanceFact => instanceFact.Fact.IsRootCause());
+    }
+
     public void FixateRootCauses()
     {
-        foreach (var root in modelProvider.GetRootCauses())
+        foreach (var root in GetRootFacts())
         {
             Fixate(root.InstanceFactId);
         }
