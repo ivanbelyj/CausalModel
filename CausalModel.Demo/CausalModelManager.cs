@@ -137,7 +137,7 @@ public class CausalModelManager
     {
         if (isHappened)
         {
-            var fact = modelProvider!.GetFact(fixatedFactId);
+            var fact = modelProvider!.GetFact(fixatedFactId.ToAddress());
 
             var prevColor = Console.ForegroundColor;
 

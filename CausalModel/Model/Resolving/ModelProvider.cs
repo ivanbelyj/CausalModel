@@ -27,17 +27,7 @@ public class ModelProvider<TFactValue> : IModelProvider<TFactValue>
 
     public InstanceFact<TFactValue> GetModelFact(string factId)
     {
-        return resolvedModelProvider.GetFact(new InstanceFactId(factId,
+        return resolvedModelProvider.GetFact(new InstanceFactAddress(factId,
             modelInstanceId));
-    }
-
-    //public IEnumerable<InstanceFact<TFactValue>> TryGetInstanceBlocksConsequences()
-    //{
-    //    return resolvedModelProvider.TryGetInstanceBlocksConsequences(modelInstanceId);
-    //}
-
-    public IEnumerable<InstanceFact<TFactValue>> GetExternalCauses()
-    {
-        return resolvedModelProvider.GetExternalCauses(modelInstanceId);
     }
 }

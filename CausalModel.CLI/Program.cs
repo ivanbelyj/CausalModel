@@ -9,7 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model.Serialization;
 using CausalModel.Blocks.Resolving;
-using CausalModel.Model.Resolving.Providers;
+using CausalModel.Model.Resolving;
+using CausalModel.Model.Instance;
 
 var rootCommand = new RootCommand
 {
@@ -53,7 +54,9 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
                 // Todo:
             }
         };
-        BlockResolver<string> resolver = new BlockResolver<string>(conventions);
+        var modelInstanceFactory = new ModelInstanceFactory<string>();
+        BlockResolver<string> resolver = new BlockResolver<string>(conventions,
+            modelInstanceFactory);
 
         try
         {
@@ -61,7 +64,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
             if (deserializationRes == null)
                 throw new NullReferenceException(input.FullName);
             else
-                modelProvider = new ResolvingModelProvider<string>(deserializationRes,
+                modelProvider = new ResolvedModelProvider<string>(deserializationRes,
                     resolver);
 
         } catch (NullReferenceException ex)

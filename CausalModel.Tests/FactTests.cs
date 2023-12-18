@@ -17,12 +17,12 @@ namespace CausalModel.Tests
         {
             var rootNode = new Fact<string>()
             {
-                CausesExpression = TestUtils.NewCausesExpression(),
+                CausesExpression = TestUtils.CreateRootCausesExpression(),
                 FactValue = "root"
             };
             var notRootNode = new Fact<string>()
             {
-                CausesExpression = TestUtils.NewNotRootCausesExpression(),
+                CausesExpression = TestUtils.CreateNotRootCausesExpression(),
                 FactValue = "not root"
             };
 
@@ -37,11 +37,11 @@ namespace CausalModel.Tests
 
             var edges = new ProbabilityFactor[TEST_SIZE];
             for (int i = 0; i < TEST_SIZE; i++)
-                edges[i] = TestUtils.NewTrueFactor();
+                edges[i] = TestUtils.CreateTrueFactor();
 
             var or = Expressions.Or(edges);
             var and = Expressions.And(edges);
-            var not = Expressions.Not(TestUtils.NewFalseFactor());
+            var not = Expressions.Not(TestUtils.CreateFalseFactor());
 
             var expr = Expressions.Or(or, and, not);
 

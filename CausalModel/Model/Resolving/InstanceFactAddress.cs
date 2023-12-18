@@ -23,4 +23,9 @@ public class InstanceFactAddress
     {
         return HashCode.Combine(FactId, ModelInstanceId);
     }
+
+    public override string ToString()
+    {
+        return $"InstanceId: {ModelInstanceId}, FactId: {FactId}";
+    }
 }

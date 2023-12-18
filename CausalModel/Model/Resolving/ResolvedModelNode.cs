@@ -8,25 +8,30 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Resolving;
-internal class RootModelDecorator<TFactValue>
+internal class ResolvedModelNode<TFactValue>
 {
     private readonly ModelInstance<TFactValue> modelInstance;
     private readonly IBlockResolver<TFactValue> resolver;
     private readonly CachingDecorator<TFactValue> cachingDecorator;
 
-    private readonly RootModelDecorator<TFactValue>? parent;
+    private readonly IEnumerable<ResolvedModelNode<TFactValue>>? blocks;
+    private readonly ResolvedModelNode<TFactValue>? parent;
 
-    public RootModelDecorator(
+    public ResolvedModelNode(
         ModelInstance<TFactValue> modelInstance,
         IBlockResolver<TFactValue> resolver,
-        RootModelDecorator<TFactValue>? parent = null)
+        IEnumerable<ResolvedModelNode<TFactValue>>? blocks,
+        ResolvedModelNode<TFactValue>? parent = null)
 	{
         this.modelInstance = modelInstance;
         this.resolver = resolver;
+        this.blocks = blocks;
         this.parent = parent;
 
         cachingDecorator = new CachingDecorator<TFactValue>(modelInstance.Model);
     }
+
+    public string ModelInstanceId => modelInstance.InstanceId;
 
     public bool IsOwn(string modelInstanceId)
     {
@@ -82,14 +87,39 @@ internal class RootModelDecorator<TFactValue>
         return modelFacts;
     }
 
-    public IEnumerable<InstanceFact<TFactValue>> GetExternalCauses()
+    public IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses()
     {
-        if (parent == null)
-            throw new InvalidOperationException("Provider without parent "
-                + "cannot provide external causes.");
+        //if (parent == null)
+        //    throw new InvalidOperationException("Provider without parent "
+        //        + "cannot provide external causes.");
 
-        return cachingDecorator
+        if (parent == null)
+            return null;
+
+        IEnumerable<InstanceFact<TFactValue>> factsFromParent = cachingDecorator
             .ExternalCauseIds
-            .Select(parent.GetFact);
+            .Select(parent.TryGetFact)
+            .Where(parentFact => parentFact != null)!;
+
+        //var blockConsequenceIds = modelInstance
+        //    .Model
+        //    .BlockConventions
+        //    ?.SelectMany(x => x.Consequences ?? new List<BaseFact>())
+        //    .Select(x => x.Id);
+
+        List<InstanceFact<TFactValue>> factsFromBlocks = new();
+        if (blocks != null)
+        {
+            foreach (var block in blocks)
+            {
+                factsFromBlocks.AddRange(cachingDecorator
+                    .ExternalCauseIds
+                    .SelectMany(externalId =>
+                        blocks.Select(block => block.TryGetFact(externalId)))
+                    .Where(fact => fact != null)!);
+            }
+        }
+
+        return factsFromParent.Concat(factsFromBlocks);
     }
 }

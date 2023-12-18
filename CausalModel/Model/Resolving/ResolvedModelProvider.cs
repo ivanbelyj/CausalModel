@@ -5,28 +5,38 @@ using CausalModel.Model.Instance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Resolving;
-public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactValue>
+public partial class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactValue>
 {
-    private readonly RootModelDecorator<TFactValue> rootModel;
+    private readonly ResolvedModelNode<TFactValue> rootModel;
     private readonly IBlockResolver<TFactValue> blockResolver;
 
+    // Todo: remove Lazy ?
     private readonly Lazy<Dictionary<string, ResolvedModelProvider<TFactValue>>>
         resolvedBlocksByInstanceId;
+
+    private readonly InstanceFactAddressResolver addressResolver;
 
     protected ResolvedModelProvider(ModelInstance<TFactValue> modelInstance,
         IBlockResolver<TFactValue> blockResolver,
         ResolvedModelProvider<TFactValue>? parent)
     {
-        rootModel = new RootModelDecorator<TFactValue>(modelInstance,
-            blockResolver, parent?.rootModel);
-
         this.blockResolver = blockResolver;
 
+        rootModel = new ResolvedModelNode<TFactValue>(
+            modelInstance,
+            blockResolver,
+            resolvedBlocksByInstanceId
+                ?.Value
+                .Values
+                .Select(x => x.rootModel),
+            parent?.rootModel);
         resolvedBlocksByInstanceId = new(GetResolvedBlocksByInstanceIds);
+        addressResolver = new InstanceFactAddressResolver(this);
     }
 
     public ResolvedModelProvider(ModelInstance<TFactValue> modelInstance,
@@ -34,6 +44,26 @@ public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactVal
         : this(modelInstance, blockResolver, null)
     {
 
+    }
+
+    private readonly Dictionary<string, ModelProvider<TFactValue>>
+        modelProviderByInstanceId = new();
+
+    public IModelProvider<TFactValue> GetModelProvider(string modelInstanceId)
+    {
+        if (!modelProviderByInstanceId.ContainsKey(modelInstanceId))
+        {
+            var factProvider = new ModelProvider<TFactValue>(this,
+                modelInstanceId);
+            modelProviderByInstanceId.Add(modelInstanceId, factProvider);
+        }
+
+        return modelProviderByInstanceId[modelInstanceId];
+    }
+
+    public IModelProvider<TFactValue> GetRootModelProvider()
+    {
+        return GetModelProvider(rootModel.ModelInstanceId);
     }
 
     /// <summary>
@@ -64,11 +94,17 @@ public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactVal
         return new ResolvedModelProvider<TFactValue>(resolvedBlock, blockResolver);
     }
 
-    public InstanceFact<TFactValue> GetFact(InstanceFactId id)
+    private InstanceFactId ResolveAddress(InstanceFactAddress address)
     {
-        var res = TryGetFact(id);
+        return addressResolver.Resolve(address);
+    }
+
+    public InstanceFact<TFactValue> GetFact(InstanceFactAddress address)
+    {
+        var res = TryGetFact(address);
         if (res == null)
-            throw new InvalidOperationException($"Fact (id: {id}) was not found.");
+            throw new InvalidOperationException($"Fact  was not found " +
+                $"by address ({address}).");
         return res;
     }
 
@@ -89,8 +125,10 @@ public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactVal
             .Concat(rootModel.GetInstanceFacts());
     }
 
-    public InstanceFact<TFactValue>? TryGetFact(InstanceFactId id)
+    public InstanceFact<TFactValue>? TryGetFact(InstanceFactAddress address)
     {
+        var id = ResolveAddress(address);
+
         var provider = GetInstanceProvider(id.ModelInstanceId);
         return provider.rootModel.TryGetFact(id.FactId);
     }
@@ -106,10 +144,10 @@ public class ResolvedModelProvider<TFactValue> : IResolvedModelProvider<TFactVal
         }
     }
 
-    public IEnumerable<InstanceFact<TFactValue>> GetExternalCauses(
+    public IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses(
         string modelInstanceId)
     {
         var provider = GetInstanceProvider(modelInstanceId);
-        return provider.rootModel.GetExternalCauses();
+        return provider.rootModel.TryGetExternalCauses();
     }
 }

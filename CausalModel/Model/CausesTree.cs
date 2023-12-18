@@ -27,6 +27,8 @@ public class CausesTree<TFactValue> : ICausesTree<TFactValue>
     {
         AddVariants(modelProvider);
         AddCausesAndConsequences(modelProvider);
+
+        Console.WriteLine("> > Model added to CausesTree");
     }
 
     private void AddVariants(IModelProvider<TFactValue> modelProvider)
@@ -74,38 +76,19 @@ public class CausesTree<TFactValue> : ICausesTree<TFactValue>
         InstanceFact<TFactValue> consequence,
         IModelProvider<TFactValue> modelProvider)
     {
-        InstanceFact<TFactValue>? causeFact = null;
-        InstanceFact<TFactValue>? causeFromInstance = modelProvider
-            .GetInstanceFact(causeLocalId);
+        // Todo: is it correct getting ?
+        InstanceFact<TFactValue> causeFact = modelProvider
+            .GetModelFact(consequence.Fact.Id);
 
-        if (causeFromInstance != null)
+        InstanceFactId causeFactId = causeFact.InstanceFactId;
+        if (!ConsequencesByCauseIds.ContainsKey(causeFactId))
         {
-            causeFact = causeFromInstance;
+            ConsequencesByCauseIds.Add(causeFactId,
+                new List<InstanceFact<TFactValue>>() { consequence });
         }
-        // If there is an external cause with a suitable id
-        else if (causeFromInstance == null)
+        else
         {
-            var externalCauses = modelProvider.GetExternalCauses();
-            var externalCause = externalCauses
-                .FirstOrDefault(x => x.InstanceFactId.FactId == causeLocalId);
-
-            if (externalCause != null)
-                causeFact = externalCause;
-        }
-
-
-        if (causeFact != null)
-        {
-            InstanceFactId causeFactId = causeFact.InstanceFactId;
-            if (!ConsequencesByCauseIds.ContainsKey(causeFactId))
-            {
-                ConsequencesByCauseIds.Add(causeFactId,
-                    new List<InstanceFact<TFactValue>>() { consequence });
-            }
-            else
-            {
-                ConsequencesByCauseIds[causeFactId].Add(consequence);
-            }
+            ConsequencesByCauseIds[causeFactId].Add(consequence);
         }
     }
 

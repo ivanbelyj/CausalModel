@@ -1,3 +1,4 @@
+using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,5 +62,10 @@ public class InstanceFactId : IEquatable<InstanceFactId>
     public override string ToString()
     {
         return $"InstanceId: {ModelInstanceId}, FactId: {FactId}";
+    }
+
+    public InstanceFactAddress ToAddress()
+    {
+        return new InstanceFactAddress(FactId, ModelInstanceId);
     }
 }

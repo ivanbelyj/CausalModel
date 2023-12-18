@@ -12,65 +12,62 @@ using System.Threading.Tasks;
 namespace CausalModel.Fixation;
 public class CausalGeneratorBuilder<TFactValue>
 {
-    private readonly CausalModel<TFactValue> model;
-    private BlockResolvingMap<TFactValue>? conventions;
-    private ModelInstanceFactory<TFactValue>? modelInstanceFactory;
-    private BlockResolver<TFactValue>? blockResolver;
-    private Fixator<TFactValue>? fixator;
-    private readonly int? seed;
+    public CausalModel<TFactValue> Model { get; private set; }
+    public BlockResolvingMap<TFactValue> Conventions { get; private set; } = new();
+    public ModelInstanceFactory<TFactValue> ModelInstanceFactory
+        { get; private set; } = new();
+    public BlockResolver<TFactValue>? BlockResolver { get; private set; }
+    public Fixator<TFactValue> Fixator { get; private set; } = new();
+    public int? Seed { get; private set; }
 
     public ResolvedModelWithCausesTree<TFactValue>? ResolvedModelProvider
     { get; private set; }
 
     public CausalGeneratorBuilder(CausalModel<TFactValue> model, int? seed = null)
     {
-        this.model = model;
-        this.seed = seed;
+        this.Model = model;
+        this.Seed = seed;
     }
 
     public CausalGeneratorBuilder<TFactValue> WithConventions(
         BlockResolvingMap<TFactValue> conventions)
     {
-        this.conventions = conventions;
+        this.Conventions = conventions;
         return this;
     }
 
     public CausalGeneratorBuilder<TFactValue> WithModelInstanceFactory(
         ModelInstanceFactory<TFactValue> modelInstanceFactory)
     {
-        this.modelInstanceFactory = modelInstanceFactory;
+        this.ModelInstanceFactory = modelInstanceFactory;
         return this;
     }
 
     public CausalGeneratorBuilder<TFactValue> WithBlockResolver(
         BlockResolver<TFactValue> blockResolver)
     {
-        this.blockResolver = blockResolver;
+        this.BlockResolver = blockResolver;
         return this;
     }
 
     public CausalGeneratorBuilder<TFactValue> WithFixator(
         Fixator<TFactValue> fixator)
     {
-        this.fixator = fixator;
+        this.Fixator = fixator;
         return this;
     }
 
     public CausalGenerator<TFactValue> Build()
     {
-        var modelInstanceFactory = this.modelInstanceFactory
-            ?? new ModelInstanceFactory<TFactValue>();
-        var blockResolver = this.blockResolver ?? new BlockResolver<TFactValue>(
-            conventions ?? new BlockResolvingMap<TFactValue>(),
-            modelInstanceFactory);
-        var modelInstance = modelInstanceFactory.InstantiateModel(model);
+        this.BlockResolver ??= new BlockResolver<TFactValue>(
+            Conventions,
+            ModelInstanceFactory);
+        var modelInstance = ModelInstanceFactory.InstantiateModel(Model);
 
         ResolvedModelProvider = new ResolvedModelWithCausesTree<TFactValue>(
-            modelInstance, blockResolver);
-
-        fixator ??= new Fixator<TFactValue>();
+            modelInstance, BlockResolver);
 
         return new CausalGenerator<TFactValue>(ResolvedModelProvider,
-            ResolvedModelProvider.CausesTree, fixator, seed);
+            ResolvedModelProvider.CausesTree, Fixator, Seed);
     }
 }

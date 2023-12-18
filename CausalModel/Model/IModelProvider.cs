@@ -28,34 +28,4 @@ public interface IModelProvider<TFactValue>
     /// nor external required causes
     /// </summary>
     IEnumerable<InstanceFact<TFactValue>> GetInstanceFacts();
-
-    InstanceFact<TFactValue> GetInstanceFact(string factId)
-    {
-        return GetInstanceFacts().First(x => x.InstanceFactId.FactId == factId);
-    }
-
-    ///// <summary>
-    ///// Gets direct blocks consequences
-    ///// </summary>
-    //IEnumerable<InstanceFact<TFactValue>>? TryGetInstanceBlocksConsequences();
-
-    IEnumerable<InstanceFact<TFactValue>> GetExternalCauses();
-
-    ///// <summary>
-    ///// Gets instance facts and direct blocks consequences
-    ///// </summary>
-    ///// <returns></returns>
-    //IEnumerable<InstanceFact<TFactValue>> GetModelFacts()
-    //{
-    //    var res = GetInstanceFacts();
-    //    var consequences = TryGetInstanceBlocksConsequences();
-    //    //var causes = TryGetExternalCauses();
-
-    //    if (consequences != null)
-    //        res = res.Concat(consequences);
-    //    //if (causes != null)
-    //    //    res = res.Concat(causes);
-
-    //    return res;
-    //}
 }

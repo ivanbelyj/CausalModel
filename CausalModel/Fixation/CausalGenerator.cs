@@ -39,32 +39,19 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         return (float)random.NextDouble(min, max);
     }
 
-    private readonly Dictionary<string, ModelProvider<TFactValue>>
-        factProviderByInstanceId = new();
-    private ModelProvider<TFactValue> GetFactProviderByInstanceId(string instanceId)
-    {
-        if (!factProviderByInstanceId.ContainsKey(instanceId))
-        {
-            var factProvider = new ModelProvider<TFactValue>(modelProvider,
-                instanceId);
-            factProviderByInstanceId.Add(instanceId, factProvider);
-        }
-
-        return factProviderByInstanceId[instanceId];
-    }
-
     /// <summary>
     /// Not null, if the causes are determined to evaluate the result
     /// </summary>
     private bool? IsFollowingFromCauses(string modelInstanceId,
         CausesExpression causesExpression)
-        => causesExpression.Evaluate(GetFactProviderByInstanceId(modelInstanceId),
+        => causesExpression.Evaluate(modelProvider.GetModelProvider(modelInstanceId),
             fixator, this);
 
-    public void Fixate(InstanceFactId factId, bool? isFactHappened = null)
+    public void Fixate(InstanceFactAddress address, bool? isFactHappened = null)
     {
-        InstanceFact<TFactValue> fixatingFact = modelProvider.GetFact(factId);
+        InstanceFact<TFactValue> fixatingFact = modelProvider.GetFact(address);
         string modelInstanceId = fixatingFact.InstanceFactId.ModelInstanceId;
+        InstanceFactId factId = fixatingFact.InstanceFactId;
 
         // If the fact happening is not explicitly specified,
         // the happening is determined based on the causes
@@ -104,7 +91,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
             // implementations are all from the same model instance
 
             var abstractFact = modelProvider.GetFact(
-                new InstanceFactId(fixatingFact.Fact.AbstractFactId,
+                new InstanceFactAddress(fixatingFact.Fact.AbstractFactId,
                     modelInstanceId));
 
             var variantsFollowingFromCauses = causesTree
@@ -137,7 +124,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
 
             var selectedVariant = WeightFactorUtils.SelectFactVariant(
                 variantsCanHappen, fixator, this,
-                GetFactProviderByInstanceId(modelInstanceId));
+                modelProvider.GetModelProvider(modelInstanceId));
             foreach (var factVariant in variantsFollowingFromCauses
                 .Select(x => x.variant))
             {
@@ -166,7 +153,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         foreach (var consequence in consequences)
         {
             if (fixator.IsFixated(consequence.InstanceFactId) == null)
-                Fixate(consequence.InstanceFactId);
+                Fixate(consequence.InstanceFactId.ToAddress());
         }
     }
 
@@ -181,7 +168,7 @@ public class CausalGenerator<TFactValue> : IRandomProvider
     {
         foreach (var root in GetRootFacts())
         {
-            Fixate(root.InstanceFactId);
+            Fixate(root.InstanceFactId.ToAddress());
         }
     }
 }

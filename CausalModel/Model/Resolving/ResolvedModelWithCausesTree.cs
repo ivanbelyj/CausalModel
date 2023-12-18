@@ -18,6 +18,9 @@ public class ResolvedModelWithCausesTree<TFactValue>
         : base(modelInstance, blockResolver, parent)
     {
         CausesTree = causesTree;
+
+        CausesTree.AddModel(new ModelProvider<TFactValue>(this,
+            modelInstance.InstanceId));
     }
 
     public ResolvedModelWithCausesTree(ModelInstance<TFactValue> modelInstance,
@@ -33,8 +36,11 @@ public class ResolvedModelWithCausesTree<TFactValue>
     {
         var res = new ResolvedModelWithCausesTree<TFactValue>(
             resolvedBlock, blockResolver, CausesTree, this);
-        CausesTree.AddModel(new ModelProvider<TFactValue>(res,
-            resolvedBlock.InstanceId));
+
+        // Todo: is it necessary ?
+        //CausesTree.AddModel(new ModelProvider<TFactValue>(res,
+        //    resolvedBlock.InstanceId));
+
         return res;
     }
 }

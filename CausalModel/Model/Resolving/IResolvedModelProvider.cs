@@ -15,16 +15,11 @@ namespace CausalModel.Model.Resolving;
 /// </summary>
 public interface IResolvedModelProvider<TFactValue>
 {
-    InstanceFact<TFactValue> GetFact(InstanceFactId id);
-    InstanceFact<TFactValue>? TryGetFact(InstanceFactId id);
+    InstanceFact<TFactValue> GetFact(InstanceFactAddress address);
+    InstanceFact<TFactValue>? TryGetFact(InstanceFactAddress address);
     IEnumerable<InstanceFact<TFactValue>> GetInstanceFacts(string modelInstanceId);
     IEnumerable<InstanceFact<TFactValue>> GetResolvedFacts();
-
-    //IEnumerable<InstanceFact<TFactValue>> GetRootFacts();
-
-    IEnumerable<InstanceFact<TFactValue>> GetExternalCauses(
+    IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses(
         string modelInstanceId);
-
-    //IEnumerable<InstanceFact<TFactValue>> TryGetInstanceBlocksConsequences(
-    //    string modelInstanceId);
+    IModelProvider<TFactValue> GetModelProvider(string modeInstanceId);
 }
