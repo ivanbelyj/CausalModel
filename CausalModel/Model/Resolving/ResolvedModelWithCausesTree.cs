@@ -30,7 +30,7 @@ public class ResolvedModelWithCausesTree<TFactValue>
 
     }
 
-    protected override ResolvedModelProvider<TFactValue> CreateResolvedBlock(
+    public override ResolvedModelProvider<TFactValue> CreateResolvedBlock(
         ModelInstance<TFactValue> resolvedBlock,
         IBlockResolver<TFactValue> blockResolver)
     {

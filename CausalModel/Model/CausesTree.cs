@@ -76,9 +76,7 @@ public class CausesTree<TFactValue> : ICausesTree<TFactValue>
         InstanceFact<TFactValue> consequence,
         IModelProvider<TFactValue> modelProvider)
     {
-        // Todo: is it correct getting ?
-        InstanceFact<TFactValue> causeFact = modelProvider
-            .GetModelFact(consequence.Fact.Id);
+        InstanceFact<TFactValue> causeFact = modelProvider.GetModelFact(causeLocalId);
 
         InstanceFactId causeFactId = causeFact.InstanceFactId;
         if (!ConsequencesByCauseIds.ContainsKey(causeFactId))

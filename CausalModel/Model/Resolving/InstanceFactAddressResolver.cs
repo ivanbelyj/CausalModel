@@ -40,7 +40,7 @@ partial class ResolvedModelProvider<TFactValue>
             if (externalIds != null)
             {
                 var externalCause = externalIds
-                .FirstOrDefault(fact => fact.Fact.Id == address.FactId);
+                    .FirstOrDefault(fact => fact.Fact.Id == address.FactId);
 
                 if (externalCause != null)
                     return externalCause.InstanceFactId;
