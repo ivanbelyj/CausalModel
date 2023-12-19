@@ -7,21 +7,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model;
+
+/// <summary>
+/// Represents given models as a tree that allows to traverse from causes
+/// to consequences
+/// </summary>
 public class CausesTree<TFactValue> : ICausesTree<TFactValue>
 {
-    //private readonly IModelProvider<TFactValue> modelProvider;
-
     public Dictionary<InstanceFactId, List<InstanceFact<TFactValue>>>
         ConsequencesByCauseIds { get; private set; } = new();
     public Dictionary<InstanceFactId, List<InstanceFact<TFactValue>>>
         VariantsByAbstractFactIds { get; private set; } = new();
-
-    public CausesTree()
-    {
-        //this.modelProvider = modelProvider;
-
-        //Initialize();
-    }
 
     public void AddModel(IModelProvider<TFactValue> modelProvider)
     {

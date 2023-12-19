@@ -17,17 +17,11 @@ public class CachingDecorator<TFactValue>
 
     public Dictionary<string, Fact<TFactValue>> FactsById
         { get; private set; } = new();
-    //public HashSet<Fact<TFactValue>> RootFacts { get; private set; } = new();
 
     public HashSet<string> ExternalCauseIds { get; private set; } = new();
 
-    //private readonly IModelProvider<TFactValue> modelProvider;
-
     public CachingDecorator(CausalModel<TFactValue> model)
-        //IModelProvider<TFactValue> modelProvider)
     {
-        //this.modelProvider = modelProvider;
-
         this.model = model;
 
         Initialize(this.model);
@@ -35,18 +29,10 @@ public class CachingDecorator<TFactValue>
 
     private void Initialize(CausalModel<TFactValue> model)
     {
-        //var consequences = (modelProvider.TryGetInstanceBlocksConsequences()
-        //    ?? new List<InstanceFact<TFactValue>>());
-
-        // Facts dictionary and roots set
+        // Facts dictionary
         foreach (Fact<TFactValue> fact in model.Facts)
-            //.GetInstanceFacts()
-            //.Concat(consequences))
         {
             FactsById.Add(fact.Id, fact);
-
-            //if (fact.IsRootCause())
-            //    RootFacts.Add(fact);
         }
 
         // External causes
@@ -54,9 +40,6 @@ public class CachingDecorator<TFactValue>
             .Facts
             .SelectMany(fact => fact.GetCauses())
             .Select(factor => factor.CauseId))
-            //.GetInstanceFacts()
-            //.SelectMany(fact => fact.Fact.GetCauses())
-            //.Select(factor => factor.CauseId))
         {
             if (cause != null
                 && !FactsById.ContainsKey(cause)

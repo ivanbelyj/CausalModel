@@ -6,6 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model;
+
+/// <summary>
+/// Providing data that allows to traverse from causes to consequences
+/// (and also information about abstract facts and their implementations)
+/// </summary>
 public interface ICausesTree<TFactValue>
 {
     IEnumerable<InstanceFact<TFactValue>> GetAbstractFactVariants(

@@ -14,6 +14,8 @@ namespace CausalModel.Model;
 /// </summary>
 public class CausalModel<TFactValue>
 {
+    public string? Name { get; set; }
+
     /// <summary>
     /// The facts of the causal model except for children
     /// </summary>

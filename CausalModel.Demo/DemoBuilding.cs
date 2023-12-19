@@ -14,32 +14,6 @@ using System.Threading.Tasks;
 namespace CausalModel.Demo;
 public class DemoBuilding
 {
-    public static ResolvedModelProvider<string> CreateDemoModelProvider()
-    {
-        return CreateModelProvider(CreateDemoCausalModel(), CreateDemoConventionMap());
-    }
-
-    public static ResolvedModelProvider<string> CreateModelProvider(
-         CausalModel<string> model, 
-         BlockResolvingMap<string> conventions)
-    {
-        var modelInstanceFactory = new ModelInstanceFactory<string>();
-        modelInstanceFactory.ModelInstanceCreated += (sender, ModelInstance) =>
-        {
-            Console.WriteLine($"// Model instanced: {ModelInstance.InstanceId}");
-        };
-
-        var resolver = new BlockResolver<string>(conventions, modelInstanceFactory);
-        resolver.BlockImplemented += (sender, block, convention, implementation) =>
-        {
-            Console.WriteLine($"// Block implemented: {block.Id}");
-        };
-
-        var modelInstance = modelInstanceFactory.InstantiateModel(model);
-        
-        return new ResolvedModelProvider<string>(modelInstance, resolver);
-    }
-
     public static BlockResolvingMap<string> CreateDemoConventionMap()
     {
         return new BlockResolvingMap<string>()
@@ -79,6 +53,7 @@ public class DemoBuilding
                 new DeclaredBlock("block1", "TestConvention")
             }
         };
+        causalModel.Name = "Character Model";
         return causalModel;
     }
 
@@ -117,12 +92,13 @@ public class DemoBuilding
                     "Block consequence (can be used in the parent model)",
                     fact2.Id,
                     "BlockConsequence"),
-                //FactsBuilding.CreateFact(
-                //    probability: 1,
-                //    value: "! Fact using external cause",
-                //    causeId: "BlockCause"),
+                FactsBuilding.CreateFact(
+                    probability: 1,
+                    value: "! Fact using external cause",
+                    causeId: "BlockCause"),
             }
         };
+        impl.Name = "Test model (used as block)";
         return (conv, impl);
     }
 

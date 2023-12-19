@@ -19,10 +19,14 @@ public partial class ResolvedModelProvider<TFactValue> :
     private readonly InstanceFactAddressResolver addressResolver;
     private readonly BlockResolvingHandler<TFactValue> blockResolvingHandler;
 
+    private readonly ResolvedModelProvider<TFactValue>? parent;
+
     protected ResolvedModelProvider(ModelInstance<TFactValue> modelInstance,
         IBlockResolver<TFactValue> blockResolver,
         ResolvedModelProvider<TFactValue>? parent)
     {
+        this.parent = parent;
+
         blockResolvingHandler = new BlockResolvingHandler<TFactValue>(
             blockResolver,
             modelInstance,
@@ -79,7 +83,7 @@ public partial class ResolvedModelProvider<TFactValue> :
     {
         var res = TryGetFact(address);
         if (res == null)
-            throw new InvalidOperationException($"Fact  was not found " +
+            throw new InvalidOperationException($"Fact was not found " +
                 $"by address ({address}).");
         return res;
     }
@@ -103,8 +107,12 @@ public partial class ResolvedModelProvider<TFactValue> :
     {
         var id = ResolveAddress(address);
 
-        var provider = GetInstanceProvider(id.ModelInstanceId);
-        return provider.rootModel.TryGetFact(id.FactId);
+        var provider = TryGetInstanceProvider(id.ModelInstanceId);
+        var fact = provider?.rootModel.TryGetFact(id.FactId);
+
+        //// Trying to get the fact from the parent
+        //fact ??= this.parent?.rootModel.TryGetFact(id.FactId);
+        return fact;
     }
 
     public InstanceFact<TFactValue>? TryGetFactInRootInstance(string factId)
@@ -112,21 +120,36 @@ public partial class ResolvedModelProvider<TFactValue> :
         return rootModel.TryGetFact(factId);
     }
 
-    private ResolvedModelProvider<TFactValue> GetInstanceProvider(
+    private ResolvedModelProvider<TFactValue>? TryGetInstanceProvider(
         string modelInstanceId)
     {
         if (rootModel.ModelInstanceId == modelInstanceId)
             return this;
+        else if (parent != null &&
+            parent.rootModel.ModelInstanceId == modelInstanceId)
+        {
+            return parent;
+        }
         else
         {
-            return blockResolvingHandler.GetResolvedBlock(modelInstanceId);
+            return blockResolvingHandler.TryGetResolvedBlock(modelInstanceId);
         }
     }
 
-    public IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses(
+    private ResolvedModelProvider<TFactValue> GetInstanceProvider(
         string modelInstanceId)
     {
-        var provider = GetInstanceProvider(modelInstanceId);
-        return provider.rootModel.TryGetExternalCauses();
+        var res = TryGetInstanceProvider(modelInstanceId);
+        if (res == null)
+            throw new InvalidOperationException($"Resolved model instance provider " +
+                $"(instance id: {modelInstanceId}) was not found.");
+        return res;
     }
+
+    //public IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses(
+    //    string modelInstanceId)
+    //{
+    //    var provider = TryGetInstanceProvider(modelInstanceId);
+    //    return provider?.rootModel.TryGetExternalCauses();
+    //}
 }

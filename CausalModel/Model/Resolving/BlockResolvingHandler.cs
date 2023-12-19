@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 namespace CausalModel.Model.Resolving;
 internal class BlockResolvingHandler<TFactValue>
 {
-    //private readonly IEnumerable<ResolvedModelNode<TFactValue>>? blocks;
     private readonly IBlockResolver<TFactValue> blockResolver;
     private readonly ModelInstance<TFactValue> modelInstance;
     private readonly IResolvedModelProviderFactory<TFactValue>
@@ -24,7 +23,6 @@ internal class BlockResolvingHandler<TFactValue>
     public BlockResolvingHandler(
         IBlockResolver<TFactValue> blockResolver,
         ModelInstance<TFactValue> modelInstance,
-        //IEnumerable<ResolvedModelNode<TFactValue>>? blocks
         IResolvedModelProviderFactory<TFactValue> resolvedModelProviderFactory
         )
 	{
@@ -32,7 +30,6 @@ internal class BlockResolvingHandler<TFactValue>
         this.modelInstance = modelInstance;
         this.resolvedModelProviderFactory = resolvedModelProviderFactory;
         resolvedBlocksByInstanceId = new(GetResolvedBlocksByInstanceIds);
-        //this.blocks = blocks;
     }
 
     /// <summary>
@@ -56,9 +53,11 @@ internal class BlockResolvingHandler<TFactValue>
         return resolvedBlocks;
     }
 
-    public ResolvedModelProvider<TFactValue> GetResolvedBlock(string modelInstanceId)
+    public ResolvedModelProvider<TFactValue>? TryGetResolvedBlock(
+        string modelInstanceId)
     {
-        return resolvedBlocksByInstanceId.Value[modelInstanceId];
+        resolvedBlocksByInstanceId.Value.TryGetValue(modelInstanceId, out var res);
+        return res;
     }
 
     /// <summary>

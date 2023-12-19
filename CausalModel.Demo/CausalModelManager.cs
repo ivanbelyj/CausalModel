@@ -1,3 +1,4 @@
+using CausalModel.Blocks.Resolving;
 using CausalModel.Fixation;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
@@ -119,10 +120,26 @@ public class CausalModelManager
         Fixator<string> fixator = new();
         fixator.FactFixated += OnFactHappened;
 
+        var modelInstanceFactory = new ModelInstanceFactory<string>();
+        modelInstanceFactory.ModelInstanceCreated += (sender, ModelInstance) =>
+        {
+            Console.WriteLine($"// Model instanced: {ModelInstance.Model.Name} " +
+                $"{ModelInstance.InstanceId}");
+        };
+
+        var conventions = DemoBuilding.CreateDemoConventionMap();
+        var resolver = new BlockResolver<string>(conventions, modelInstanceFactory);
+        resolver.BlockImplemented += (sender, block, convention, implementation) =>
+        {
+            Console.WriteLine($"// Block implemented: {block.Id}");
+        };
+
         var generatorBuilder = new CausalGeneratorBuilder<string>(causalModel,
             seed.Value)
             .WithFixator(fixator)
-            .WithConventions(DemoBuilding.CreateDemoConventionMap());
+            .WithConventions(conventions)
+            .WithBlockResolver(resolver)
+            .WithModelInstanceFactory(modelInstanceFactory);
 
         var generator = generatorBuilder.Build();
         this.modelProvider = generatorBuilder.ResolvedModelProvider;

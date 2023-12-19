@@ -10,6 +10,9 @@ namespace CausalModel.Model.Resolving;
 
 partial class ResolvedModelProvider<TFactValue>
 {
+    /// <summary>
+    /// Resolving InstanceFactAddress to actual unique InstanceFactId
+    /// </summary>
     internal class InstanceFactAddressResolver
     {
         private readonly ResolvedModelProvider<TFactValue> resolvedModelProvider;

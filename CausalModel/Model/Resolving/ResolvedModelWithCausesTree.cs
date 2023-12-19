@@ -7,6 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Model.Resolving;
+
+/// <summary>
+/// A component resolving blocks of the causal model and providing causes tree based
+/// on it
+/// </summary>
 public class ResolvedModelWithCausesTree<TFactValue>
     : ResolvedModelProvider<TFactValue>
 {
@@ -36,10 +41,6 @@ public class ResolvedModelWithCausesTree<TFactValue>
     {
         var res = new ResolvedModelWithCausesTree<TFactValue>(
             resolvedBlock, blockResolver, CausesTree, this);
-
-        // Todo: is it necessary ?
-        //CausesTree.AddModel(new ModelProvider<TFactValue>(res,
-        //    resolvedBlock.InstanceId));
 
         return res;
     }

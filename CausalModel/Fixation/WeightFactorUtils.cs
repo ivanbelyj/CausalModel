@@ -60,9 +60,7 @@ internal static class WeightFactorUtils
         List<InstanceFact<TFactValue>> variants,
         IFixatedProvider fixatedProvider,
         IRandomProvider randomProvider,
-        IModelProvider<TFactValue> factProvider
-        //IResolvedModelProvider<TFactValue> modelProvider
-        )
+        IModelProvider<TFactValue> factProvider)
     {
         const float EPSILON = 0.000001f;
 
@@ -71,8 +69,9 @@ internal static class WeightFactorUtils
         float weightsSum = 0;
         foreach (var fact in variants)
         {
-            float totalWeight = WeightFactorUtils.TotalWeight(fact.Fact.Weights!,
-                fixatedProvider, factProvider);
+            float totalWeight = fact.Fact.Weights != null ?
+                TotalWeight(fact.Fact.Weights, fixatedProvider, factProvider)
+                : 0;
             if (totalWeight >= EPSILON)
             {
                 factsAndWeights.Add((fact, totalWeight));
