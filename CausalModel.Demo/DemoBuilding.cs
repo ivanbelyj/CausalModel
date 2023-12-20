@@ -25,38 +25,6 @@ public class DemoBuilding
         };
     }
 
-    public static CausalModel<string> CreateDemoCausalModel()
-    {
-        var facts = CreateCharacterFacts();
-
-        // Required for the declared block
-        facts.Add(FactsBuilding.CreateFact(
-            0.9f,
-            value: "Block cause",
-            causeId: null,
-            id: "BlockCause"));
-
-        // Add fact using block consequence
-        facts.Add(FactsBuilding.CreateFact(1f,
-            value: "Fact using block consequence",
-            causeId: "BlockConsequence"));
-
-        var causalModel = new CausalModel<string>()
-        {
-            Facts = facts,
-            BlockConventions = new List<BlockConvention>()
-            {
-                CreateConventionAndImplementation().convention
-            },
-            Blocks = new List<DeclaredBlock>()
-            {
-                new DeclaredBlock("block1", "TestConvention")
-            }
-        };
-        causalModel.Name = "Character Model";
-        return causalModel;
-    }
-
     private static (BlockConvention convention, CausalModel<string> model)
         CreateConventionAndImplementation()
     {
@@ -100,6 +68,38 @@ public class DemoBuilding
         };
         impl.Name = "Test model (used as block)";
         return (conv, impl);
+    }
+
+    public static CausalModel<string> CreateDemoCausalModel()
+    {
+        var facts = CreateCharacterFacts();
+
+        // Required for the declared block
+        facts.Add(FactsBuilding.CreateFact(
+            0.9f,
+            value: "Block cause",
+            causeId: null,
+            id: "BlockCause"));
+
+        // Add fact using block consequence
+        facts.Add(FactsBuilding.CreateFact(1f,
+            value: "Fact using block consequence",
+            causeId: "BlockConsequence"));
+
+        var causalModel = new CausalModel<string>()
+        {
+            Facts = facts,
+            BlockConventions = new List<BlockConvention>()
+            {
+                CreateConventionAndImplementation().convention
+            },
+            Blocks = new List<DeclaredBlock>()
+            {
+                new DeclaredBlock("block1", "TestConvention")
+            }
+        };
+        causalModel.Name = "Character Model";
+        return causalModel;
     }
 
     private static List<Fact<string>> CreateCharacterFacts()

@@ -4,6 +4,7 @@ using CausalModel.Model;
 using CausalModel.Model.Instance;
 using CausalModel.Model.Resolving;
 using CausalModel.Model.Serialization;
+using CausalModel.MonteCarlo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,7 +82,8 @@ public class CausalModelManager
         while (true)
         {
             Console.WriteLine();
-            Console.WriteLine("Press Enter to generate, Space to specify a seed"
+            Console.WriteLine("Press Enter to generate, Space to specify a seed,"
+                + " Tab to run Monte-Carlo simulation "
                 + " or something else to exit");
             var key = Console.ReadKey(false);
             if (key.Key == ConsoleKey.Enter)
@@ -102,6 +104,9 @@ public class CausalModelManager
                     Console.WriteLine("Integer expected");
                 }
 
+            } else if (key.Key == ConsoleKey.Tab)
+            {
+                RunMonteCarloSimulation(causalModel);
             }
             else
             {
@@ -117,37 +122,44 @@ public class CausalModelManager
 
         Console.WriteLine("Seed: " + seed);
 
-        Fixator<string> fixator = new();
-        fixator.FactFixated += OnFactHappened;
+        var facadeBuilder = new FixationFacadeBuilder<string>(causalModel)
+            .AddOnFactFixated(OnFactFixated)
+            .WithConventions(DemoBuilding.CreateDemoConventionMap())
+            .AddOnBlockImplemented((sender, block, convention, implementation) =>
+            {
+                Console.WriteLine($"// Block implemented: {block.Id}");
+            })
+            .AddOnModelInstanceCreated((sender, ModelInstance) =>
+            {
+                Console.WriteLine($"// Model instanced: {ModelInstance.Model.Name} " +
+                    $"{ModelInstance.InstanceId}");
+            });
 
-        var modelInstanceFactory = new ModelInstanceFactory<string>();
-        modelInstanceFactory.ModelInstanceCreated += (sender, ModelInstance) =>
-        {
-            Console.WriteLine($"// Model instanced: {ModelInstance.Model.Name} " +
-                $"{ModelInstance.InstanceId}");
-        };
+        var fixationFacade = facadeBuilder.Build();
+        modelProvider = fixationFacade.ResolvedModelProvider;
 
-        var conventions = DemoBuilding.CreateDemoConventionMap();
-        var resolver = new BlockResolver<string>(conventions, modelInstanceFactory);
-        resolver.BlockImplemented += (sender, block, convention, implementation) =>
-        {
-            Console.WriteLine($"// Block implemented: {block.Id}");
-        };
-
-        var generatorBuilder = new CausalGeneratorBuilder<string>(causalModel,
-            seed.Value)
-            .WithFixator(fixator)
-            .WithConventions(conventions)
-            .WithBlockResolver(resolver)
-            .WithModelInstanceFactory(modelInstanceFactory);
-
-        var generator = generatorBuilder.Build();
-        this.modelProvider = generatorBuilder.ResolvedModelProvider;
-
-        generator.FixateRootCauses();
+        fixationFacade.Generator.FixateRootCauses();
     }
 
-    private void OnFactHappened(
+    private void RunMonteCarloSimulation(CausalModel<string> causalModel)
+    {
+        var facadeBuilder = new FixationFacadeBuilder<string>(causalModel)
+            //.AddOnFactFixated(OnFactFixated)
+            .WithConventions(DemoBuilding.CreateDemoConventionMap());
+        SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
+
+        Console.WriteLine("\nRunning Monte-Carlo simulation...");
+        var totalResult = simulationsRunner.RunSimulations(1000);
+
+        var prevColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("\nSimulation completed.");
+        Console.ForegroundColor = prevColor;
+
+        Console.WriteLine(totalResult);
+    }
+
+    private void OnFactFixated(
         object sender,
         InstanceFactId fixatedFactId,
         bool isHappened)

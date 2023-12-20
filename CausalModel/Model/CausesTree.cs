@@ -23,8 +23,6 @@ public class CausesTree<TFactValue> : ICausesTree<TFactValue>
     {
         AddVariants(modelProvider);
         AddCausesAndConsequences(modelProvider);
-
-        Console.WriteLine("> > Model added to CausesTree");
     }
 
     private void AddVariants(IModelProvider<TFactValue> modelProvider)

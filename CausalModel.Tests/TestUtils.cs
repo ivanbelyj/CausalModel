@@ -81,7 +81,7 @@ internal static class TestUtils
         if (facts != null)
             model.Facts = facts;
 
-        var builder = new CausalGeneratorBuilder<TFactValue>(model);
+        var builder = new FixationFacadeBuilder<TFactValue>(model);
         var gen = builder.Build();
 
         return (gen,

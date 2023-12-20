@@ -68,4 +68,9 @@ public class InstanceFactId : IEquatable<InstanceFactId>
     {
         return new InstanceFactAddress(FactId, ModelInstanceId);
     }
+
+    public static implicit operator InstanceFactAddress(InstanceFactId id)
+    {
+        return id.ToAddress();
+    }
 }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CausalModel.Fixation;
 public class Fixator<TFactValue> : IFixator<TFactValue>
 {
-    private readonly Dictionary<InstanceFactId, bool> factIdsFixated = new();
+    private Dictionary<InstanceFactId, bool> factIdsFixated = new();
 
     public event FactFixatedEventHandler<TFactValue>? FactFixated;
 
@@ -23,5 +23,10 @@ public class Fixator<TFactValue> : IFixator<TFactValue>
     {
         factIdsFixated[factId] = isHappened;
         FactFixated?.Invoke(this, factId, isHappened);
+    }
+
+    public void Reset()
+    {
+        factIdsFixated = new();
     }
 }

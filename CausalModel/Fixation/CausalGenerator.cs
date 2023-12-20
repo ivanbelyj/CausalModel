@@ -17,6 +17,8 @@ public class CausalGenerator<TFactValue> : IRandomProvider
     private readonly ICausesTree<TFactValue> causesTree;
 
     private readonly IFixator<TFactValue> fixator;
+    //public IFixator<TFactValue> Fixator => fixator;
+
     private readonly Random random;
 
     public CausalGenerator(

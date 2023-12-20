@@ -13,13 +13,13 @@ public delegate void ModelInstanceCreatedEventHandler<TFactValue>(
 
 public class ModelInstanceFactory<TFactValue>
 {
-    public event ModelInstanceCreatedEventHandler<TFactValue>? ModelInstanceCreated;
+    public event ModelInstanceCreatedEventHandler<TFactValue>? ModelInstantiated;
 
     public ModelInstance<TFactValue> InstantiateModel(
         CausalModel<TFactValue> model)
     {
         var res = new ModelInstance<TFactValue>(model);
-        ModelInstanceCreated?.Invoke(this, res);
+        ModelInstantiated?.Invoke(this, res);
         return res;
     }
 }
