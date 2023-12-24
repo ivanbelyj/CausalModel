@@ -1,5 +1,5 @@
 using CausalModel.Fixation;
-using CausalModel.MonteCarlo.Simulation;
+using CausalModel.Running.Simulation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.MonteCarlo;
+namespace CausalModel.Running;
 public class SimulationsRunner<TFactValue>
 {
     private readonly IFixationFacadeFactory<TFactValue> generatorFactory;
+    private readonly Random random = new();
 
     public SimulationsRunner(IFixationFacadeFactory<TFactValue> generatorFactory)
 	{
@@ -39,6 +40,6 @@ public class SimulationsRunner<TFactValue>
     {
         var fixationFacade = generatorFactory.Create();
         Simulation<TFactValue> simulation = new(fixationFacade);
-        return simulation.Run();
+        return simulation.Run(random.Next());
     }
 }

@@ -11,41 +11,61 @@ using System.Threading.Tasks;
 namespace CausalModel.Fixation;
 public class FixationFacade<TFactValue>
 {
-    public CausalModel<TFactValue> MainModel { get; private set; }
-    public int? Seed { get; private set; }
-    public BlockResolvingMap<TFactValue> Conventions { get; private set; } = new();
-    public ModelInstanceFactory<TFactValue> ModelInstanceFactory { get; private set; }
-        = new();
+    public CausalModel<TFactValue> MainModel { get; }
+    //public ModelInstance<TFactValue> MainModelInstance { get; private set; }
+    public BlockResolvingMap<TFactValue> Conventions { get; }
+    public ModelInstanceFactory<TFactValue> ModelInstanceFactory { get; }
 
-    public IBlockResolver<TFactValue> BlockResolver { get; private set; }
-    public IFixator<TFactValue> Fixator { get; private set; }
+    public IBlockResolver<TFactValue> BlockResolver { get; }
+    public IFixator<TFactValue> Fixator { get; }
 
-    public IResolvedModelProvider<TFactValue> ResolvedModelProvider
-        { get; private set; }
-    public CausalGenerator<TFactValue> Generator { get; private set; }
+    //public IResolvedModelProvider<TFactValue> ResolvedModelProvider
+    //    { get; private set; }
+    //public CausalGenerator<TFactValue> Generator { get; private set; }
 
     public FixationFacade(
         CausalModel<TFactValue> mainModel,
-        int? seed,
+        //ModelInstance<TFactValue> mainModelInstance,
         BlockResolvingMap<TFactValue> conventions,
+        ModelInstanceFactory<TFactValue> modelInstanceFactory,
 
         IBlockResolver<TFactValue> blockResolver,
-        IFixator<TFactValue> fixator,
+        IFixator<TFactValue> fixator
         
-        IResolvedModelProvider<TFactValue> resolvedModelProvider,
-        ICausesTree<TFactValue> causesTree)
+        //IResolvedModelProvider<TFactValue> resolvedModelProvider,
+        //CausesTree<TFactValue> causesTree
+        )
     {
         MainModel = mainModel;
-        Seed = seed;
+        //MainModelInstance = mainModelInstance;
         Conventions = conventions;
-        ModelInstanceFactory = new();
+        ModelInstanceFactory = modelInstanceFactory;
+
+        // Todo: make it work
+        //ModelInstanceFactory.ModelInstantiated += (sender, model) =>
+        //{
+        //    Console.WriteLine("!!!model instantiated (callback added" +
+        //        "in the facade constructor)");
+        //};
 
         BlockResolver = blockResolver;
         Fixator = fixator;
 
-        ResolvedModelProvider = resolvedModelProvider;
+        //ResolvedModelProvider = resolvedModelProvider;
 
-        Generator = new CausalGenerator<TFactValue>(resolvedModelProvider,
-            causesTree, fixator, Seed);
+        //Generator = new CausalGenerator<TFactValue>(resolvedModelProvider,
+        //    causesTree, fixator, Seed);
+    }
+
+    public CausalGenerator<TFactValue> CreateGenerator(int? seed = null)
+    {
+        var mainModelInstance = ModelInstanceFactory.InstantiateModel(MainModel);
+
+        var resolvedModelProvider = new ResolvedModelWithCausesTree<TFactValue>(
+            mainModelInstance, BlockResolver);
+
+        var generator = new CausalGenerator<TFactValue>(resolvedModelProvider,
+            resolvedModelProvider.CausesTree, Fixator, seed);
+        return generator;
     }
 }

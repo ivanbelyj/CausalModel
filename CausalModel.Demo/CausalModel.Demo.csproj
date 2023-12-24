@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CausalModel.MonteCarlo\CausalModel.MonteCarlo.csproj" />
+    <ProjectReference Include="..\CausalModel.Running\CausalModel.Running.csproj" />
     <ProjectReference Include="..\CausalModel\CausalModel.csproj" />
   </ItemGroup>
 

@@ -12,11 +12,10 @@ using System.Threading.Tasks;
 namespace CausalModel.Fixation;
 public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactValue>
 {
-    private CausalModel<TFactValue>? Model { get; set; }
-    public int? Seed { get; private set; }
+    private CausalModel<TFactValue>? MainModel { get; set; }
     private BlockResolvingMap<TFactValue>? Conventions { get; set; }
 
-    public ModelInstanceFactory<TFactValue>? ModelInstanceFactory { get; set; }
+    private ModelInstanceFactory<TFactValue>? ModelInstanceFactory { get; set; }
     private ModelInstanceCreatedEventHandler<TFactValue>? onModelInstanceCreated;
 
     private BlockResolver<TFactValue>? BlockResolver { get; set; }
@@ -27,10 +26,9 @@ public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactVal
 
     public FixationFacadeBuilder() { }
 
-    public FixationFacadeBuilder(CausalModel<TFactValue> model, int? seed = null)
+    public FixationFacadeBuilder(CausalModel<TFactValue> mainModel)
     {
-        this.Model = model;
-        this.Seed = seed;
+        this.MainModel = mainModel;
     }
 
     public FixationFacadeBuilder<TFactValue> WithConventions(
@@ -91,7 +89,7 @@ public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactVal
 
     public FixationFacade<TFactValue> Build()
     {
-        if (Model == null)
+        if (MainModel == null)
             throw new InvalidOperationException("Main causal model is required " +
                 "for fixation facade building.");
 
@@ -109,10 +107,10 @@ public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactVal
             conventions,
             modelInstanceFactory);
 
-        var modelInstance = modelInstanceFactory.InstantiateModel(Model);
+        //var mainModelInstance = modelInstanceFactory.InstantiateModel(MainModel);
 
-        var resolvedModelProvider = new ResolvedModelWithCausesTree<TFactValue>(
-            modelInstance, blockResolver);
+        //var resolvedModelProvider = new ResolvedModelWithCausesTree<TFactValue>(
+        //    mainModelInstance, blockResolver);
 
         var fixator = Fixator ?? new();
         if (onFactFixated != null)
@@ -121,13 +119,12 @@ public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactVal
             fixator.FactFixated += onFactFixated;
         }
 
-        var res = new FixationFacade<TFactValue>(Model,
-            Seed,
+        var res = new FixationFacade<TFactValue>(
+            MainModel,
             conventions,
+            modelInstanceFactory,
             blockResolver,
-            fixator,
-            resolvedModelProvider,
-            resolvedModelProvider.CausesTree);
+            fixator);
         return res;
     }
 

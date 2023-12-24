@@ -7,13 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.MonteCarlo.Simulation;
+namespace CausalModel.Running.Simulation;
 public class Simulation<TFactValue>
 {
     private readonly FixationFacade<TFactValue> fixation;
-    private readonly Dictionary<string, ModelInstance<TFactValue>> modelsByInstanceId
-        = new();
-
+    private CausalGenerator<TFactValue>? generator;
     private readonly SimulationResultBuilder<TFactValue> resultBuilder;
 
     public Simulation(FixationFacade<TFactValue> fixation)
@@ -28,7 +26,7 @@ public class Simulation<TFactValue>
     private void OnModelInstantiated(object sender,
         ModelInstance<TFactValue> modelInstance)
     {
-        modelsByInstanceId.Add(modelInstance.InstanceId, modelInstance);
+        resultBuilder.AddModelInstantiated(modelInstance);
     }
 
     private void OnFactFixated(
@@ -36,18 +34,20 @@ public class Simulation<TFactValue>
         InstanceFactId fixatedFactId,
         bool isHappened)
     {
-        var fact = fixation.ResolvedModelProvider.GetFact(fixatedFactId);
-        resultBuilder.AddFact(fact);
+        var fact = generator!.ModelProvider.GetFact(fixatedFactId);
+        resultBuilder.AddFact(fact, isHappened);
     }
 
-    public SimulationResult Run()
+    public SimulationResult Run(int? seed = null)
     {
+        generator = fixation.CreateGenerator(seed);
+
         Stopwatch stopwatch = Stopwatch.StartNew();
-        fixation.Generator.FixateRootCauses();
+        generator.FixateRootCauses();
         stopwatch.Stop();
 
-        var res = resultBuilder.Build();
-        res.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+        var res = resultBuilder
+            .Build(stopwatch.ElapsedMilliseconds);
 
         return res;
     }

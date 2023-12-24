@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CausalModel.Model.Resolving;
 internal interface IResolvedModelProviderFactory<TFactValue>
 {
-    ResolvedModelProvider<TFactValue> CreateResolvedBlock(
-        ModelInstance<TFactValue> resolvedBlock,
+    ResolvedModelProvider<TFactValue> CreateResolvedModel(
+        ModelInstance<TFactValue> modelInstance,
         IBlockResolver<TFactValue> blockResolver);
 }

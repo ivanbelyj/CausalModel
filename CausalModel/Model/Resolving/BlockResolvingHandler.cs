@@ -46,7 +46,7 @@ internal class BlockResolvingHandler<TFactValue>
         foreach (var resolvedBlock in resolvedBlocksList)
         {
             var resolvedModelProvider = resolvedModelProviderFactory
-                .CreateResolvedBlock(resolvedBlock, blockResolver);
+                .CreateResolvedModel(resolvedBlock, blockResolver);
             resolvedBlocks.Add(resolvedBlock.InstanceId, resolvedModelProvider);
         }
 
@@ -77,4 +77,3 @@ internal class BlockResolvingHandler<TFactValue>
         return res;
     }
 }
-

@@ -15,17 +15,29 @@ namespace CausalModel.Model.Resolving;
 public class ResolvedModelWithCausesTree<TFactValue>
     : ResolvedModelProvider<TFactValue>
 {
-    public CausesTree<TFactValue> CausesTree { get; }
+    private readonly ModelProvider<TFactValue> initialModelProvider;
+    public CausesTree<TFactValue> CausesTree
+    {
+        get; private set;
+    }
 
     private ResolvedModelWithCausesTree(ModelInstance<TFactValue> modelInstance,
-        IBlockResolver<TFactValue> blockResolver, CausesTree<TFactValue> causesTree,
+        IBlockResolver<TFactValue> blockResolver,
+        CausesTree<TFactValue> causesTree,
         ResolvedModelWithCausesTree<TFactValue>? parent)
         : base(modelInstance, blockResolver, parent)
     {
         CausesTree = causesTree;
 
-        CausesTree.AddModel(new ModelProvider<TFactValue>(this,
-            modelInstance.InstanceId));
+        initialModelProvider = new ModelProvider<TFactValue>(this,
+            modelInstance.InstanceId);
+
+        InitCausesTree();
+    }
+
+    private void InitCausesTree()
+    {
+        CausesTree.AddModel(initialModelProvider);
     }
 
     public ResolvedModelWithCausesTree(ModelInstance<TFactValue> modelInstance,
@@ -35,7 +47,7 @@ public class ResolvedModelWithCausesTree<TFactValue>
 
     }
 
-    public override ResolvedModelProvider<TFactValue> CreateResolvedBlock(
+    public override ResolvedModelProvider<TFactValue> CreateResolvedModel(
         ModelInstance<TFactValue> resolvedBlock,
         IBlockResolver<TFactValue> blockResolver)
     {

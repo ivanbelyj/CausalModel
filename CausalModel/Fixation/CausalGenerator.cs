@@ -14,6 +14,9 @@ namespace CausalModel.Fixation;
 public class CausalGenerator<TFactValue> : IRandomProvider
 {
     private readonly IResolvedModelProvider<TFactValue> modelProvider;
+
+    public IResolvedModelProvider<TFactValue> ModelProvider => modelProvider;
+
     private readonly ICausesTree<TFactValue> causesTree;
 
     private readonly IFixator<TFactValue> fixator;
@@ -85,12 +88,6 @@ public class CausalGenerator<TFactValue> : IRandomProvider
         else
         {
             // Fixation of the abstract fact implementation variants
-
-            // Todo: causal models integration via block.Causes
-            // and block.Consequences
-
-            // In the current implementation the abstract fact and its
-            // implementations are all from the same model instance
 
             var abstractFact = modelProvider.GetFact(
                 new InstanceFactAddress(fixatingFact.Fact.AbstractFactId,

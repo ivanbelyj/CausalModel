@@ -21,7 +21,8 @@ public partial class ResolvedModelProvider<TFactValue> :
 
     private readonly ResolvedModelProvider<TFactValue>? parent;
 
-    protected ResolvedModelProvider(ModelInstance<TFactValue> modelInstance,
+    protected ResolvedModelProvider(
+        ModelInstance<TFactValue> modelInstance,
         IBlockResolver<TFactValue> blockResolver,
         ResolvedModelProvider<TFactValue>? parent)
     {
@@ -67,7 +68,7 @@ public partial class ResolvedModelProvider<TFactValue> :
         return GetModelProvider(rootModel.ModelInstanceId);
     }
 
-    public virtual ResolvedModelProvider<TFactValue> CreateResolvedBlock(
+    public virtual ResolvedModelProvider<TFactValue> CreateResolvedModel(
         ModelInstance<TFactValue> resolvedBlock,
         IBlockResolver<TFactValue> blockResolver)
     {

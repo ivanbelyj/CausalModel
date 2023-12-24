@@ -4,7 +4,7 @@ using CausalModel.Model;
 using CausalModel.Model.Instance;
 using CausalModel.Model.Resolving;
 using CausalModel.Model.Serialization;
-using CausalModel.MonteCarlo;
+using CausalModel.Running;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ public class CausalModelManager
 
     private CausalModel<string>? causalModel;
 
-    private IResolvedModelProvider<string>? modelProvider;
+    private CausalGenerator<string>? generator;
 
     public CausalModelManager()
     {
@@ -136,9 +136,9 @@ public class CausalModelManager
             });
 
         var fixationFacade = facadeBuilder.Build();
-        modelProvider = fixationFacade.ResolvedModelProvider;
+        generator = fixationFacade.CreateGenerator();
 
-        fixationFacade.Generator.FixateRootCauses();
+        generator.FixateRootCauses();
     }
 
     private void RunMonteCarloSimulation(CausalModel<string> causalModel)
@@ -149,7 +149,7 @@ public class CausalModelManager
         SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
 
         Console.WriteLine("\nRunning Monte-Carlo simulation...");
-        var totalResult = simulationsRunner.RunSimulations(1000);
+        var totalResult = simulationsRunner.RunSimulations(10000);
 
         var prevColor = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
@@ -166,7 +166,7 @@ public class CausalModelManager
     {
         if (isHappened)
         {
-            var fact = modelProvider!.GetFact(fixatedFactId.ToAddress());
+            var fact = generator!.ModelProvider.GetFact(fixatedFactId.ToAddress());
 
             var prevColor = Console.ForegroundColor;
 
