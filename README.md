@@ -4,7 +4,7 @@ A structure for representing possible states of a causal entity (such as plot, g
 
 Previous deprecated project - https://github.com/ivanbelyj/CausalGeneration
 
-## What is a Causal model ?
+## What is Causal model ?
 Data structure with related concepts developed for using in different projects, mainly in the tasks of simulation and procedural generation. It is called Causal model, but it takes inspiration from different things and most of all it resembles decision trees.
 In fact, the Causal model is a directed acyclic graph, the nodes of which represent some facts, events or properties of the entity being modelled, and the edges represent causal relationships.
 
