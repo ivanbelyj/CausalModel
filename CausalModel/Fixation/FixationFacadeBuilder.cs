@@ -13,7 +13,7 @@ namespace CausalModel.Fixation;
 public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactValue>
 {
     private CausalModel<TFactValue>? MainModel { get; set; }
-    private BlockResolvingMap<TFactValue>? Conventions { get; set; }
+    private BlockResolvingMap<TFactValue>? ResolvingMap { get; set; }
 
     private ModelInstanceFactory<TFactValue>? ModelInstanceFactory { get; set; }
     private ModelInstanceCreatedEventHandler<TFactValue>? onModelInstanceCreated;
@@ -31,10 +31,10 @@ public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactVal
         this.MainModel = mainModel;
     }
 
-    public FixationFacadeBuilder<TFactValue> WithConventions(
-        BlockResolvingMap<TFactValue> conventions)
+    public FixationFacadeBuilder<TFactValue> WithResolvingMap(
+        BlockResolvingMap<TFactValue> resolvingMap)
     {
-        this.Conventions = conventions;
+        this.ResolvingMap = resolvingMap;
         return this;
     }
 
@@ -101,7 +101,7 @@ public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactVal
             modelInstanceFactory.ModelInstantiated += onModelInstanceCreated;
         }
 
-        var conventions = Conventions ?? new();
+        var conventions = ResolvingMap ?? new();
 
         var blockResolver = BlockResolver ?? new BlockResolver<TFactValue>(
             conventions,

@@ -6,8 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Running;
-public class TotalResultBuilder
+public class SimulationsTotalResultBuilder
 {
+    private int simulationsCount = 0;
     private readonly List<long> simulationTimesMs = new();
 
     private readonly Dictionary<string, Dictionary<string, int>> modelFactCounts = new();
@@ -15,6 +16,8 @@ public class TotalResultBuilder
 
     public void AddSimulationResult(SimulationResult simulationResult)
     {
+        simulationsCount++;
+
         simulationTimesMs.Add(simulationResult.ElapsedMilliseconds);
 
         foreach (var (modelName, countsByFactId) in simulationResult
@@ -62,10 +65,11 @@ public class TotalResultBuilder
         return res;
     }
 
-    public TotalResult Build()
+    public SimulationsTotalResult Build()
     {
-        return new TotalResult()
+        return new SimulationsTotalResult()
         {
+            SimulationsCount = simulationsCount,
             MinTimeMilliseconds = simulationTimesMs.Min(),
             MaxTimeMilliseconds = simulationTimesMs.Max(),
             AverageTimeMilliseconds = simulationTimesMs.Average(),

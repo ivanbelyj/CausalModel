@@ -8,5 +8,5 @@ using CausalModel.Model;
 
 string fileName = UserInteraction.GetFileName();
 CausalModelManager manager = new CausalModelManager();
-manager.SetCausalModel(fileName);
+manager.Init(fileName);
 manager.RunModel();

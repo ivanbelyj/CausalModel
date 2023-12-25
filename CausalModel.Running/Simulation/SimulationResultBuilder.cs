@@ -16,11 +16,10 @@ public class SimulationResultBuilder<TFactValue>
 
     public void AddModelInstantiated(ModelInstance<TFactValue> modelInstance)
     {
-        string? modelName = modelInstance.Model.Name;
-        if (modelName == null)
-            throw new ArgumentException($"Causal model name" +
-                $" (id: {modelInstance.InstanceId})" +
-                $" should be set for Monte-Carlo simulation.");
+        string modelName = modelInstance.Model.Name ?? throw new ArgumentException(
+            $"Causal model name" +
+            $" (id: {modelInstance.InstanceId})" +
+            $" should be set for Monte-Carlo simulation.");
 
         if (!modelsByInstanceId.ContainsKey(modelInstance.InstanceId))
             modelsByInstanceId.Add(modelInstance.InstanceId, modelInstance);

@@ -21,6 +21,8 @@ public class Simulation<TFactValue>
 
         fixation.ModelInstanceFactory.ModelInstantiated += OnModelInstantiated;
         fixation.Fixator.FactFixated += OnFactFixated;
+
+        // Todo: add data about not fixated facts ?
     }
 
     private void OnModelInstantiated(object sender,

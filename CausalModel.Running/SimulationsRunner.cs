@@ -18,10 +18,10 @@ public class SimulationsRunner<TFactValue>
         this.generatorFactory = generatorFactory;
     }
 
-    public TotalResult RunSimulations(int count = 1000)
+    public SimulationsTotalResult RunSimulations(int count = 1000)
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
-        TotalResultBuilder totalResBuilder = new();
+        SimulationsTotalResultBuilder totalResBuilder = new();
 
         for (int i = 0; i < count; i++)
         {

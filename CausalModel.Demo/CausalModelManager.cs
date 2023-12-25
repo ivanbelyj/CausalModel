@@ -18,6 +18,7 @@ public class CausalModelManager
     private readonly FileHandler fileHandler;
 
     private CausalModel<string>? causalModel;
+    private BlockResolvingMap<string>? blockResolvingMap;
 
     private CausalGenerator<string>? generator;
 
@@ -26,28 +27,25 @@ public class CausalModelManager
         fileHandler = new FileHandler();
     }
 
-    public CausalModel<string> SetCausalModel(string fileName)
+    public void Init(string fileName)
     {
         try
         {
-            causalModel = DeserializeModel(fileName);
+            SetModelAndResolvingMap(fileName);
         }
         catch (Exception ex)
         {
             UserInteraction.PrintErrorMessage(
-            "An error occured during the model opening.", ex);
+                "An error occured during the model opening.", ex);
 
             Console.ReadKey(false);
 
             throw;
         }
-
-        return causalModel;
     }
 
-    private CausalModel<string> DeserializeModel(string fileName)
+    private void SetModelAndResolvingMap(string fileName)
     {
-        CausalModel<string> causalModel;
         if (/*!CREATE_FILE && */ File.Exists(fileName))
         {
             Console.WriteLine("Found " + fileName);
@@ -67,11 +65,12 @@ public class CausalModelManager
 
             causalModel = DemoBuilding.CreateDemoCausalModel();
 
-
             fileHandler.Serialize(causalModel, fileName);
             Console.WriteLine("Data used for generation saved to " + fileName);
         }
-        return causalModel;
+
+        // Todo: get it from file ?
+        blockResolvingMap = DemoBuilding.CreateDemoConventionMap();
     }
 
     public void RunModel()
@@ -89,7 +88,7 @@ public class CausalModelManager
             if (key.Key == ConsoleKey.Enter)
             {
                 Console.WriteLine();
-                Generate(causalModel);
+                Generate();
             }
             else if (key.Key == ConsoleKey.Spacebar)
             {
@@ -97,7 +96,7 @@ public class CausalModelManager
                 Console.WriteLine("\nEnter seed (integer)");
                 try
                 {
-                    Generate(causalModel, int.Parse(Console.ReadLine()!));
+                    Generate(int.Parse(Console.ReadLine()!));
                 }
                 catch (FormatException)
                 {
@@ -106,7 +105,7 @@ public class CausalModelManager
 
             } else if (key.Key == ConsoleKey.Tab)
             {
-                RunMonteCarloSimulation(causalModel);
+                RunMonteCarloSimulation();
             }
             else
             {
@@ -116,15 +115,19 @@ public class CausalModelManager
         }
     }
 
-    private void Generate(CausalModel<string> causalModel, int? seed = null)
+    private void Generate(int? seed = null)
     {
+        if (causalModel == null || blockResolvingMap == null)
+            throw new InvalidOperationException("Causal model or resolving map "
+                + "is null. Cannot generate");
+
         seed ??= new Random().Next();
 
         Console.WriteLine("Seed: " + seed);
 
         var facadeBuilder = new FixationFacadeBuilder<string>(causalModel)
             .AddOnFactFixated(OnFactFixated)
-            .WithConventions(DemoBuilding.CreateDemoConventionMap())
+            .WithResolvingMap(blockResolvingMap)
             .AddOnBlockImplemented((sender, block, convention, implementation) =>
             {
                 Console.WriteLine($"// Block implemented: {block.Id}");
@@ -141,22 +144,25 @@ public class CausalModelManager
         generator.FixateRootCauses();
     }
 
-    private void RunMonteCarloSimulation(CausalModel<string> causalModel)
+    private void RunMonteCarloSimulation()
     {
+        if (causalModel == null || blockResolvingMap == null)
+            throw new InvalidOperationException("Causal model or resolving map "
+                + "is null. Cannot run Monte-Carlo simulation");
+
         var facadeBuilder = new FixationFacadeBuilder<string>(causalModel)
-            //.AddOnFactFixated(OnFactFixated)
-            .WithConventions(DemoBuilding.CreateDemoConventionMap());
+            .WithResolvingMap(blockResolvingMap);
         SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
 
         Console.WriteLine("\nRunning Monte-Carlo simulation...");
-        var totalResult = simulationsRunner.RunSimulations(10000);
+        var totalResult = simulationsRunner.RunSimulations(1000);
 
         var prevColor = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("\nSimulation completed.");
+        Console.WriteLine("\n\nSimulation completed.\n");
         Console.ForegroundColor = prevColor;
 
-        Console.WriteLine(totalResult);
+        Console.WriteLine(totalResult.ToString(causalModel, blockResolvingMap));
     }
 
     private void OnFactFixated(

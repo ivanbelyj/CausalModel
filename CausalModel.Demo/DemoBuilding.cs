@@ -20,13 +20,12 @@ public class DemoBuilding
         {
             ModelsByConventionName = new Dictionary<string, CausalModel<string>>()
             {
-                { "TestConvention", CreateConventionAndImplementation().model }
+                { "TestConvention", CreateDemoConventionImplementation() }
             }
         };
     }
 
-    private static (BlockConvention convention, CausalModel<string> model)
-        CreateConventionAndImplementation()
+    private static BlockConvention CreateDemoConvention()
     {
         var conv = new BlockConvention("TestConvention")
         {
@@ -47,6 +46,11 @@ public class DemoBuilding
                 }
         };
 
+        return conv;
+    }
+
+    private static CausalModel<string> CreateDemoConventionImplementation()
+    {
         var fact1 = FactsBuilding.CreateFact(1, "Inner fact 1", null);
         var fact2 = FactsBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
         var impl = new CausalModel<string>()
@@ -67,7 +71,7 @@ public class DemoBuilding
             }
         };
         impl.Name = "Test model (used as block)";
-        return (conv, impl);
+        return impl;
     }
 
     public static CausalModel<string> CreateDemoCausalModel()
@@ -91,7 +95,7 @@ public class DemoBuilding
             Facts = facts,
             BlockConventions = new List<BlockConvention>()
             {
-                CreateConventionAndImplementation().convention
+                CreateDemoConvention()
             },
             Blocks = new List<DeclaredBlock>()
             {
