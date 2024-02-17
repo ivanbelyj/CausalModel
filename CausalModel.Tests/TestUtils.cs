@@ -20,10 +20,10 @@ internal static class TestUtils
     public static (Fact<string> cause, Fact<string> consequence)
         CreateCauseAndConsequence()
     {
-        var cause = FactsBuilding.CreateFact(1,
+        var cause = FactBuilding.CreateFact(1,
             "Cause", null);
 
-        var consequence = FactsBuilding.CreateFact(1, "Consequence", cause.Id);
+        var consequence = FactBuilding.CreateFact(1, "Consequence", cause.Id);
         return (cause, consequence);
     }
 
@@ -43,7 +43,7 @@ internal static class TestUtils
 
     public static CausesExpression CreateNotRootCausesExpression()
     {
-        var rootNode = FactsBuilding.CreateFact(1, "root", null);
+        var rootNode = FactBuilding.CreateFact(1, "root", null);
 
         var notRootEdge = new ProbabilityFactor(1, rootNode.Id);
 

@@ -51,20 +51,20 @@ public class DemoBuilding
 
     private static CausalModel<string> CreateDemoConventionImplementation()
     {
-        var fact1 = FactsBuilding.CreateFact(1, "Inner fact 1", null);
-        var fact2 = FactsBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
+        var fact1 = FactBuilding.CreateFact(1, "Inner fact 1", null);
+        var fact2 = FactBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
         var impl = new CausalModel<string>()
         {
             Facts = new()
             {
                 fact1,
                 fact2,
-                FactsBuilding.CreateFact(1, "Inner fact 3", null),
-                FactsBuilding.CreateFact(1,
+                FactBuilding.CreateFact(1, "Inner fact 3", null),
+                FactBuilding.CreateFact(1,
                     "Block consequence (can be used in the parent model)",
                     fact2.Id,
                     "BlockConsequence"),
-                FactsBuilding.CreateFact(
+                FactBuilding.CreateFact(
                     probability: 1,
                     value: "! Fact using external cause",
                     causeId: "BlockCause"),
@@ -79,14 +79,14 @@ public class DemoBuilding
         var facts = CreateCharacterFacts();
 
         // Required for the declared block
-        facts.Add(FactsBuilding.CreateFact(
+        facts.Add(FactBuilding.CreateFact(
             0.9f,
             value: "Block cause",
             causeId: null,
             id: "BlockCause"));
 
         // Add fact using block consequence
-        facts.Add(FactsBuilding.CreateFact(1f,
+        facts.Add(FactBuilding.CreateFact(1f,
             value: "Fact using block consequence",
             causeId: "BlockConsequence"));
 
@@ -111,7 +111,7 @@ public class DemoBuilding
         // A simple example of a character model
 
         var facts = new List<Fact<string>>();
-        Fact<string> hobbyRoot = FactsBuilding.CreateFact(0.9f, "Хобби");
+        Fact<string> hobbyRoot = FactBuilding.CreateFact(0.9f, "Хобби");
         facts.Add(hobbyRoot);
 
         foreach (string hobbyName in new string[] { "Рисование",
@@ -119,21 +119,21 @@ public class DemoBuilding
             "Писательство", "Спорт", "Role play",
             "3d моделирование"})
         {
-            facts.Add(FactsBuilding.CreateFact(0.3f, hobbyName, hobbyRoot.Id));
+            facts.Add(FactBuilding.CreateFact(0.3f, hobbyName, hobbyRoot.Id));
         }
         foreach (string hobbyName in new string[] { "Worldbuilding" })
         {
-            facts.Add(FactsBuilding.CreateFact(0.1f, hobbyName, hobbyRoot.Id));
+            facts.Add(FactBuilding.CreateFact(0.1f, hobbyName, hobbyRoot.Id));
         }
 
-        var educationNode = FactsBuilding.CreateFact(1, "Образование", null);
-        facts.AddRange(FactsBuilding.CreateAbstractFact(educationNode,
+        var educationNode = FactBuilding.CreateFact(1, "Образование", null);
+        facts.AddRange(FactBuilding.CreateAbstractFactVariants(educationNode,
             "Компьютерные науки", "История", "Математика"));
-        var linguisticsNode = FactsBuilding.CreateVariant(educationNode.Id,
+        var linguisticsNode = FactBuilding.CreateVariant(educationNode.Id,
             20, "лингвистика");
         facts.Add(linguisticsNode);
 
-        var conlangHobby = FactsBuilding.CreateFact(0.1f, "Создание языков", hobbyRoot.Id);
+        var conlangHobby = FactBuilding.CreateFact(0.1f, "Создание языков", hobbyRoot.Id);
         facts.Add(conlangHobby);
 
         // Причиной того, что персонаж понимает несколько языков, может быть как
@@ -141,7 +141,7 @@ public class DemoBuilding
         // Других причин в данной модели не предполагается
         var linguisticsEdge = new ProbabilityFactor(0.9f, linguisticsNode.Id);
         var conlangEdge = new ProbabilityFactor(0.3f, conlangHobby.Id);
-        var languages = FactsBuilding.CreateFactWithOr("Понимает несколько языков",
+        var languages = FactBuilding.CreateFactWithOr("Понимает несколько языков",
             linguisticsEdge, conlangEdge);
         // Todo: если оба ребра имеют ненулевую вероятность, то все зависит от conlangEdge
         // (первое не учитывается). Если есть только одно ребро - учитывается только оно
@@ -149,7 +149,7 @@ public class DemoBuilding
 
         // Персонаж с лингвистическим образованием будет разбираться в лингвистике
         // почти гарантированно, а тот, кто создает языки - 20%
-        var linguisticsPro = FactsBuilding.CreateFactWithOr("Разбирается в лингвистике",
+        var linguisticsPro = FactBuilding.CreateFactWithOr("Разбирается в лингвистике",
             new ProbabilityFactor(0.95f, linguisticsNode.Id),
             new ProbabilityFactor(0.2f, conlangHobby.Id)
             );
@@ -157,8 +157,9 @@ public class DemoBuilding
 
         // Раса напрямую связана с бытием существа.
         // Факт наличия расы реализуется одним из конкретных вариантов
-        Fact<string> raceNode = FactsBuilding.CreateFact(1, "Раса", null);
-        facts.AddRange(FactsBuilding.CreateAbstractFact(raceNode,
+        Fact<string> raceNode = FactBuilding.CreateFact(1, "Раса", null);
+        facts.Add(raceNode);
+        facts.AddRange(FactBuilding.CreateAbstractFactVariants(raceNode,
             "тшэайская", "мэрайская", "мйеурийская", "эвойская", "оанэйская"));
 
         return facts;
