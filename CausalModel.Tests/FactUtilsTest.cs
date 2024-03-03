@@ -1,7 +1,6 @@
-﻿using CausalModel.FactCollection;
+﻿using CausalModel.Model;
 using CausalModel.Factors;
-using CausalModel.Nests;
-using CausalModel.Nodes;
+using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,34 +16,31 @@ namespace CausalModel.Tests
         public void CreateNodeTest()
         {
             string val = "Root node";
-            var node = FactUtils.CreateNode(1, val, null);
-            Assert.NotEqual(node.Id, default);
-            Assert.Equal(val, node.NodeValue);
-            Assert.Single(node.ProbabilityNest.GetEdges());
-            Assert.Equal(1f, node.ProbabilityNest.GetEdges().ElementAt(0).Probability);
+            var node = FactBuilding.CreateFact(1, val, null);
+            Assert.NotEqual(default, node.Id);
+            Assert.Equal(val, node.FactValue);
+            Assert.NotNull(node.CausesExpression);
+            Assert.Single(node.CausesExpression.GetEdges());
+            Assert.Equal(1f, node.CausesExpression.GetEdges().ElementAt(0).Probability);
         }
 
         [Fact]
         public void CreateAbstractFactTest()
         {
             // Arrange
-            var model = new FactCollection<string>();
-            var abstractNode = new Fact<string>(new ProbabilityNest(1, null),
-                "Kemsh (race)");
+            var abstractNode = FactBuilding.CreateFact(1, "Kemsh (race)", null);
             var races = new string[] {"Cheaymea", "Emera", "Evoymea",
-                "Myeuramea", "Oanei" };
+                "Myeuramea", "Oanai" };
 
             // Act
-            var facts = FactUtils.CreateAbstractFact(abstractNode, races);
+            var variants = FactBuilding.CreateAbstractFactVariants(abstractNode, races);
 
             // Assert
-            Assert.Equal(races.Length + 1, facts.Count);
+            Assert.Equal(races.Length, variants.Count);
 
-            foreach (var node in model.Nodes)
+            foreach (var node in variants)
             {
-                if (node == abstractNode)
-                    continue;
-                var nodeEdges = node.GetEdges();
+                var nodeEdges = node.GetCauses();
                 var weightEdges = nodeEdges.OfType<WeightFactor>();
                 var probabilityEdges = nodeEdges.OfType<ProbabilityFactor>();
                 Assert.Single(weightEdges);

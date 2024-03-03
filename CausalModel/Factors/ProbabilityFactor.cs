@@ -7,17 +7,18 @@ using System.Threading.Tasks;
 namespace CausalModel.Factors
 {
     /// <summary>
-    /// Представляет причинно-следственное ребро, которое указывает, с какой вероятностью
-    /// один из факторов следствия происходит в случае происшествия причины.
+    /// Represents a causal-consequential edge that indicates with what probability
+    /// one of the consequence factors occurs in the case of the occurrence
+    /// of the cause.
     /// </summary>
-    public class ProbabilityFactor : CausalEdge
+    public class ProbabilityFactor : Factor
     {
         private float probability;
+        
         /// <summary>
-        /// Вероятность того, что причинно-следственная связь повлечет за собой
-        /// фактор события. Значение от 0 (фактор не происходит никогда) до 1.0
-        /// (фактор происходит в любом случае)
-        /// включительно <br />
+        /// The probability that the causal-consequential relationship will lead to
+        /// an event factor. The value ranges from 0 (the factor never occurs)
+        /// to 1.0 (the factor always occurs) inclusively
         /// </summary>
         public float Probability
         {
@@ -29,54 +30,30 @@ namespace CausalModel.Factors
                     probability = value;
                 }
                 else
-                    throw new ArgumentOutOfRangeException("",
-                        "Некорректное значение вероятности");
+                    throw new ArgumentOutOfRangeException(nameof(Probability),
+                        "Incorrect probability value. It must be in [0, 1]");
             }
         }
 
-        //private double? fixingValue;
-        /// <summary>
-        /// Значение, фиксирующее вероятность и определяющее, повлекла ли
-        /// причинно-следственная связь за собой фактор события в текущей генерации.
-        /// Значение больше или равно 0 (фактор происходит при любой ненулевой вероятности)
-        /// и строго меньше 1.0
-        /// Может принимать значение null, например, до генерации
-        /// </summary>
-        //public double? FixingValue
-        //{
-        //    get => fixingValue;
-        //    set
-        //    {
-        //        if (value is null || value >= 0 && value < 1.0)
-        //        {
-        //            fixingValue = value;
-        //        }
-        //        else
-        //            throw new ArgumentOutOfRangeException("",
-        //                "Некорректное фиксирующее значение");
-        //    }
-        //}
-
-        public ProbabilityFactor(float probability, Guid? causeId = null)
+        public ProbabilityFactor(float probability, string? causeId = null)
         {
             Probability = probability;
             CauseId = causeId;
-            //FixingValue = actualProbability;
         }
 
         public override string ToString()
         {
-            string str = $"Probability: {Probability}; ";
-            str += $"CauseId: {CauseId}";
+            string str = $"(probability: {Probability}, "
+                + $"causeId: {CauseId})";
             return str;
         }
 
         /// <summary>
-        /// Функция, определяющая, повлекла ли причинно-следственная связь за собой
-        /// фактор события в текущей генерации при данных вероятности и фиксурующем
-        /// значении. Значение вероятности превалирует над фиксирующим значением
-        /// (если вероятность определена как 0 или 1, любое фиксирующее значение не может
-        /// повлиять на исход фактора)
+        /// Function that determines whether the causal-consequential relationship
+        /// lead to an event factor with given probability and fixing value.
+        /// The probability value prevails over the fixing value
+        /// (if the probability is defined as 0 or 1, any fixing value cannot
+        /// affect the outcome of the factor)
         /// </summary>
         public static bool IsHappened(float probability, float fixingValue)
             => probability - fixingValue > 0;

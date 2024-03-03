@@ -1,48 +1,47 @@
-﻿using CausalModel.Factors;
-using CausalModel.Nests;
+﻿using CausalModel.CausesExpressionTree;
+using CausalModel.Factors;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Nodes
+namespace CausalModel.Facts
 {
-    public class Fact<TNodeValue>
+    public class Fact<TFactValue> : FactWithCauses
+        where TFactValue : class
     {
-        public Guid Id { get; set; }
-        
-        public ProbabilityNest ProbabilityNest { get; set; }
+        public CausesExpression CausesExpression { get; set; }
 
-        /// <summary>
-        /// Если null, то данное звено – только связующее
-        /// </summary>
-        public TNodeValue? NodeValue { get; set; }
+        public TFactValue? FactValue { get; set; }
 
-        // Для десериализации
-        public Fact() : this(new ProbabilityNest(), default) { }
-        public Fact(Guid id, ProbabilityNest probabilityNest,
-            TNodeValue? nodeValue)
+        public string? AbstractFactId { get; set; }
+        public IEnumerable<WeightFactor>? Weights { get; set; }
+
+        public Fact()
         {
-            Id = id;
-            NodeValue = nodeValue;
-            ProbabilityNest = probabilityNest;
+            CausesExpression = GetDefaultCausesExpression();
         }
-        public Fact(ProbabilityNest probabilityNest, TNodeValue? value)
-            : this(Guid.NewGuid(), probabilityNest, value) { }
 
-        /// <summary>
-        /// Все исходящие причинные ребра. В подклассах могут добавиться другие гнезда,
-        /// поэтому метод можно переопределять
-        /// </summary>
-        public virtual IEnumerable<CausalEdge> GetEdges() => ProbabilityNest.GetEdges();
-        public virtual bool IsRootNode() => ProbabilityNest.IsRootNest();
-
-        public override string? ToString() => $"{Id} - " + (NodeValue?.ToString() ?? "null");
-
-        public override int GetHashCode()
+        private CausesExpression GetDefaultCausesExpression()
         {
-            return Id.GetHashCode();
+            // The fact is a root cause by default
+            return new FactorLeaf(new ProbabilityFactor(1, null));
+        }
+
+        public override string? ToString() =>
+            $"{Id} - " + (FactValue?.ToString() ?? "null");
+
+        public override IEnumerable<Factor> GetCauses()
+        {
+            var res = new List<Factor>();
+            if (CausesExpression != null)
+                res.AddRange(CausesExpression.GetEdges());
+            if (Weights != null)
+                res.AddRange(Weights);
+
+            return res;
         }
     }
 }

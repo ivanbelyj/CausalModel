@@ -1,6 +1,5 @@
-﻿using CausalModel.FactCollection;
-using CausalModel.Model;
-using CausalModel.Nodes;
+﻿using CausalModel.Fixation;
+using CausalModel.Facts;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -8,7 +7,10 @@ using System.CommandLine.NamingConventionBinder;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-
+using CausalModel.Model.Serialization;
+using CausalModel.Blocks.Resolving;
+using CausalModel.Model.Resolving;
+using CausalModel.Model.Instance;
 
 var rootCommand = new RootCommand
 {
@@ -41,15 +43,29 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     {
         Console.WriteLine($"Processing file: {input.FullName}");
 
-        FactCollection<string> factCol = null!;
+        ResolvedModelProvider<string> modelProvider = null!;
         Exception? exceptionToExit = null;
+
+        // Todo: blocks resolving CLI support
+        BlockResolvingMap<string> conventions = new BlockResolvingMap<string>()
+        {
+            ModelsByConventionName = new()
+            {
+                // Todo:
+            }
+        };
+        var modelInstanceFactory = new ModelInstanceFactory<string>();
+        BlockResolver<string> resolver = new BlockResolver<string>(conventions,
+            modelInstanceFactory);
+
         try
         {
             var deserializationRes = Deserialize(input.FullName);
             if (deserializationRes == null)
                 throw new NullReferenceException(input.FullName);
             else
-                factCol = deserializationRes;
+                modelProvider = new ResolvedModelProvider<string>(deserializationRes,
+                    resolver);
 
         } catch (NullReferenceException ex)
         {
@@ -77,7 +93,7 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
         }
 
         // Generate facts
-        string genOutput = Generate(factCol, seed);
+        string genOutput = Generate(modelProvider, seed);
 
         // If an output file is specified, write the results to the file
         if (output != null)
@@ -103,11 +119,11 @@ static void Run(FileInfo input, FileInfo? output, int? seed, bool? notWaitForRea
     }
 }
 
-static FactCollection<string>? Deserialize(string fileName)
+static CausalModel.Model.CausalModel<string>? Deserialize(string fileName)
 {
     string fileContent = File.ReadAllText(fileName);
-    var factCol = FactCollectionUtils.Deserialize(fileContent);
-    return factCol;
+    var model = CausalModelSerialization.FromJson<string>(fileContent);
+    return model;
 }
 
 //static string Serialize(FactCollection<string> factCollection,
@@ -122,14 +138,14 @@ static FactCollection<string>? Deserialize(string fileName)
 //    return jsonString;
 //}
 
-static string Generate(FactCollection<string> factCollection, int? seed = null)
+static string Generate(ResolvedModelProvider<string> model, int? seed = null)
 {
     if (seed == null)
         seed = new Random().Next();
 
     Console.WriteLine("Seed: " + seed);
     Fixator<string> fixator = new Fixator<string>();
-    var model = new CausalModel<string>(factCollection, seed.Value, fixator);
+    var generator = new CausalGenerator<string>(model, fixator, seed.Value);
 
     var resStringBuilder = new StringBuilder();
     resStringBuilder.AppendLine("Seed: " + seed);
@@ -137,12 +153,12 @@ static string Generate(FactCollection<string> factCollection, int? seed = null)
     {
         if (isHappened)
         {
-            string newLine = (fact.IsRootNode() ? "" : "\t") + fact.NodeValue;
+            string newLine = (fact.IsRootCause() ? "" : "\t") + fact.FactValue;
             Console.WriteLine(newLine);
             resStringBuilder.AppendLine(newLine);
         }
     };
 
-    model.FixateRoots();
+    generator.FixateRootCauses();
     return resStringBuilder.ToString();
 }

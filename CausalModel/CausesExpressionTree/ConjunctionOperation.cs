@@ -24,7 +24,10 @@ namespace CausalModel.CausesExpressionTree
                     returnNull = true;
                 }
             }
-            return returnNull ? null : true;
+
+            if (returnNull)
+                return null;
+            else return true;
         }
     }
 }

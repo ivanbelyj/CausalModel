@@ -1,12 +1,12 @@
-﻿using CausalModel.FactCollection;
-using CausalModel.Factors;
-using CausalModel.Model;
-using CausalModel.Nodes;
+﻿using CausalModel.Factors;
+using CausalModel.Fixation;
+using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CausalModel.Model;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -25,16 +25,22 @@ namespace CausalModel.CausesExpressionTree
             Edge = edge;
         }
 
-        public override bool? Evaluate<TNodeValue>(IFactProvider<TNodeValue> factProvider,
-            IFixatedProvider happenedProvider, IFixatingValueProvider fixingValueProvider)
+        public override bool? Evaluate<TFactValue>(
+            IModelProvider<TFactValue> factProvider,
+            //IInstanceFactProvider<TFactValue> factProvider,
+            IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
+            where TFactValue : class
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
-                fixingValueProvider.GetFixatingValue());
+                (float)fixingValueProvider.NextDouble());
             
             bool isExistingCauseHappened = false;
             if (Edge.CauseId != null)
             {
-                bool? isHappened = happenedProvider.IsFixated(Edge.CauseId.Value);
+                var causeId = factProvider
+                    .GetModelFact(Edge.CauseId)
+                    .InstanceFactId;
+                bool? isHappened = happenedProvider.IsFixated(causeId);
                 // Если причина есть, но не зафиксирована
                 if (isHappened == null)
                 {
