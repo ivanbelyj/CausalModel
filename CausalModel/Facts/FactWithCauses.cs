@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Facts;
-public abstract class FactWithCauses : BaseFact
+namespace CausalModel.Facts
 {
-    public abstract IEnumerable<Factor> GetCauses();
-    public bool IsRootCause()
+    public abstract class FactWithCauses : BaseFact
     {
-        return GetCauses().All(x => x.CauseId == null);
+        public abstract IEnumerable<Factor> GetCauses();
+        public bool IsRootCause()
+        {
+            return GetCauses().All(x => x.CauseId == null);
+        }
     }
 }

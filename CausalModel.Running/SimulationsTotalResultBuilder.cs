@@ -5,76 +5,80 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Running;
-public class SimulationsTotalResultBuilder
+namespace CausalModel.Running
 {
-    private int simulationsCount = 0;
-    private readonly List<long> simulationTimesMs = new();
-
-    private readonly Dictionary<string, Dictionary<string, int>> modelFactCounts = new();
-    private readonly Dictionary<string, int> simulationsCountByModelName = new();
-
-    public void AddSimulationResult(SimulationResult simulationResult)
+    public class SimulationsTotalResultBuilder
     {
-        simulationsCount++;
+        private int simulationsCount = 0;
+        private readonly List<long> simulationTimesMs = new List<long>();
 
-        simulationTimesMs.Add(simulationResult.ElapsedMilliseconds);
+        private readonly Dictionary<string, Dictionary<string, int>> modelFactCounts
+            = new Dictionary<string, Dictionary<string, int>>();
+        private readonly Dictionary<string, int> simulationsCountByModelName
+            = new Dictionary<string, int>();
 
-        foreach (var (modelName, countsByFactId) in simulationResult
-            .ModelFactCounts)
+        public void AddSimulationResult(SimulationResult simulationResult)
         {
-            if (!modelFactCounts.ContainsKey(modelName))
-                modelFactCounts.Add(modelName, new Dictionary<string, int>());
+            simulationsCount++;
 
-            foreach (var (factId, factCount) in countsByFactId)
+            simulationTimesMs.Add(simulationResult.ElapsedMilliseconds);
+
+            foreach (var (modelName, countsByFactId) in simulationResult
+                .ModelFactCounts)
             {
-                if (!modelFactCounts[modelName].ContainsKey(factId))
-                    modelFactCounts[modelName].Add(factId, 0);
-                modelFactCounts[modelName][factId] += factCount;
+                if (!modelFactCounts.ContainsKey(modelName))
+                    modelFactCounts.Add(modelName, new Dictionary<string, int>());
+
+                foreach (var (factId, factCount) in countsByFactId)
+                {
+                    if (!modelFactCounts[modelName].ContainsKey(factId))
+                        modelFactCounts[modelName].Add(factId, 0);
+                    modelFactCounts[modelName][factId] += factCount;
+                }
+            }
+
+            foreach (var (modelName, simulationsCount) in simulationResult
+                .SimulationsCountByModelName)
+            {
+                if (!simulationsCountByModelName.ContainsKey(modelName))
+                    simulationsCountByModelName.Add(modelName, 0);
+
+                simulationsCountByModelName[modelName] += simulationsCount;
             }
         }
 
-        foreach (var (modelName, simulationsCount) in simulationResult
-            .SimulationsCountByModelName)
+        private Dictionary<string, Dictionary<string, float>>
+            CalculateFactActualProbabilitiesByModelName()
         {
-            if (!simulationsCountByModelName.ContainsKey(modelName))
-                simulationsCountByModelName.Add(modelName, 0);
+            var res = new Dictionary<string, Dictionary<string, float>>();
 
-            simulationsCountByModelName[modelName] += simulationsCount;
-        }
-    }
-
-    private Dictionary<string, Dictionary<string, float>>
-        CalculateFactActualProbabilitiesByModelName()
-    {
-        var res = new Dictionary<string, Dictionary<string, float>>();
-
-        foreach (var (modelName, factCountsByFactId) in modelFactCounts)
-        {
-            var actualProbabilitiesByFactId = new Dictionary<string, float>();
-            res.Add(modelName, actualProbabilitiesByFactId);
-
-            foreach (var (factId, factCount) in factCountsByFactId)
+            foreach (var (modelName, factCountsByFactId) in modelFactCounts)
             {
-                float actualProbability = (float)factCount
-                    / simulationsCountByModelName[modelName];
-                actualProbabilitiesByFactId.Add(factId, actualProbability);
+                var actualProbabilitiesByFactId = new Dictionary<string, float>();
+                res.Add(modelName, actualProbabilitiesByFactId);
+
+                foreach (var (factId, factCount) in factCountsByFactId)
+                {
+                    float actualProbability = (float)factCount
+                        / simulationsCountByModelName[modelName];
+                    actualProbabilitiesByFactId.Add(factId, actualProbability);
+                }
             }
+
+            return res;
         }
 
-        return res;
-    }
-
-    public SimulationsTotalResult Build()
-    {
-        return new SimulationsTotalResult()
+        public SimulationsTotalResult Build()
         {
-            SimulationsCount = simulationsCount,
-            MinTimeMilliseconds = simulationTimesMs.Min(),
-            MaxTimeMilliseconds = simulationTimesMs.Max(),
-            AverageTimeMilliseconds = simulationTimesMs.Average(),
-            FactActualProbabilitiesByModelName
-                = CalculateFactActualProbabilitiesByModelName(),
-        };
+            return new SimulationsTotalResult()
+            {
+                SimulationsCount = simulationsCount,
+                MinTimeMilliseconds = simulationTimesMs.Min(),
+                MaxTimeMilliseconds = simulationTimesMs.Max(),
+                AverageTimeMilliseconds = simulationTimesMs.Average(),
+                FactActualProbabilitiesByModelName
+                    = CalculateFactActualProbabilitiesByModelName(),
+            };
+        }
     }
 }

@@ -7,50 +7,53 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Running.Simulation;
-public class Simulation<TFactValue>
+namespace CausalModel.Running.Simulation
 {
-    private readonly FixationFacade<TFactValue> fixation;
-    private CausalGenerator<TFactValue>? generator;
-    private readonly SimulationResultBuilder<TFactValue> resultBuilder;
-
-    public Simulation(FixationFacade<TFactValue> fixation)
+    public class Simulation<TFactValue>
+        where TFactValue : class
     {
-        this.fixation = fixation;
-        resultBuilder = new();
+        private readonly FixationFacade<TFactValue> fixation;
+        private CausalGenerator<TFactValue>? generator;
+        private readonly SimulationResultBuilder<TFactValue> resultBuilder;
 
-        fixation.ModelInstanceFactory.ModelInstantiated += OnModelInstantiated;
-        fixation.Fixator.FactFixated += OnFactFixated;
+        public Simulation(FixationFacade<TFactValue> fixation)
+        {
+            this.fixation = fixation;
+            resultBuilder = new SimulationResultBuilder<TFactValue>();
 
-        // Todo: add data about not fixated facts ?
-    }
+            fixation.ModelInstanceFactory.ModelInstantiated += OnModelInstantiated;
+            fixation.Fixator.FactFixated += OnFactFixated;
 
-    private void OnModelInstantiated(object sender,
-        ModelInstance<TFactValue> modelInstance)
-    {
-        resultBuilder.AddModelInstantiated(modelInstance);
-    }
+            // Todo: add data about not fixated facts ?
+        }
 
-    private void OnFactFixated(
-        object sender,
-        InstanceFactId fixatedFactId,
-        bool isHappened)
-    {
-        var fact = generator!.ModelProvider.GetFact(fixatedFactId);
-        resultBuilder.AddFact(fact, isHappened);
-    }
+        private void OnModelInstantiated(object sender,
+            ModelInstance<TFactValue> modelInstance)
+        {
+            resultBuilder.AddModelInstantiated(modelInstance);
+        }
 
-    public SimulationResult Run(int? seed = null)
-    {
-        generator = fixation.CreateGenerator(seed);
+        private void OnFactFixated(
+            object sender,
+            InstanceFactId fixatedFactId,
+            bool isHappened)
+        {
+            var fact = generator!.ModelProvider.GetFact(fixatedFactId);
+            resultBuilder.AddFact(fact, isHappened);
+        }
 
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        generator.FixateRootCauses();
-        stopwatch.Stop();
+        public SimulationResult Run(int? seed = null)
+        {
+            generator = fixation.CreateGenerator(seed);
 
-        var res = resultBuilder
-            .Build(stopwatch.ElapsedMilliseconds);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            generator.FixateRootCauses();
+            stopwatch.Stop();
 
-        return res;
+            var res = resultBuilder
+                .Build(stopwatch.ElapsedMilliseconds);
+
+            return res;
+        }
     }
 }

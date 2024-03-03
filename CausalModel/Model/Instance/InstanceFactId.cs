@@ -5,72 +5,74 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Instance;
-
-/// <summary>
-/// The unique identifier of the fact in the resolved causal model.
-/// If the fact is used in several model instances via blocks mechanism,
-/// the id should reference to the actual instance from where we can get it
-/// directly
-/// </summary>
-public class InstanceFactId : IEquatable<InstanceFactId>
+namespace CausalModel.Model.Instance
 {
-    public string FactId { get; }
 
     /// <summary>
-    /// Id of the model instance where the fact is located.
+    /// The unique identifier of the fact in the resolved causal model.
+    /// If the fact is used in several model instances via blocks mechanism,
+    /// the id should reference to the actual instance from where we can get it
+    /// directly
     /// </summary>
-    public string ModelInstanceId { get; }
-    public InstanceFactId(string factId, string causalInstanceId)
+    public class InstanceFactId : IEquatable<InstanceFactId>
     {
-        FactId = factId;
-        ModelInstanceId = causalInstanceId;
-    }
+        public string FactId { get; }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(FactId, ModelInstanceId);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is InstanceFactId other)
+        /// <summary>
+        /// Id of the model instance where the fact is located.
+        /// </summary>
+        public string ModelInstanceId { get; }
+        public InstanceFactId(string factId, string causalInstanceId)
         {
-            return Equals(other);
+            FactId = factId;
+            ModelInstanceId = causalInstanceId;
         }
-        else
-            return false;
-    }
 
-    public bool Equals(InstanceFactId? other)
-    {
-        if (other == null) return false;
-        return other.ModelInstanceId == ModelInstanceId
-            && other.FactId == FactId;
-    }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(FactId, ModelInstanceId);
+        }
 
-    public static bool operator ==(InstanceFactId? id1, InstanceFactId? id2)
-    {
-        return EqualityComparer<InstanceFactId>.Default.Equals(id1, id2);
-    }
+        public override bool Equals(object? obj)
+        {
+            if (obj is InstanceFactId other)
+            {
+                return Equals(other);
+            }
+            else
+                return false;
+        }
 
-    public static bool operator !=(InstanceFactId? id1, InstanceFactId? id2)
-    {
-        return !(id1 == id2);
-    }
+        public bool Equals(InstanceFactId? other)
+        {
+            if (other == null) return false;
+            return other.ModelInstanceId == ModelInstanceId
+                && other.FactId == FactId;
+        }
 
-    public override string ToString()
-    {
-        return $"InstanceId: {ModelInstanceId}, FactId: {FactId}";
-    }
+        public static bool operator ==(InstanceFactId? id1, InstanceFactId? id2)
+        {
+            return EqualityComparer<InstanceFactId>.Default.Equals(id1, id2);
+        }
 
-    public InstanceFactAddress ToAddress()
-    {
-        return new InstanceFactAddress(FactId, ModelInstanceId);
-    }
+        public static bool operator !=(InstanceFactId? id1, InstanceFactId? id2)
+        {
+            return !(id1 == id2);
+        }
 
-    public static implicit operator InstanceFactAddress(InstanceFactId id)
-    {
-        return id.ToAddress();
+        public override string ToString()
+        {
+            return $"InstanceId: {ModelInstanceId}, FactId: {FactId}";
+        }
+
+        public InstanceFactAddress ToAddress()
+        {
+            return new InstanceFactAddress(FactId, ModelInstanceId);
+        }
+
+        public static implicit operator InstanceFactAddress(InstanceFactId id)
+        {
+            return id.ToAddress();
+        }
     }
 }

@@ -53,6 +53,7 @@ internal static class TestUtils
 
     public static CausalModel<TFactValue> CreateCausalModel<TFactValue>(
         List<Fact<TFactValue>>? facts = null)
+        where TFactValue : class
     {
         var res = new CausalModel<TFactValue>();
         if (facts != null)
@@ -60,33 +61,24 @@ internal static class TestUtils
         return res;
     }
 
-    public static
-        (CausalGenerator<TFactValue> generator,
-        Fixator<TFactValue> fixator,
-        ResolvedModelProvider<TFactValue> provider,
-        BlockResolver<TFactValue> resolver)
-        CreateMockGenerator<TFactValue>(params Fact<TFactValue>[] facts)
+    public static FixationFacade<TFactValue> CreateFixationFacade<TFactValue>(
+        params Fact<TFactValue>[] facts)
+        where TFactValue : class
     {
-        return CreateMockGenerator(facts.ToList());
+        return CreateFixationFacade(facts.ToList());
     }
 
-    public static
-        (CausalGenerator<TFactValue> generator,
-        Fixator<TFactValue> fixator,
-        ResolvedModelProvider<TFactValue> provider,
-        BlockResolver<TFactValue> resolver)
-        CreateMockGenerator<TFactValue>(List<Fact<TFactValue>>? facts = null)
+    public static FixationFacade<TFactValue> CreateFixationFacade<TFactValue>(
+        List<Fact<TFactValue>>? facts = null)
+        where TFactValue : class
     {
         var model = new CausalModel<TFactValue>();
         if (facts != null)
             model.Facts = facts;
 
         var builder = new FixationFacadeBuilder<TFactValue>(model);
-        var gen = builder.Build();
+        var facade = builder.Build();
 
-        return (gen,
-            builder.Fixator,
-            builder.ResolvedModelProvider!,
-            builder.BlockResolver!);
+        return facade;
     }
 }

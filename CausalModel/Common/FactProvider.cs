@@ -7,34 +7,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Common;
-
-public class FactProvider<TFactValue>
+namespace CausalModel.Common
 {
-    private readonly IEnumerable<CausalModel<TFactValue>> models;
 
-    public FactProvider(CausalModel<TFactValue> model,
-        BlockResolvingMap<TFactValue> blockResolvingMap)
+    public class FactProvider<TFactValue>
+        where TFactValue : class
     {
-        models = blockResolvingMap
-            .ModelsByDeclaredBlockId
-            .Values
-            .Concat(new[] { model })
-            .Concat(blockResolvingMap.ModelsByConventionName.Values);
-    }
+        private readonly IEnumerable<CausalModel<TFactValue>> models;
 
-    public FactProvider(IEnumerable<CausalModel<TFactValue>> models)
-    {
-        this.models = models;
-    }
+        public FactProvider(CausalModel<TFactValue> model,
+            BlockResolvingMap<TFactValue> blockResolvingMap)
+        {
+            models = blockResolvingMap
+                .ModelsByDeclaredBlockId
+                .Values
+                .Concat(new[] { model })
+                .Concat(blockResolvingMap.ModelsByConventionName.Values);
+        }
 
-    public Fact<TFactValue> GetFact(string modelName, string factId)
-    {
-        var forDebug = models.ToList();
+        public FactProvider(IEnumerable<CausalModel<TFactValue>> models)
+        {
+            this.models = models;
+        }
 
-        return models
-            .First(model => model.Name == modelName)
-            .Facts
-            .First(fact => fact.Id == factId);
+        public Fact<TFactValue> GetFact(string modelName, string factId)
+        {
+            var forDebug = models.ToList();
+
+            return models
+                .First(model => model.Name == modelName)
+                .Facts
+                .First(fact => fact.Id == factId);
+        }
     }
 }

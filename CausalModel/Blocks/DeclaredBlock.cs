@@ -5,24 +5,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Blocks;
-public class DeclaredBlock
+namespace CausalModel.Blocks
 {
-    [JsonProperty(Required = Required.Always)]
-    public string Id { get; set; }
-
-    // Null - "any"
-    public string? Convention { get; set; }
-
-
-    // Should be used for deserialization.
-    private DeclaredBlock() : this(null!, null)
+    public class DeclaredBlock
     {
-    }
+        [JsonProperty(Required = Required.Always)]
+        public string Id { get; set; }
 
-    public DeclaredBlock(string id, string? convention)
-    {
-        Id = id;
-        Convention = convention;
+        // Null - "any"
+        public string? Convention { get; set; }
+
+
+        // Should be used for deserialization.
+        private DeclaredBlock() : this(null!, null)
+        {
+        }
+
+        public DeclaredBlock(string id, string? convention)
+        {
+            Id = id;
+            Convention = convention;
+        }
     }
 }

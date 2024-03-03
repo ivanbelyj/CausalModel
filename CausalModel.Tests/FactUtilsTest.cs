@@ -33,15 +33,13 @@ namespace CausalModel.Tests
                 "Myeuramea", "Oanai" };
 
             // Act
-            var facts = FactBuilding.CreateAbstractFactVariants(abstractNode, races);
+            var variants = FactBuilding.CreateAbstractFactVariants(abstractNode, races);
 
             // Assert
-            Assert.Equal(races.Length + 1, facts.Count);
+            Assert.Equal(races.Length, variants.Count);
 
-            foreach (var node in facts)
+            foreach (var node in variants)
             {
-                if (node == abstractNode)
-                    continue;
                 var nodeEdges = node.GetCauses();
                 var weightEdges = nodeEdges.OfType<WeightFactor>();
                 var probabilityEdges = nodeEdges.OfType<ProbabilityFactor>();

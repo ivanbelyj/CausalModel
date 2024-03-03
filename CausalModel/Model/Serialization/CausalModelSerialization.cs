@@ -12,6 +12,7 @@ namespace CausalModel.Model.Serialization
     {
         public static string ToJson<TFactValue>(CausalModel<TFactValue> model,
             bool writeIndented = false)
+            where TFactValue : class
         {
             JsonSerializerSettings settings = new JsonSerializerSettings()
             {
@@ -25,6 +26,7 @@ namespace CausalModel.Model.Serialization
         }
 
         public static CausalModel<TFactValue>? FromJson<TFactValue>(string jsonString)
+            where TFactValue : class
         {
             JsonSerializerSettings settings = new JsonSerializerSettings()
             {

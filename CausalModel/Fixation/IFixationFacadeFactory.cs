@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Fixation;
-public interface IFixationFacadeFactory<TFactValue>
+namespace CausalModel.Fixation
 {
-    FixationFacade<TFactValue> Create();
+    public interface IFixationFacadeFactory<TFactValue>
+        where TFactValue : class
+    {
+        FixationFacade<TFactValue> Create();
+    }
 }

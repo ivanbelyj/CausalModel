@@ -7,80 +7,85 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model;
-
-/// <summary>
-/// Representing not resolved causal model including blocks
-/// </summary>
-public class CausalModel<TFactValue>
+namespace CausalModel.Model
 {
-    public string? Name { get; set; }
-
     /// <summary>
-    /// The facts of the causal model except for children
+    /// Representing not resolved causal model including blocks
     /// </summary>
-    public List<Fact<TFactValue>> Facts { get; set; }
-        = new List<Fact<TFactValue>>();
-
-    public List<DeclaredBlock> Blocks { get; set; }
-        = new List<DeclaredBlock>();
-
-    private Dictionary<string, BlockConvention>? conventionByName;
-    private Dictionary<string, BlockFact>? blockFactByName;
-
-    public BlockConvention GetConventionByName(string convName)
+    public class CausalModel<TFactValue>
+        where TFactValue : class
     {
-        if (conventionByName == null)
-            throw new InvalidOperationException("Cannot get convention "
-                + "from model that has no conventions");
-        return conventionByName[convName];
-    }
+        public string? Name { get; set; }
 
-    /// <summary>
-    /// Block conventions that blocks included in the model can use
-    /// </summary>
-    public IEnumerable<BlockConvention>? BlockConventions {
-        get => conventionByName?.Values.ToList();
-        // Casting to list for correct serialization
-        set {
-            if (value != null)
+        /// <summary>
+        /// The facts of the causal model except for children
+        /// </summary>
+        public List<Fact<TFactValue>> Facts { get; set; }
+            = new List<Fact<TFactValue>>();
+
+        public List<DeclaredBlock> Blocks { get; set; }
+            = new List<DeclaredBlock>();
+
+        private Dictionary<string, BlockConvention>? conventionByName;
+        private Dictionary<string, BlockFact>? blockFactByName;
+
+        public BlockConvention GetConventionByName(string convName)
+        {
+            if (conventionByName == null)
+                throw new InvalidOperationException("Cannot get convention "
+                    + "from model that has no conventions");
+            return conventionByName[convName];
+        }
+
+        /// <summary>
+        /// Block conventions that blocks included in the model can use
+        /// </summary>
+        public IEnumerable<BlockConvention>? BlockConventions
+        {
+            get => conventionByName?.Values.ToList();
+            // Casting to list for correct serialization
+            set
             {
-                conventionByName = new();
-                foreach (var conv in value)
+                if (value != null)
                 {
-                    if (conv.Name == null)
-                        throw new ArgumentException("Block convention name "
-                            + "is required.");
-                    conventionByName.Add(conv.Name, conv);
+                    conventionByName = new Dictionary<string, BlockConvention>();
+                    foreach (var conv in value)
+                    {
+                        if (conv.Name == null)
+                            throw new ArgumentException("Block convention name "
+                                + "is required.");
+                        conventionByName.Add(conv.Name, conv);
+                    }
                 }
-            } else
-            {
-                conventionByName = null;
+                else
+                {
+                    conventionByName = null;
+                }
             }
         }
-    }
 
-    [JsonIgnore]
-    internal IEnumerable<BlockFact> BlockFacts
-    {
-        get
+        [JsonIgnore]
+        internal IEnumerable<BlockFact> BlockFacts
         {
-            if (blockFactByName == null)
+            get
             {
-                blockFactByName = new();
-                foreach (var block in Blocks)
+                if (blockFactByName == null)
                 {
-                    var conv = block.Convention == null ? null
-                        : GetConventionByName(block.Convention);
+                    blockFactByName = new Dictionary<string, BlockFact>();
+                    foreach (var block in Blocks)
+                    {
+                        var conv = block.Convention == null ? null
+                            : GetConventionByName(block.Convention);
 
-                    var blockFact = new BlockFact(block, conv);
-                    blockFact.Id = block.Id;
+                        var blockFact = new BlockFact(block, conv);
+                        blockFact.Id = block.Id;
 
-                    blockFactByName.Add(block.Id, blockFact);
+                        blockFactByName.Add(block.Id, blockFact);
+                    }
                 }
-            }
 
-            return blockFactByName.Values;
+                return blockFactByName.Values;
+            }
         }
     }
 }

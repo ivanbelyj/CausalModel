@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Running.Simulation;
-public class SimulationResult
+namespace CausalModel.Running.Simulation
 {
-    public long ElapsedMilliseconds { get; set; }
-    public Dictionary<string, int> SimulationsCountByModelName { get; set; } = new();
-    public Dictionary<string, Dictionary<string, int>> ModelFactCounts { get; set; }
-        = new();
+    public class SimulationResult
+    {
+        public long ElapsedMilliseconds { get; set; }
+        public Dictionary<string, int> SimulationsCountByModelName { get; set; }
+            = new Dictionary<string, int>();
+        public Dictionary<string, Dictionary<string, int>> ModelFactCounts { get; set; }
+            = new Dictionary<string, Dictionary<string, int>>();
+    }
 }

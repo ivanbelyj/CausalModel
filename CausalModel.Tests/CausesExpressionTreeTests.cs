@@ -20,13 +20,16 @@ namespace CausalModel.Tests
 
             var (cause, factWithCause) = TestUtils.CreateCauseAndConsequence();
 
-            var (generator, fixator, resolvedModelProvider, _)
-                = TestUtils.CreateMockGenerator<string>(cause, factWithCause);
-            var provider = resolvedModelProvider.GetRootModelProvider();
+            var facade = TestUtils.CreateFixationFacade(cause, factWithCause);
+            var generator = facade.CreateGenerator();
+            var provider = generator.ModelProvider.GetRootModelProvider();
 
-            Assert.False(new FactorLeaf(falseEdge).Evaluate(provider, fixator, generator));
-            Assert.True(new FactorLeaf(trueEdge).Evaluate(provider, fixator, generator));
-            Assert.Null(factWithCause.CausesExpression.Evaluate(provider, fixator, generator));
+            Assert.False(new FactorLeaf(falseEdge)
+                .Evaluate(provider, facade.Fixator, generator));
+            Assert.True(new FactorLeaf(trueEdge)
+                .Evaluate(provider, facade.Fixator, generator));
+            Assert.Null(factWithCause.CausesExpression
+                .Evaluate(provider, facade.Fixator, generator));
         }
 
         [Fact]
@@ -39,14 +42,19 @@ namespace CausalModel.Tests
 
             var (cause, factWithCause) = TestUtils.CreateCauseAndConsequence();
 
-            var (generator, fixator, resolvedModelProvider, _)
-                = TestUtils.CreateMockGenerator<string>(cause, factWithCause);
-            var provider = resolvedModelProvider.GetRootModelProvider();
+            var facade = TestUtils.CreateFixationFacade(cause, factWithCause);
+            var generator = facade.CreateGenerator();
+            var fixator = facade.Fixator;
+            var provider = generator.ModelProvider.GetRootModelProvider();
 
-            Assert.False(Expressions.And(falseEdge, falseEdge1).Evaluate(provider, fixator, generator));
-            Assert.False(Expressions.And(falseEdge, trueEdge).Evaluate(provider, fixator, generator));
-            Assert.False(Expressions.And(trueEdge, falseEdge1).Evaluate(provider, fixator, generator));
-            Assert.True(Expressions.And(trueEdge, trueEdge1).Evaluate(provider, fixator, generator));
+            Assert.False(Expressions.And(falseEdge, falseEdge1)
+                .Evaluate(provider, fixator, generator));
+            Assert.False(Expressions.And(falseEdge, trueEdge)
+                .Evaluate(provider, fixator, generator));
+            Assert.False(Expressions.And(trueEdge, falseEdge1)
+                .Evaluate(provider, fixator, generator));
+            Assert.True(Expressions.And(trueEdge, trueEdge1)
+                .Evaluate(provider, fixator, generator));
 
             // Todo: ?
             //Assert.False(Expressions.And(factWithCause, falseEdge1).Evaluate(provider, fixator, generator));
@@ -66,14 +74,19 @@ namespace CausalModel.Tests
 
             var (cause, factWithCause) = TestUtils.CreateCauseAndConsequence();
 
-            var (generator, fixator, resolvedModelProvider, _)
-                = TestUtils.CreateMockGenerator<string>(cause, factWithCause);
-            var provider = resolvedModelProvider.GetRootModelProvider();
+            var facade = TestUtils.CreateFixationFacade(cause, factWithCause);
+            var generator = facade.CreateGenerator();
+            var fixator = facade.Fixator;
+            var provider = generator.ModelProvider.GetRootModelProvider();
 
-            Assert.False(Expressions.Or(falseEdge, falseEdge1).Evaluate(provider, fixator, generator));
-            Assert.True(Expressions.Or(falseEdge, trueEdge).Evaluate(provider, fixator, generator));
-            Assert.True(Expressions.Or(trueEdge, falseEdge1).Evaluate(provider, fixator, generator));
-            Assert.True(Expressions.Or(trueEdge, trueEdge1).Evaluate(provider, fixator, generator));
+            Assert.False(Expressions.Or(falseEdge, falseEdge1)
+                .Evaluate(provider, fixator, generator));
+            Assert.True(Expressions.Or(falseEdge, trueEdge)
+                .Evaluate(provider, fixator, generator));
+            Assert.True(Expressions.Or(trueEdge, falseEdge1)
+                .Evaluate(provider, fixator, generator));
+            Assert.True(Expressions.Or(trueEdge, trueEdge1)
+                .Evaluate(provider, fixator, generator));
 
             //Assert.Null(Expressions.Or(nullFactor, falseEdge1).Evaluate(provider, fixator, generator));
             //Assert.Null(Expressions.Or(falseEdge, nullFactor).Evaluate(provider, fixator, generator));
@@ -90,13 +103,17 @@ namespace CausalModel.Tests
 
             var (cause, factWithCause) = TestUtils.CreateCauseAndConsequence();
 
-            var (generator, fixator, resolvedModelProvider, _)
-                = TestUtils.CreateMockGenerator<string>(cause, factWithCause);
-            var provider = resolvedModelProvider.GetRootModelProvider();
+            var facade = TestUtils.CreateFixationFacade(cause, factWithCause);
+            var generator = facade.CreateGenerator();
+            var fixator = facade.Fixator;
+            var provider = generator.ModelProvider.GetRootModelProvider();
 
-            Assert.True(Expressions.Not(falseEdge).Evaluate(provider, fixator, generator));
-            Assert.False(Expressions.Not(trueEdge).Evaluate(provider, fixator, generator));
-            Assert.False(Expressions.Not(trueEdge).Evaluate(provider, fixator, generator));
+            Assert.True(Expressions.Not(falseEdge)
+                .Evaluate(provider, fixator, generator));
+            Assert.False(Expressions.Not(trueEdge)
+                .Evaluate(provider, fixator, generator));
+            Assert.False(Expressions.Not(trueEdge)
+                .Evaluate(provider, fixator, generator));
 
             //Assert.Null(Expressions.Not(nullFactor).Evaluate(provider, fixator, generator));
         }

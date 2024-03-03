@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Facts;
-
-/// <summary>
-/// The most abstract fact class agnostic about its causes.
-/// All that we can say about fact via BaseFact is whether it fixated or not
-/// </summary>
-public class BaseFact
+namespace CausalModel.Facts
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public override int GetHashCode()
+    /// <summary>
+    /// The most abstract fact class agnostic about its causes.
+    /// All that we can say about fact via BaseFact is whether it fixated or not
+    /// </summary>
+    public class BaseFact
     {
-        return Id.GetHashCode();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 }

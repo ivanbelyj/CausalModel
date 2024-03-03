@@ -7,38 +7,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Blocks.Resolving;
-public class BlockResolver<TFactValue> : BlockResolverBase<TFactValue>
+namespace CausalModel.Blocks.Resolving
 {
-    private readonly BlockResolvingMap<TFactValue> conventionsMap;
-
-    public BlockResolver(BlockResolvingMap<TFactValue> conventionsMap,
-        ModelInstanceFactory<TFactValue> modelInstanceFactory)
-        : base(modelInstanceFactory)
+    public class BlockResolver<TFactValue> : BlockResolverBase<TFactValue>
+        where TFactValue : class
     {
-        this.conventionsMap = conventionsMap;
-    }
+        private readonly BlockResolvingMap<TFactValue> conventionsMap;
 
-    public override CausalModel<TFactValue> GetConventionImplementation(
-        DeclaredBlock block,
-        BlockConvention? convention)
-    {
-        CausalModel<TFactValue>? modelByConv = null;
-        if (convention != null)
+        public BlockResolver(BlockResolvingMap<TFactValue> conventionsMap,
+            ModelInstanceFactory<TFactValue> modelInstanceFactory)
+            : base(modelInstanceFactory)
+        {
+            this.conventionsMap = conventionsMap;
+        }
+
+        public override CausalModel<TFactValue> GetConventionImplementation(
+            DeclaredBlock block,
+            BlockConvention? convention)
+        {
+            CausalModel<TFactValue>? modelByConv = null;
+            if (convention != null)
+                conventionsMap
+                    .ModelsByConventionName
+                    .TryGetValue(convention.Name, out modelByConv);
+
+            CausalModel<TFactValue>? modelByBlock;
             conventionsMap
-                .ModelsByConventionName
-                .TryGetValue(convention.Name, out modelByConv);
+                .ModelsByDeclaredBlockId
+                .TryGetValue(block.Id, out modelByBlock);
 
-        CausalModel<TFactValue>? modelByBlock;
-        conventionsMap
-            .ModelsByDeclaredBlockId
-            .TryGetValue(block.Id, out modelByBlock);
+            if (modelByConv == null && modelByBlock == null)
+                throw new BlockResolvingException("Cannot select block implementation: "
+                    + $"no model provided for block (id: {block.Id}, "
+                    + $"convention: {convention?.Name})");
 
-        if (modelByConv == null && modelByBlock == null )
-            throw new BlockResolvingException("Cannot select block implementation: "
-                + $"no model provided for block (id: {block.Id}, "
-                + $"convention: {convention?.Name})");
-
-        return modelByBlock ?? modelByConv!;
+            return modelByBlock ?? modelByConv!;
+        }
     }
 }

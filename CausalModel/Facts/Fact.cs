@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace CausalModel.Facts
 {
     public class Fact<TFactValue> : FactWithCauses
+        where TFactValue : class
     {
         public CausesExpression CausesExpression { get; set; }
 
@@ -32,7 +33,7 @@ namespace CausalModel.Facts
         public override string? ToString() =>
             $"{Id} - " + (FactValue?.ToString() ?? "null");
 
-        public override List<Factor> GetCauses()
+        public override IEnumerable<Factor> GetCauses()
         {
             var res = new List<Factor>();
             if (CausesExpression != null)

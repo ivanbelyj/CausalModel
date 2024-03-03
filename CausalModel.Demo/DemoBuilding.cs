@@ -127,6 +127,7 @@ public class DemoBuilding
         }
 
         var educationNode = FactBuilding.CreateFact(1, "Образование", null);
+        facts.Add(educationNode);
         facts.AddRange(FactBuilding.CreateAbstractFactVariants(educationNode,
             "Компьютерные науки", "История", "Математика"));
         var linguisticsNode = FactBuilding.CreateVariant(educationNode.Id,

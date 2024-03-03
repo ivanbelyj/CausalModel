@@ -8,79 +8,83 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Blocks.Resolving;
-public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
+namespace CausalModel.Blocks.Resolving
 {
-    private readonly ModelInstanceFactory<TFactValue> modelInstanceFactory;
-
-    public event BlockImplementedEventHandler<TFactValue>? BlockImplemented;
-
-    public BlockResolverBase(ModelInstanceFactory<TFactValue> modelInstanceFactory)
+    public abstract class BlockResolverBase<TFactValue> : IBlockResolver<TFactValue>
+        where TFactValue : class
     {
-        this.modelInstanceFactory = modelInstanceFactory;
-    }
+        private readonly ModelInstanceFactory<TFactValue> modelInstanceFactory;
 
-    protected virtual void CheckConvention(BlockConvention convention,
-        CausalModel<TFactValue> model, ModelInstance<TFactValue> parent)
-    {
-        List<Factor>? notImplementedCauses = new();
-        List<BaseFact>? notImplementedConsequences = new();
+        public event BlockImplementedEventHandler<TFactValue>? BlockImplemented;
 
-        if (convention.Consequences != null)
+        public BlockResolverBase(ModelInstanceFactory<TFactValue> modelInstanceFactory)
         {
-            foreach (var consequence in convention.Consequences)
+            this.modelInstanceFactory = modelInstanceFactory;
+        }
+
+        protected virtual void CheckConvention(BlockConvention convention,
+            CausalModel<TFactValue> model, ModelInstance<TFactValue> parent)
+        {
+            List<Factor>? notImplementedCauses = new List<Factor>();
+            List<BaseFact>? notImplementedConsequences = new List<BaseFact>();
+
+            if (convention.Consequences != null)
             {
-                var fact = model.Facts.Find(fact => fact.Id == consequence.Id);
-                if (fact == null)
+                foreach (var consequence in convention.Consequences)
                 {
-                    notImplementedConsequences.Add(consequence);
+                    var fact = model.Facts.Find(fact => fact.Id == consequence.Id);
+                    if (fact == null)
+                    {
+                        notImplementedConsequences.Add(consequence);
+                    }
                 }
+            }
+
+            if (convention.Causes != null)
+            {
+                foreach (var cause in convention.Causes)
+                {
+                    var fact = parent.Model.Facts.Find(fact => fact.Id == cause.CauseId);
+                    if (fact == null)
+                    {
+                        notImplementedCauses.Add(cause);
+                    }
+                }
+            }
+
+            if (notImplementedConsequences.Any()
+                || notImplementedCauses.Any())
+            {
+                throw new BlockResolvingException($"Failed to resolve block convention "
+                    + $"(name: {convention.Name}): model provided by resolver "
+                    + "is not matching.")
+                {
+                    NotImplementedCauses = notImplementedCauses,
+                    NotImplementedConsequences = notImplementedConsequences
+                };
             }
         }
 
-        if (convention.Causes != null)
+        public abstract CausalModel<TFactValue> GetConventionImplementation(
+            DeclaredBlock block,
+            BlockConvention? convention);
+
+        public ModelInstance<TFactValue> Resolve(DeclaredBlock block,
+            ModelInstance<TFactValue> parentInstance)
         {
-            foreach (var cause in convention.Causes)
-            {
-                var fact = parent.Model.Facts.Find(fact => fact.Id == cause.CauseId);
-                if (fact == null)
-                {
-                    notImplementedCauses.Add(cause);
-                }
-            }
+            string? convName = block.Convention;
+            BlockConvention? convention = convName == null ? null
+                : parentInstance.Model.GetConventionByName(convName);
+
+            var model = GetConventionImplementation(block, convention);
+
+            if (convention != null)
+                CheckConvention(convention, model, parentInstance);
+
+            var instance = modelInstanceFactory.InstantiateModel(model);
+
+            BlockImplemented?.Invoke(this, block, convention, instance);
+            return instance;
         }
-
-        if (notImplementedConsequences.Any()
-            || notImplementedCauses.Any()) {
-            throw new BlockResolvingException($"Failed to resolve block convention "
-                + $"(name: {convention.Name}): model provided by resolver "
-                + "is not matching.")
-            {
-                NotImplementedCauses = notImplementedCauses,
-                NotImplementedConsequences = notImplementedConsequences
-            };
-        }
-    }
-
-    public abstract CausalModel<TFactValue> GetConventionImplementation(
-        DeclaredBlock block,
-        BlockConvention? convention);
-
-    public ModelInstance<TFactValue> Resolve(DeclaredBlock block,
-        ModelInstance<TFactValue> parentInstance)
-    {
-        string? convName = block.Convention;
-        BlockConvention? convention = convName == null ? null
-            : parentInstance.Model.GetConventionByName(convName);
-
-        var model = GetConventionImplementation(block, convention);
-
-        if (convention != null)
-            CheckConvention(convention, model, parentInstance);
-
-        var instance = modelInstanceFactory.InstantiateModel(model);
-
-        BlockImplemented?.Invoke(this, block, convention, instance);
-        return instance;
     }
 }

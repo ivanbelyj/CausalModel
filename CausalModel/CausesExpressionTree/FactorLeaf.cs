@@ -29,6 +29,7 @@ namespace CausalModel.CausesExpressionTree
             IModelProvider<TFactValue> factProvider,
             //IInstanceFactProvider<TFactValue> factProvider,
             IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
+            where TFactValue : class
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
                 (float)fixingValueProvider.NextDouble());
