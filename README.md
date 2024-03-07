@@ -31,16 +31,19 @@ At the fixation stage, the causes are evaluated starting from the root and marke
 ## Abstract facts
 // Todo:
 
-## When should I use CM: recommendations
+## When to use: recommendations
 ### ✅ Good to use
-* Causal logic too huge to represent in code. For example, it's not convenient to keep all the possible world history development via conditional constuctions
-* Logic mostly isolated from external systems. For example, dialog structure is generally separated from the common game logic
-* 
+* Causal logic too huge to represent in code. For example, it's not convenient to keep all the possible world history outcomes via conditional constuctions
+* Logic mostly isolated from external systems. For example, dialog structures are generally separated from the common game logic
+* Logic that tends to be declarative
 
 ### May be used
+* Probabilities estimation and simulations
 
-### 
-❌
+### ❌ May be unpropriate
+* Not very large causal logic with a low probability of growth
+* Logic that tends to be imperative
+* Logic closely coupled with external components
 
 # Blocks
 // Todo:
