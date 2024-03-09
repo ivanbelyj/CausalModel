@@ -12,11 +12,11 @@ The project is motivated primarily by the needs of the Raging Tomorrow and Jailp
 
 ## Features
 
-- A language-independent way of representing possible states of causal entity
+- A language-independent way of representing possible states of a causal entity
 - Fixation - dynamic CM-based simulation integrating with external code
 - Probabilities of causal relationships
 - Logical grouping of factors included in fact cause
-- Abstract facts and implementation with weights (see Core concepts)
+- Abstract facts and implementations with weights
 - Modular architecture
 - Blocks - convention-based nested causal models feature providing reusing, abstracting and polymorphism in causal models development
 - Model instances functionality allowing differentiate resolved blocks created during model fixation
@@ -33,13 +33,12 @@ The project is motivated primarily by the needs of the Raging Tomorrow and Jailp
 Although almost all facts have their causes, there are some **root causes** in the model that contain only factors without a cause.
 At the fixation stage, the causes are evaluated starting from the root and marked as **occured** or **not occured** (for which the Fixator component is responsible). In the current implementation, causes support the most common logical operators - AND, OR and NOT.
 
-## Abstract facts
+## Abstract facts and variants
 
-### Abstract fact (AF)
-
-- A semantically abstract property or event. For example, the fact that a character has a weapon does not incicate which weapon is actually there.
+- A semantically abstract property or event. For example, the fact that a character is proficient in martial arts does not indicate which specific skill is actually present.
 - Can be implemented by _one_ of its **variants**.
 - If there are no occurred variants, the AF is considered **uncertain**
+- From the implementations that have occured, one option is selected in accordance with the weights determined by the **weight factors** (another type of factors that can also be grouped)
 
 ## When to use CM: common recommendations
 
@@ -51,11 +50,12 @@ At the fixation stage, the causes are evaluated starting from the root and marke
 
 ### May be used
 
-- Probabilities estimation and simulations
+- Probabilities estimation, simulations and risks assessment
+- Expert systems operating with primitive boolean logic
 
 ### ❌ May be unpropriate
 
-- Not very large causal logic with a low probability of growth
+- Not very large causal logic with a low probability of growth that could be represented in code
 - Logic that actively operates with a state or tends to be imperative. Causal model is acyclic and prefers declarative approaches such as recursion using blocks resolving
 - Logic closely coupled with external components. For example, CM may be not suitable for shooter AI that relies heavily on navigating the world and using mathematical calculations
 
@@ -63,9 +63,9 @@ At the fixation stage, the causes are evaluated starting from the root and marke
 
 - **Block** is a black box, seamlessly integrated into the cause-and-effect relationships of the causal model.
 - A block defines a **block convention** - a set of inputs and outputs, **block references**. Inputs refer to external facts for the block, and outputs become factors for facts that follow from the block.
-- A potential implementation of a _block_ is any causal model that satisfies its _convention_.
-- The fixation is accompanied by the **blocks resolving**, as a result of which the blocks are replaced by actual facts.
+- A potential implementation of a block is any causal model that satisfies its convention.
 - A block does not know about the causal model that implement it.
+- The fixation is accompanied by the **blocks resolving**, as a result of which the blocks are treated as actual sets of facts.
 
 ## Using blocks
 
@@ -74,6 +74,7 @@ At the fixation stage, the causes are evaluated starting from the root and marke
 
 ## Block Functions
 
+- **Recursion**: Inspired by real life, where time is linear, CM has no concept of cycles and treats iterations as unique elements generating each other similar to recursion.
 - **Abstraction**: A block can represent a logically unified, but actually complex part of a causal model.
 - **Reusability**: A complex entity can be used in the model multiple times without duplicating its structure. For example, if a character model is used multiple times in a plot model, it is advantageous to express the character model as a block.
 - **Data hiding**: A block hides details of the structure that are not necessary for the overall model. For example, to model the history of a state, it is not necessary to know all the details of the cause-and-effect structure of one of its leaders (if they do not directly affect the overall model).
