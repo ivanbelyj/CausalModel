@@ -16,6 +16,8 @@ namespace CausalModel.Model
     {
         IEnumerable<InstanceFact<TFactValue>> GetAbstractFactVariants(
             InstanceFactId abstractFactId);
+        IEnumerable<InstanceFact<TFactValue>>? TryGetAbstractFactVariants(
+            InstanceFactId abstractFactId);
         IEnumerable<InstanceFact<TFactValue>>? TryGetConsequences(InstanceFactId id);
     }
 }

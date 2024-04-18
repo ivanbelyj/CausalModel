@@ -6,9 +6,7 @@ using CausalModel.Model;
 // работает некорректно
 // 
 
-// Todo: вернуть сборку CausalModel.Tests
-
 string fileName = UserInteraction.GetFileName();
-CausalModelManager manager = new CausalModelManager();
+CausalModelManager manager = new();
 manager.Init(fileName);
 manager.RunModel();

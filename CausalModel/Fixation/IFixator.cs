@@ -1,5 +1,6 @@
 ﻿using CausalModel.Facts;
 using CausalModel.Model.Instance;
+using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,9 @@ namespace CausalModel.Fixation
 {
     public delegate void FactFixatedEventHandler<TFactValue>(
         object sender,
-        InstanceFactId fixatedFactId,
-        bool isHappened);
+        InstanceFact<TFactValue> fixatedFact,
+        bool isOccured)
+        where TFactValue : class;
 
     /// <summary>
     /// A component of the causal model fixation process
@@ -20,8 +22,10 @@ namespace CausalModel.Fixation
     /// </summary>
     /// <typeparam name="TFactValue">The type of the causal model fact value</typeparam>
     public interface IFixator<TFactValue> : IFixatedProvider
+        where TFactValue : class
     {
         event FactFixatedEventHandler<TFactValue> FactFixated;
-        void FixateFact(InstanceFactId factId, bool isHappened);
+        void FixateFact(InstanceFact<TFactValue> fact, bool isOccurred);
+        void Initialize(IResolvedModelProvider<TFactValue> resolvedModelProvider);
     }
 }

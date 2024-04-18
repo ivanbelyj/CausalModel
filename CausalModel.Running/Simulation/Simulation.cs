@@ -35,11 +35,10 @@ namespace CausalModel.Running.Simulation
 
         private void OnFactFixated(
             object sender,
-            InstanceFactId fixatedFactId,
-            bool isHappened)
+            InstanceFact<TFactValue> fixatedFact,
+            bool isOccurred)
         {
-            var fact = generator!.ModelProvider.GetFact(fixatedFactId);
-            resultBuilder.AddFact(fact, isHappened);
+            resultBuilder.AddFact(fixatedFact, isOccurred);
         }
 
         public SimulationResult Run(int? seed = null)
@@ -47,7 +46,7 @@ namespace CausalModel.Running.Simulation
             generator = fixation.CreateGenerator(seed);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            generator.FixateRootCauses();
+            generator.FixateRootFacts();
             stopwatch.Stop();
 
             var res = resultBuilder

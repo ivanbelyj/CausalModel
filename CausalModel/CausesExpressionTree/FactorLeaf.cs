@@ -11,7 +11,7 @@ using CausalModel.Model;
 namespace CausalModel.CausesExpressionTree
 {
     /// <summary>
-    /// Элемент логического выражения, который вычисляется на основе причинного ребра
+    /// An element of a logical expression that is calculated based on the factor
     /// </summary>
     public class FactorLeaf : CausesExpression
     {
@@ -27,8 +27,8 @@ namespace CausalModel.CausesExpressionTree
 
         public override bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
-            //IInstanceFactProvider<TFactValue> factProvider,
-            IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
+            IFixatedProvider happenedProvider,
+            IRandomProvider fixingValueProvider)
             where TFactValue : class
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
@@ -41,7 +41,7 @@ namespace CausalModel.CausesExpressionTree
                     .GetModelFact(Edge.CauseId)
                     .InstanceFactId;
                 bool? isHappened = happenedProvider.IsFixated(causeId);
-                // Если причина есть, но не зафиксирована
+                // If there is a cause, but it is not fixated
                 if (isHappened == null)
                 {
                     return null;
@@ -49,8 +49,8 @@ namespace CausalModel.CausesExpressionTree
                 isExistingCauseHappened = isHappened.Value;
             }
 
-            // Если причины нет, значит, достаточно лишь выполнения самого фактора
-            // на основе вероятности
+            // If there is no cause, then it is enough to just fulfill
+            // the factor itself based on probability
             return probabilityHappened &&
                 (Edge.CauseId == null || isExistingCauseHappened);
         }

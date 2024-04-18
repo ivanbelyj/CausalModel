@@ -10,7 +10,6 @@ using CausalModel.Model.Resolving;
 
 namespace CausalModel.Fixation
 {
-
     /// <summary>
     /// Performs causal model fixation traverse
     /// </summary>
@@ -25,7 +24,6 @@ namespace CausalModel.Fixation
         private readonly ICausesTree<TFactValue> causesTree;
 
         private readonly IFixator<TFactValue> fixator;
-        //public IFixator<TFactValue> Fixator => fixator;
 
         private readonly Random random;
 
@@ -39,8 +37,17 @@ namespace CausalModel.Fixation
             this.causesTree = causesTree;
 
             this.fixator = fixator;
+            fixator.FactFixated += OnFactFixated;
 
             random = seed == null ? new Random() : new Random(seed.Value);
+        }
+
+        private void OnFactFixated(
+            object sender,
+            InstanceFact<TFactValue> fixatedFact,
+            bool isOccured)
+        {
+            FixateNotFixatedConsequencesAndVariants(fixatedFact);
         }
 
         // Todo: make seed not sensitive to fixation order?
@@ -60,7 +67,6 @@ namespace CausalModel.Fixation
         public void Fixate(InstanceFactAddress address, bool? isFactHappened = null)
         {
             InstanceFact<TFactValue> fixatingFact = modelProvider.GetFact(address);
-            string modelInstanceId = fixatingFact.InstanceFactId.ModelInstanceId;
             InstanceFactId factId = fixatingFact.InstanceFactId;
 
             // If the fact happening is not explicitly specified,
@@ -71,9 +77,13 @@ namespace CausalModel.Fixation
                     factId.ModelInstanceId,
                     fixatingFact.Fact.CausesExpression);
 
+                bool hasAbstractFactNotFixated =
+                    fixatingFact.Fact.AbstractFactId != null &&
+                    !IsFixated(GetAbstractFact(fixatingFact));
+
                 // The case when there is not enough data (some causes have not been
                 // fixated yet)
-                if (isFollowingFromCauses == null)
+                if (isFollowingFromCauses == null || hasAbstractFactNotFixated)
                 {
                     return;
                 }
@@ -86,79 +96,117 @@ namespace CausalModel.Fixation
             // (as the most, an explicit defined the fact of happening)
             if (fixatingFact.Fact.AbstractFactId == null)
             {
-                fixator.FixateFact(fixatingFact.InstanceFactId, isFactHappened.Value);
-
-                FixateNotFixatedConsequences(fixatingFact);
+                FixateFactCore(fixatingFact, isFactHappened.Value);
             }
             else
             {
-                // Fixation of the abstract fact implementation variants
-
-                var abstractFact = modelProvider.GetFact(
-                    new InstanceFactAddress(fixatingFact.Fact.AbstractFactId,
-                        modelInstanceId));
-
-                var variantsFollowingFromCauses = causesTree
-                    .GetAbstractFactVariants(abstractFact.InstanceFactId)
-                    .Select(variant =>
-                    {
-                        bool? canHappen = IsFollowingFromCauses(modelInstanceId,
-                            variant.Fact.CausesExpression);
-                        return (canHappen, variant);
-                    })
-                    .Where(x => x.canHappen != null)
-                    .ToList();
-
-                // If there is not enough data for any implementation variant,
-                // the selection of a single implementation is postponed
-                if (variantsFollowingFromCauses.Count < causesTree
-                    .GetAbstractFactVariants(abstractFact.InstanceFactId)
-                    .Count())
-                {
-                    return;
-                }
-
-                // In the future, the implementation is selected only
-                // from the candidates that have happened
-                var variantsCanHappen = variantsFollowingFromCauses
-                    .Where(x => x.canHappen == true)
-                    .Select(x => x.variant)
-                    .ToList();
-
-                //goingToHappen = factsAndVariants[abstractFact];
-
-                var selectedVariant = WeightFactorUtils.SelectFactVariant(
-                    variantsCanHappen, fixator, this,
-                    modelProvider.GetModelProvider(modelInstanceId));
-                foreach (var factVariant in variantsFollowingFromCauses
-                    .Select(x => x.variant))
-                {
-
-                    // Also fixating variants not participated in the selection
-                    // because they obviously won't happen
-
-                    if (fixator.IsFixated(factVariant.InstanceFactId) == null)
-                    {
-                        fixator.FixateFact(factVariant.InstanceFactId,
-                            ReferenceEquals(factVariant, selectedVariant));
-
-                        FixateNotFixatedConsequences(factVariant);
-                    }
-                }
+                FixateAbstractFactVariants(fixatingFact);
             }
         }
 
-        private void FixateNotFixatedConsequences(InstanceFact<TFactValue> fixatingFact)
+        private void FixateFactCore(
+            InstanceFact<TFactValue> fixatingFact,
+            bool isOccurred)
         {
+            fixator.FixateFact(fixatingFact, isOccurred);
+        }
+
+        private void FixateNotFixatedConsequencesAndVariants(
+            InstanceFact<TFactValue> fixatingFact)
+        {
+            var descendants = new List<InstanceFact<TFactValue>>();
             var consequences = causesTree
                 .TryGetConsequences(fixatingFact.InstanceFactId);
-            if (consequences == null)
-                return;
-
-            foreach (var consequence in consequences)
+            if (consequences != null)
             {
-                if (fixator.IsFixated(consequence.InstanceFactId) == null)
-                    Fixate(consequence.InstanceFactId.ToAddress());
+                descendants.AddRange(consequences);
+            }
+
+            // Todo: ?
+            //var variants = causesTree
+            //    .TryGetAbstractFactVariants(fixatingFact.InstanceFactId);
+            //if (variants != null)
+            //{
+            //    descendants.AddRange(variants);
+            //}
+
+            foreach (var descendant in descendants)
+            {
+                if (!IsFixated(descendant))
+                    Fixate(descendant.InstanceFactId.ToAddress());
+            }
+        }
+
+        private bool IsFixated(InstanceFact<TFactValue> fact)
+        {
+            return fixator.IsFixated(fact.InstanceFactId) != null;
+        }
+
+        private InstanceFact<TFactValue> GetAbstractFact(
+            InstanceFact<TFactValue> fixatingFact)
+        {
+            if (fixatingFact.Fact.AbstractFactId == null)
+                throw new InvalidOperationException();
+
+            string modelInstanceId = fixatingFact.InstanceFactId.ModelInstanceId;
+            return modelProvider.GetFact(
+                new InstanceFactAddress(fixatingFact.Fact.AbstractFactId,
+                    modelInstanceId));
+        }
+
+        private void FixateAbstractFactVariants(InstanceFact<TFactValue> fixatingFact)
+        {
+            if (fixatingFact.Fact.AbstractFactId == null)
+                throw new InvalidOperationException();
+
+            // Fixation of the abstract fact implementation variants
+
+            var abstractFact = GetAbstractFact(fixatingFact);
+            string modelInstanceId = fixatingFact.InstanceFactId.ModelInstanceId;
+
+            var variantsFollowingFromCauses = causesTree
+                .GetAbstractFactVariants(abstractFact.InstanceFactId)
+                .Select(variant =>
+                {
+                    bool? canHappen = IsFollowingFromCauses(modelInstanceId,
+                        variant.Fact.CausesExpression);
+                    return (canHappen, variant);
+                })
+                .Where(x => x.canHappen != null)
+                .ToList();
+
+            // If there is not enough data for any implementation variant,
+            // the selection of a single implementation is postponed
+            if (variantsFollowingFromCauses.Count < causesTree
+                .GetAbstractFactVariants(abstractFact.InstanceFactId)
+                .Count())
+            {
+                return;
+            }
+
+            // In the future, the implementation is selected only
+            // from the candidates that have occurred
+            var variantsCanOccur = variantsFollowingFromCauses
+                .Where(x => x.canHappen == true)
+                .Select(x => x.variant)
+                .ToList();
+
+            var selectedVariant = WeightFactorUtils.SelectFactVariant(
+                variantsCanOccur,
+                fixator,
+                this,
+                modelProvider.GetModelProvider(modelInstanceId));
+            foreach (var factVariant in variantsFollowingFromCauses
+                .Select(x => x.variant))
+            {
+                // Also fixating variants not participated in the selection
+                // because they obviously won't occur
+
+                if (!IsFixated(factVariant))
+                {
+                    FixateFactCore(factVariant,
+                        ReferenceEquals(factVariant, selectedVariant));
+                }
             }
         }
 
@@ -169,7 +217,7 @@ namespace CausalModel.Fixation
                 .Where(instanceFact => instanceFact.Fact.IsRootCause());
         }
 
-        public void FixateRootCauses()
+        public void FixateRootFacts()
         {
             foreach (var root in GetRootFacts())
             {

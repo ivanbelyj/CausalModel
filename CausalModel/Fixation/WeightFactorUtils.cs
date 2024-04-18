@@ -18,7 +18,6 @@ namespace CausalModel.Fixation
         public static float TotalWeight<TFactValue>(IEnumerable<WeightFactor> factors,
             IFixatedProvider fixatedProvider,
             IModelProvider<TFactValue> factProvider)
-        //IResolvedModelProvider<TFactValue> modelProvider)
             where TFactValue : class
         {
             if (!factors.Any())

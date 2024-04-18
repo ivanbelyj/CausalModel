@@ -88,10 +88,20 @@ namespace CausalModel.Model
             }
         }
 
+        public IEnumerable<InstanceFact<TFactValue>>? TryGetAbstractFactVariants(
+            InstanceFactId abstractFactId)
+        {
+            VariantsByAbstractFactIds.TryGetValue(abstractFactId, out var res);
+            return res;
+        }
+
         public IEnumerable<InstanceFact<TFactValue>> GetAbstractFactVariants(
             InstanceFactId abstractFactId)
         {
-            return VariantsByAbstractFactIds[abstractFactId];
+            var variants = TryGetAbstractFactVariants(abstractFactId);
+            if (variants == null)
+                throw new InvalidOperationException();
+            return variants;
         }
 
         public IEnumerable<InstanceFact<TFactValue>>? TryGetConsequences(InstanceFactId id)

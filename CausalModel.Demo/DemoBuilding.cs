@@ -53,7 +53,7 @@ public class DemoBuilding
     {
         var fact1 = FactBuilding.CreateFact(1, "Inner fact 1", null);
         var fact2 = FactBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
-        var impl = new CausalModel<string>()
+        var impl = new CausalModel<string>
         {
             Facts = new()
             {
@@ -68,9 +68,9 @@ public class DemoBuilding
                     probability: 1,
                     value: "! Fact using external cause",
                     causeId: "BlockCause"),
-            }
+            },
+            Name = "Test model (used as block)"
         };
-        impl.Name = "Test model (used as block)";
         return impl;
     }
 
@@ -90,7 +90,7 @@ public class DemoBuilding
             value: "Fact using block consequence",
             causeId: "BlockConsequence"));
 
-        var causalModel = new CausalModel<string>()
+        var causalModel = new CausalModel<string>
         {
             Facts = facts,
             BlockConventions = new List<BlockConvention>()
@@ -99,10 +99,10 @@ public class DemoBuilding
             },
             Blocks = new List<DeclaredBlock>()
             {
-                new DeclaredBlock("block1", "TestConvention")
-            }
+                new("block1", "TestConvention")
+            },
+            Name = "Character Model"
         };
-        causalModel.Name = "Character Model";
         return causalModel;
     }
 

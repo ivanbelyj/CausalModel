@@ -110,11 +110,6 @@ namespace CausalModel.Fixation
                 conventions,
                 modelInstanceFactory);
 
-            //var mainModelInstance = modelInstanceFactory.InstantiateModel(MainModel);
-
-            //var resolvedModelProvider = new ResolvedModelWithCausesTree<TFactValue>(
-            //    mainModelInstance, blockResolver);
-
             var fixator = Fixator ?? new Fixator<TFactValue>();
             if (onFactFixated != null)
             {
@@ -127,7 +122,8 @@ namespace CausalModel.Fixation
                 conventions,
                 modelInstanceFactory,
                 blockResolver,
-                fixator);
+                fixator
+                );
             return res;
         }
 

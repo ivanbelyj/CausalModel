@@ -135,14 +135,14 @@ public class CausalModelManager
             })
             .AddOnModelInstanceCreated((sender, ModelInstance) =>
             {
-                Console.WriteLine($"// Model instanced: {ModelInstance.Model.Name} " +
-                    $"{ModelInstance.InstanceId}");
+                Console.WriteLine($"// Model instantiated: {ModelInstance.Model.Name}"
+                    + $"{ModelInstance.InstanceId}");
             });
 
         var fixationFacade = facadeBuilder.Build();
         generator = fixationFacade.CreateGenerator();
 
-        generator.FixateRootCauses();
+        generator.FixateRootFacts();
     }
 
     private void RunMonteCarloSimulation()
@@ -168,21 +168,19 @@ public class CausalModelManager
 
     private void OnFactFixated(
         object sender,
-        InstanceFactId fixatedFactId,
-        bool isHappened)
+        InstanceFact<string> fixatedFact,
+        bool isOccurred)
     {
-        if (isHappened)
+        if (isOccurred)
         {
-            var fact = generator!.ModelProvider.GetFact(fixatedFactId.ToAddress());
-
             var prevColor = Console.ForegroundColor;
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write((fact.Fact.IsRootCause() ? "" : "\t")
-                + fact.Fact.FactValue);
+            Console.Write((fixatedFact.Fact.IsRootCause() ? "" : "\t")
+                + fixatedFact.Fact.FactValue);
 
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine($" ({fixatedFactId})");
+            Console.WriteLine($" ({fixatedFact.InstanceFactId})");
 
             Console.ForegroundColor = prevColor;
         }
