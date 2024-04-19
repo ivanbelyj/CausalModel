@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Fixation
+namespace CausalModel.Fixation.Fixators
 {
     public class Fixator<TFactValue> : IFixator<TFactValue>
         where TFactValue : class
@@ -32,19 +32,39 @@ namespace CausalModel.Fixation
                 return null;
         }
 
-        public void FixateFact(InstanceFactId instanceFactId, bool isOccurred)
+        public void HandleFixation(InstanceFactId instanceFactId, bool isOccurred)
+        {
+            var fact = GetFactById(instanceFactId);
+            HandleFixation(fact, isOccurred);
+        }
+
+        public virtual void HandleFixation(
+            InstanceFact<TFactValue> fact,
+            bool isOccurred)
+        {
+            Fixate(fact, isOccurred);
+        }
+
+        protected void Fixate(InstanceFactId instanceFactId, bool isOccurred)
+        {
+            var fact = GetFactById(instanceFactId);
+            Fixate(fact, isOccurred);
+        }
+
+        protected void Fixate(
+            InstanceFact<TFactValue> fact,
+            bool isOccurred)
+        {
+            factIdsFixated[fact.InstanceFactId] = isOccurred;
+            FactFixated?.Invoke(this, fact, isOccurred);
+        }
+
+        private InstanceFact<TFactValue> GetFactById(InstanceFactId instanceFactId)
         {
             if (resolvedModelProvider == null)
                 throw new InvalidOperationException("Fixator is not initialized");
 
-            var fact = resolvedModelProvider.GetFact(instanceFactId.ToAddress());
-            FixateFact(fact, isOccurred);
-        }
-
-        public virtual void FixateFact(InstanceFact<TFactValue> fact, bool isOccurred)
-        {
-            factIdsFixated[fact.InstanceFactId] = isOccurred;
-            FactFixated?.Invoke(this, fact, isOccurred);
+            return resolvedModelProvider.GetFact(instanceFactId.ToAddress());
         }
     }
 }

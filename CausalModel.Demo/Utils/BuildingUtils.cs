@@ -11,8 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Demo;
-public class DemoBuilding
+namespace CausalModel.Demo.Utils;
+public static class BuildingUtils
 {
     public static BlockResolvingMap<string> CreateDemoConventionMap()
     {

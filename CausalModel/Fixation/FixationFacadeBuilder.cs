@@ -1,5 +1,6 @@
 using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
+using CausalModel.Fixation.Fixators;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
 using CausalModel.Model.Resolving;
@@ -23,7 +24,7 @@ namespace CausalModel.Fixation
         private BlockResolver<TFactValue>? BlockResolver { get; set; }
         private BlockImplementedEventHandler<TFactValue>? onBlockImplemented;
 
-        private Fixator<TFactValue>? Fixator { get; set; }
+        private IFixator<TFactValue>? Fixator { get; set; }
         private FactFixatedEventHandler<TFactValue>? onFactFixated;
 
         public FixationFacadeBuilder() { }
@@ -77,7 +78,7 @@ namespace CausalModel.Fixation
         }
 
         public FixationFacadeBuilder<TFactValue> WithFixator(
-            Fixator<TFactValue> fixator)
+            IFixator<TFactValue> fixator)
         {
             this.Fixator = fixator;
             return this;

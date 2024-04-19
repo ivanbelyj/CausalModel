@@ -14,6 +14,6 @@ namespace CausalModel.Fixation
         /// <summary>
         /// Next random float from min (inclusive) and max (exclusive)
         /// </summary>
-        public float NextDouble(float min = 0, float max = 1);
+        public float NextFloat(float min = 0, float max = 1);
     }
 }

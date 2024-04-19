@@ -7,6 +7,7 @@ using CausalModel.CausesExpressionTree;
 using CausalModel.Model.Instance;
 using CausalModel.Model;
 using CausalModel.Model.Resolving;
+using CausalModel.Fixation.Fixators;
 
 namespace CausalModel.Fixation
 {
@@ -51,7 +52,7 @@ namespace CausalModel.Fixation
         }
 
         // Todo: make seed not sensitive to fixation order?
-        public float NextDouble(float min = 0, float max = 1)
+        public float NextFloat(float min = 0, float max = 1)
         {
             return (float)random.NextDouble(min, max);
         }
@@ -108,7 +109,7 @@ namespace CausalModel.Fixation
             InstanceFact<TFactValue> fixatingFact,
             bool isOccurred)
         {
-            fixator.FixateFact(fixatingFact, isOccurred);
+            fixator.HandleFixation(fixatingFact, isOccurred);
         }
 
         private void FixateNotFixatedConsequencesAndVariants(

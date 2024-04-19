@@ -1,12 +1,7 @@
 using CausalModel.Demo;
+using CausalModel.Demo.Utils;
 using CausalModel.Model;
 
-// Todo: ?
-// Если CauseId для WeightEdge не указан, выбор реализации абстрактного факта
-// работает некорректно
-// 
-
-string fileName = UserInteraction.GetFileName();
-CausalModelManager manager = new();
-manager.Init(fileName);
-manager.RunModel();
+string fileName = FileUtils.GetFileName();
+DemoRunner demoRunner = new(fileName);
+demoRunner.Run();

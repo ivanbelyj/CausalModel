@@ -32,7 +32,7 @@ namespace CausalModel.CausesExpressionTree
             where TFactValue : class
         {
             bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
-                (float)fixingValueProvider.NextDouble());
+                (float)fixingValueProvider.NextFloat());
             
             bool isExistingCauseHappened = false;
             if (Edge.CauseId != null)

@@ -85,7 +85,7 @@ namespace CausalModel.Fixation
 
             // Define the Id of the single implementation
             // Roulette wheel selection algorithm
-            double choice = randomProvider.NextDouble(0, weightsSum);
+            double choice = randomProvider.NextFloat(0, weightsSum);
             int curNodeIndex = -1;
             while (choice >= 0)
             {

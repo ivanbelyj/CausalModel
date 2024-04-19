@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Fixation
+namespace CausalModel.Fixation.Fixators
 {
     public delegate void FactFixatedEventHandler<TFactValue>(
         object sender,
@@ -25,7 +25,12 @@ namespace CausalModel.Fixation
         where TFactValue : class
     {
         event FactFixatedEventHandler<TFactValue> FactFixated;
-        void FixateFact(InstanceFact<TFactValue> fact, bool isOccurred);
+
+        /// <summary>
+        /// Method called from generation process
+        /// </summary>
+        void HandleFixation(InstanceFact<TFactValue> fact, bool isOccurred);
+
         void Initialize(IResolvedModelProvider<TFactValue> resolvedModelProvider);
     }
 }

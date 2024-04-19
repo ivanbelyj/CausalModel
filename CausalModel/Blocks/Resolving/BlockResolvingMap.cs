@@ -7,7 +7,6 @@ using CausalModel.Model;
 
 namespace CausalModel.Blocks.Resolving
 {
-
     /// <summary>
     /// Maps implementing models with conventions or block names for resolving purposes.
     /// </summary>
