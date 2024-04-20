@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CausalModel.Fixation.Fixators
+namespace CausalModel.Fixation.Fixators.Pending
 {
     public delegate void FactPendingEventHandler<TFactValue>(
         object sender,
@@ -28,6 +28,7 @@ namespace CausalModel.Fixation.Fixators
             Fixated = 3,
         }
 
+        private readonly IPendingFixationFilter<TFactValue> pendingFilter;
         private Dictionary<InstanceFactId, bool> pendingFacts
             = new Dictionary<InstanceFactId, bool>();
         private Dictionary<InstanceFactId, bool> factsApprovedToFixate
@@ -35,9 +36,13 @@ namespace CausalModel.Fixation.Fixators
         public event FactPendingEventHandler<TFactValue>? FactPending;
 
         private int approvePendingFactsCallsCount = 0;
+        
         public int ApprovePendingFactsCallsCount => approvePendingFactsCallsCount;
 
-        public virtual bool ShouldBePending(InstanceFact<TFactValue> fact) => true;
+        public PendingFixator(IPendingFixationFilter<TFactValue>? pendingFilter = null)
+        {
+            this.pendingFilter = pendingFilter ?? new DefaultPendingFilter<TFactValue>();
+        }
 
         public override void HandleFixation(
             InstanceFact<TFactValue> fact,
@@ -83,7 +88,7 @@ namespace CausalModel.Fixation.Fixators
 
             Fixate(factId, isOccurred ?? fact);
         }
-        
+
         public void ApprovePendingFacts()
         {
             LogInfo("Approve pending facts calls count: " +
@@ -120,7 +125,7 @@ namespace CausalModel.Fixation.Fixators
                 return PendingFactFixationStatus.Fixated;
             else
             {
-                return ShouldBePending(fact)
+                return pendingFilter.ShouldBePending(fact)
                     ? PendingFactFixationStatus.NoneToPending
                     : PendingFactFixationStatus.ApprovedToFixate;
             }

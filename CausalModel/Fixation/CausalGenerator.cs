@@ -54,7 +54,8 @@ namespace CausalModel.Fixation
         // Todo: make seed not sensitive to fixation order?
         public float NextFloat(float min = 0, float max = 1)
         {
-            return (float)random.NextDouble(min, max);
+            float res = (float)random.NextDouble(min, max);
+            return res;
         }
 
         /// <summary>

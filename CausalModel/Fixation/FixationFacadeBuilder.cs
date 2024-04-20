@@ -34,14 +34,14 @@ namespace CausalModel.Fixation
             this.MainModel = mainModel;
         }
 
-        public FixationFacadeBuilder<TFactValue> WithResolvingMap(
+        public FixationFacadeBuilder<TFactValue> UseResolvingMap(
             BlockResolvingMap<TFactValue> resolvingMap)
         {
             this.ResolvingMap = resolvingMap;
             return this;
         }
 
-        public FixationFacadeBuilder<TFactValue> WithModelInstanceFactory(
+        public FixationFacadeBuilder<TFactValue> UseModelInstanceFactory(
             ModelInstanceFactory<TFactValue> modelInstanceFactory)
         {
             this.ModelInstanceFactory = modelInstanceFactory;
@@ -64,7 +64,7 @@ namespace CausalModel.Fixation
             return SetOrAddAndReturnThis(ref onModelInstanceCreated, eventHandler);
         }
 
-        public FixationFacadeBuilder<TFactValue> WithBlockResolver(
+        public FixationFacadeBuilder<TFactValue> UseBlockResolver(
             BlockResolver<TFactValue> blockResolver)
         {
             this.BlockResolver = blockResolver;
@@ -77,7 +77,7 @@ namespace CausalModel.Fixation
             return SetOrAddAndReturnThis(ref onBlockImplemented, eventHandler);
         }
 
-        public FixationFacadeBuilder<TFactValue> WithFixator(
+        public FixationFacadeBuilder<TFactValue> UseFixator(
             IFixator<TFactValue> fixator)
         {
             this.Fixator = fixator;

@@ -21,8 +21,8 @@ namespace CausalModel.CausesExpressionTree
 
         public override bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
-            //IInstanceFactProvider<TFactValue> factProvider,
-            IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
+            IFixatedProvider happenedProvider,
+            IRandomProvider fixingValueProvider)
         {
             bool? eval = expression.Evaluate(factProvider, happenedProvider, fixingValueProvider);
             if (eval == null)

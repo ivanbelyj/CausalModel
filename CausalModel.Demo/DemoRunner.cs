@@ -2,6 +2,7 @@ using CausalModel.Blocks.Resolving;
 using CausalModel.Demo.Utils;
 using CausalModel.Fixation;
 using CausalModel.Fixation.Fixators;
+using CausalModel.Fixation.Fixators.Pending;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
 using CausalModel.Model.Resolving;
@@ -135,7 +136,7 @@ public class DemoRunner
         var facadeBuilder = CreateFacadeBuilder(fixator);
         var fixationFacade = facadeBuilder.Build();
 
-        return fixationFacade.CreateGenerator();
+        return fixationFacade.CreateGenerator(seed);
     }
 
     private PendingFixator<string> CreatePendingFixator()
@@ -153,9 +154,9 @@ public class DemoRunner
         IFixator<string>? fixator = null)
     {
         return new FixationFacadeBuilder<string>(CausalModel)
-            .WithFixator(fixator ?? new Fixator<string>())
+            .UseFixator(fixator ?? new Fixator<string>())
             .AddOnFactFixated(DemoUtils.WriteFactFixated)
-            .WithResolvingMap(BlockResolvingMap)
+            .UseResolvingMap(BlockResolvingMap)
             .AddOnBlockImplemented((sender, block, convention, implementation) =>
             {
                 Write($"// Block implemented: {block.Id}");
@@ -170,7 +171,7 @@ public class DemoRunner
     private void RunMonteCarloSimulation(bool? usePendingFixator = null)
     {
         var facadeBuilder = new FixationFacadeBuilder<string>(CausalModel)
-            .WithResolvingMap(BlockResolvingMap);
+            .UseResolvingMap(BlockResolvingMap);
         SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
 
         Write("\nRunning Monte-Carlo simulation...");

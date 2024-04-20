@@ -33,9 +33,10 @@ namespace CausalModel.CausesExpressionTree
 
         public override bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
-            IFixatedProvider happenedProvider, IRandomProvider fixingValueProvider)
+            IFixatedProvider happenedProvider,
+            IRandomProvider fixatingValueProvider)
             => Operation(Operands.Select(expr => expr.Evaluate(factProvider,
-                happenedProvider, fixingValueProvider))
+                happenedProvider, fixatingValueProvider))
                 .ToArray());
 
         protected abstract bool? Operation(bool?[] operands);
