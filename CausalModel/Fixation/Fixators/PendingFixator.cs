@@ -22,7 +22,7 @@ namespace CausalModel.Fixation.Fixators
     {
         private enum PendingFactFixationStatus
         {
-            None = 0,  // The fact occurs for the first time during fixation
+            NoneToPending = 0,  // The fact occurs for the first time during fixation
             PendingToApprove = 1,
             ApprovedToFixate = 2,
             Fixated = 3,
@@ -37,13 +37,15 @@ namespace CausalModel.Fixation.Fixators
         private int approvePendingFactsCallsCount = 0;
         public int ApprovePendingFactsCallsCount => approvePendingFactsCallsCount;
 
+        public virtual bool ShouldBePending(InstanceFact<TFactValue> fact) => true;
+
         public override void HandleFixation(
             InstanceFact<TFactValue> fact,
             bool isOccurred)
         {
             switch (GetFactStatus(fact))
             {
-                case PendingFactFixationStatus.None:
+                case PendingFactFixationStatus.NoneToPending:
                     LogInfo("Fact occurred the first time : " + fact + ", "
                         + isOccurred);
                     AddPendingFact(fact, isOccurred);
@@ -106,7 +108,8 @@ namespace CausalModel.Fixation.Fixators
             FactPending?.Invoke(this, fact, isOccurred);
         }
 
-        private PendingFactFixationStatus GetFactStatus(InstanceFact<TFactValue> fact)
+        private PendingFactFixationStatus GetFactStatus(
+            InstanceFact<TFactValue> fact)
         {
             var factId = fact.InstanceFactId;
             if (factsApprovedToFixate.ContainsKey(factId))
@@ -116,7 +119,11 @@ namespace CausalModel.Fixation.Fixators
             else if (IsFixated(factId) != null)
                 return PendingFactFixationStatus.Fixated;
             else
-                return PendingFactFixationStatus.None;
+            {
+                return ShouldBePending(fact)
+                    ? PendingFactFixationStatus.NoneToPending
+                    : PendingFactFixationStatus.ApprovedToFixate;
+            }
         }
 
         #region Logging
