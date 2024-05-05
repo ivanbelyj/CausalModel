@@ -175,7 +175,7 @@ public class DemoRunner
         SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
 
         Write("\nRunning Monte-Carlo simulation...");
-        var totalResult = simulationsRunner.RunSimulations(1000);
+        var totalResult = simulationsRunner.RunSimulations(10000);
 
         WriteMain("\n\nSimulation completed.\n");
 
