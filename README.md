@@ -25,7 +25,7 @@ The project is motivated primarily by the needs of the Raging Tomorrow and Jailp
 
 # Core concepts
 
-**Causal model** represents all possible situations or states. The process in which an individual situation or entity is determined is called **fixation**. The library supports dynamic fixation, which can be integrated with external code (for example, which is necessary to stimulate plot responsive to players actions or dynamic personal changes).
+**Causal model** represents all possible situations or states. The process in which an individual situation or entity is determined is called **fixation**. The library supports dynamic fixation, which can be integrated with external code (for example, which is necessary to simulate plot responsive to players actions or dynamic personal changes).
 
 ## Fact
 
@@ -75,9 +75,8 @@ At the fixation stage, the causes are evaluated starting from the root and marke
 ## Block Functions
 
 - **Recursion**: Inspired by real life, where time is linear, CM has no concept of cycles and treats iterations as unique elements generating each other similar to recursion.
-- **Abstraction**: A block can represent a logically unified, but actually complex part of a causal model.
+- **Abstraction**: A block can represent a logically unified, but actually complex part of a causal model. It hides details of the structure, visibility of which is not necessary for the overall model. For example, to model the history of a state, it is not necessary to know all the details of the cause-and-effect structure of one of its leaders (if they are not directly referenced from the overall model).
 - **Reusability**: A complex entity can be used in the model multiple times without duplicating its structure. For example, if a character model is used multiple times in a plot model, it is advantageous to express the character model as a block.
-- **Data hiding**: A block hides details of the structure that are not necessary for the overall model. For example, to model the history of a state, it is not necessary to know all the details of the cause-and-effect structure of one of its leaders (if they do not directly affect the overall model).
 - **Polymorphism and increasing resulting combinations**: A block's convention can be satisfied by multiple implementations. Fixating different implementations can lead to different results in the final application. Thus, external code can not only define the root causes of one general model by fixating the model accordingly to the situation, but also implement blocks with different cause-and-effect structures, potentially elevating the diversity of procedural generation.
 
 # Monte Carlo probabilities estimation

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Facts
 {
+    // Todo: rename ?
     /// <summary>
     /// Block declared in a causal model and implemented during generation
     /// </summary>
