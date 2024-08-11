@@ -105,11 +105,12 @@ namespace CausalModel.Fixation
                 modelInstanceFactory.ModelInstantiated += onModelInstanceCreated;
             }
 
-            var conventions = ResolvingMap ?? new BlockResolvingMap<TFactValue>();
+            var blockResolvingMap = ResolvingMap ?? new BlockResolvingMap<TFactValue>();
 
             var blockResolver = BlockResolver ?? new BlockResolver<TFactValue>(
-                conventions,
-                modelInstanceFactory);
+                blockResolvingMap,
+                modelInstanceFactory
+                );
 
             var fixator = Fixator ?? new Fixator<TFactValue>();
             if (onFactFixated != null)
@@ -120,7 +121,7 @@ namespace CausalModel.Fixation
 
             var res = new FixationFacade<TFactValue>(
                 MainModel,
-                conventions,
+                blockResolvingMap,
                 modelInstanceFactory,
                 blockResolver,
                 fixator

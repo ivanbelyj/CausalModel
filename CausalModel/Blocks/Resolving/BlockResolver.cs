@@ -1,3 +1,4 @@
+using CausalModel.Common;
 using CausalModel.Facts;
 using CausalModel.Model;
 using CausalModel.Model.Instance;
@@ -14,7 +15,8 @@ namespace CausalModel.Blocks.Resolving
     {
         private readonly BlockResolvingMap<TFactValue> conventionsMap;
 
-        public BlockResolver(BlockResolvingMap<TFactValue> conventionsMap,
+        public BlockResolver(
+            BlockResolvingMap<TFactValue> conventionsMap,
             ModelInstanceFactory<TFactValue> modelInstanceFactory)
             : base(modelInstanceFactory)
         {

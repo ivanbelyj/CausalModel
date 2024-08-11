@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Blocks.Resolving
 {
-
     public class BlockResolvingException : Exception
     {
         public List<Factor>? NotImplementedCauses { get; set; }

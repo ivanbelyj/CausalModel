@@ -1,3 +1,4 @@
+using CausalModel.Blocks;
 using CausalModel.Facts;
 using CausalModel.Model.Instance;
 using System;
@@ -8,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model.Resolving
 {
-
     partial class ResolvedModelProvider<TFactValue>
     {
         /// <summary>
@@ -30,40 +30,59 @@ namespace CausalModel.Model.Resolving
                     .GetInstanceProvider(address.ModelInstanceId);
 
                 // 1. Trying to get fact from the addressed model instance directly
-                var factFromInstanceModel = provider.rootModel
-                    .TryGetFact(address.FactId);
-
-                if (factFromInstanceModel != null)
-                {
-                    return factFromInstanceModel.InstanceFactId;
-                }
+                var factFromInstanceModel = TryGetFromRootModel(provider, address);
 
                 // 2. In the second case the fact may be external cause
                 // and located in the parent
-                var externalIds = provider.rootModel.TryGetExternalCauses();
+                var externalFact = TryGetFromParent(provider, address);
+
+                return factFromInstanceModel
+                    ?? externalFact
+                    // Otherwise, there is no such a block in the model
+                    ?? throw new InvalidOperationException(
+                        $"The fact was not found by address"
+                        + $" ({address}) in the resolved model.");
+            }
+
+            private InstanceFactId? TryGetFromRootModel(
+                ResolvedModelProvider<TFactValue> provider,
+                InstanceFactAddress address)
+            {
+                var factFromInstanceModel = provider.rootModel.TryGetFact(address.FactId);
+                return factFromInstanceModel?.InstanceFactId;
+            }
+
+            private InstanceFactId? TryGetFromParent(
+                ResolvedModelProvider<TFactValue> provider,
+                InstanceFactAddress address)
+            {
+                address = GetActualExternalAddress(address, provider.DeclaredBlock);
+
+                var externalIds = provider.rootModel.TryGetExternalCauses().ToList();
                 if (externalIds != null)
                 {
                     var externalCause = externalIds
                         .FirstOrDefault(fact => fact.Fact.Id == address.FactId);
 
-                    if (externalCause != null)
-                        return externalCause.InstanceFactId;
+                    return externalCause?.InstanceFactId;
                 }
-
-                // Otherwise, there is no such a block in the model
-                throw new InvalidOperationException($"The fact was not found by address"
-                    + $" ({address}) in the resolved model.");
+                return null;
             }
 
-            //private bool IsFactExternal(string modelInstanceId, string factId)
-            //{
-            //    return rootInstance
-            //        .Model
-            //        .BlockConventions
-            //        ?.SelectMany(x => x.Consequences ?? new List<BaseFact>())
-            //        .Select(x => x.Id)
-            //        .Contains(id.FactId) ?? false;
-            //}
+            private InstanceFactAddress GetActualExternalAddress(
+                InstanceFactAddress address,
+                DeclaredBlock? declaredBlock)
+            {
+                if (declaredBlock != null)
+                {
+                    var actualId = declaredBlock.TryGetActualExternalFactId(address.FactId);
+                    if (actualId != null)
+                    {
+                        address = new InstanceFactAddress(actualId, address.ModelInstanceId);
+                    }
+                }
+                return address;
+            }
         }
     }
 }

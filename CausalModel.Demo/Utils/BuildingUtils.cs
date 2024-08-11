@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 namespace CausalModel.Demo.Utils;
 public static class BuildingUtils
 {
+    private const string CausalModelName = "Character Model";
+
     public static BlockResolvingMap<string> CreateDemoConventionMap()
     {
         return new BlockResolvingMap<string>()
@@ -25,25 +27,22 @@ public static class BuildingUtils
         };
     }
 
+    private static BlockCausesConvention CreateDemoCausesConvention()
+    {
+        var conv = new BlockCausesConvention("TestCausesConvention")
+        {
+            // Cause from the parent model required for the block
+            Causes = new() { "BlockCause" }
+        };
+
+        return conv;
+    }
+
     private static BlockConvention CreateDemoConvention()
     {
         var conv = new BlockConvention("TestConvention")
         {
-            Causes = new()
-                {
-                    new Factor()
-                    {
-                        // Cause from the parent model required for the block
-                        CauseId = "BlockCause"
-                    }
-                },
-            Consequences = new()
-                {
-                    new BaseFact()
-                    {
-                        Id = "BlockConsequence"
-                    }
-                }
+            Consequences = new() { "BlockConsequence" }
         };
 
         return conv;
@@ -60,10 +59,11 @@ public static class BuildingUtils
                 fact1,
                 fact2,
                 FactBuilding.CreateFact(1, "Inner fact 3", null),
-                FactBuilding.CreateFact(1,
-                    "Block consequence (can be used in the parent model)",
-                    fact2.Id,
-                    "BlockConsequence"),
+                FactBuilding.CreateFact(
+                    probability: 1,
+                    value: "Block consequence (can be used in the parent model)",
+                    causeId: fact2.Id,
+                    id: "BlockConsequence"),
                 FactBuilding.CreateFact(
                     probability: 1,
                     value: "! Fact using external cause",
@@ -81,9 +81,15 @@ public static class BuildingUtils
         // Required for the declared block
         facts.Add(FactBuilding.CreateFact(
             0.9f,
-            value: "Block cause",
+            value: "Block cause fact value",
             causeId: null,
-            id: "BlockCause"));
+            id: "BlockCause1"));
+
+        facts.Add(FactBuilding.CreateFact(
+            0.9f,
+            value: "Block cause fact value (2)",
+            causeId: null,
+            id: "BlockCause2"));
 
         // Add fact using block consequence
         facts.Add(FactBuilding.CreateFact(1f,
@@ -97,13 +103,30 @@ public static class BuildingUtils
             {
                 CreateDemoConvention()
             },
-            Blocks = new List<DeclaredBlock>()
+            BlockCausesConventions = new List<BlockCausesConvention>()
             {
-                new("block1", "TestConvention")
+                CreateDemoCausesConvention()
             },
-            Name = "Character Model"
+            DeclaredBlocks = new List<DeclaredBlock>()
+            {
+                CreateDeclaredBlock(1),
+                CreateDeclaredBlock(2)
+            },
+            Name = CausalModelName
         };
         return causalModel;
+    }
+
+    private static DeclaredBlock CreateDeclaredBlock(int blockNumber)
+    {
+        return new DeclaredBlock(
+            $"Block{blockNumber}",
+            "TestConvention",
+            "TestCausesConvention",
+            new()
+            {
+                { "BlockCause", $"BlockCause{blockNumber}" }
+            });
     }
 
     private static List<Fact<string>> CreateCharacterFacts()

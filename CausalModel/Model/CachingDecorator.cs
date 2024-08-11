@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model
 {
-
     /// <summary>
     /// Caching data from the causal model for faster access
     /// </summary>
@@ -39,15 +38,16 @@ namespace CausalModel.Model
             }
 
             // External causes
-            foreach (string? cause in model
-                .Facts
+            foreach (string? cause in model.Facts
                 .SelectMany(fact => fact.GetCauses())
                 .Select(factor => factor.CauseId))
             {
                 if (cause != null
                     && !FactsById.ContainsKey(cause)
                     && !ExternalCauseIds.Contains(cause))
+                {
                     ExternalCauseIds.Add(cause);
+                }
             }
         }
 

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model
 {
-
     /// <summary>
     /// Represents given models as a tree that allows to traverse from causes
     /// to consequences
@@ -63,14 +62,17 @@ namespace CausalModel.Model
                 {
                     if (edge.CauseId != null)
                     {
-                        ProcessCauseAndConsequence(edge.CauseId,
-                            instanceFact, modelProvider);
+                        ProcessCauseAndConsequence(
+                            edge.CauseId,
+                            instanceFact,
+                            modelProvider);
                     }
                 }
             }
         }
 
-        private void ProcessCauseAndConsequence(string causeLocalId,
+        private void ProcessCauseAndConsequence(
+            string causeLocalId,
             InstanceFact<TFactValue> consequence,
             IModelProvider<TFactValue> modelProvider)
         {

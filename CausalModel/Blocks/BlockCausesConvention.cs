@@ -9,24 +9,24 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Blocks
 {
-    public class BlockConvention
+    public class BlockCausesConvention
     {
         [JsonProperty(Required = Required.Always)]
         public string Name { get; set; }
 
         /// <summary>
-        /// Consequences, that can be used by the external model.
-        /// On the level of convention they are expressed by names only
+        /// Causes, required for the block in the external model.
+        /// On the level of convention they are expressed by local ids (names)
         /// </summary>
-        public List<string>? Consequences { get; set; }
+        public List<string>? Causes { get; set; }
 
-        public BlockConvention(string name)
+        public BlockCausesConvention(string name)
         {
             Name = name;
         }
 
-        // Should be used for deserialization
-        private BlockConvention() : this(null!)
+        // Should be used for deserialization only
+        private BlockCausesConvention() : this(null!)
         {
 
         }

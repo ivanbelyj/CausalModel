@@ -25,7 +25,8 @@ namespace CausalModel.Blocks.Resolving
         where TFactValue : class
     {
         event BlockImplementedEventHandler<TFactValue> BlockImplemented;
-        ModelInstance<TFactValue> Resolve(DeclaredBlock block,
+        ModelInstance<TFactValue> Resolve(
+            DeclaredBlock block,
             ModelInstance<TFactValue> parentInstance);
     }
 }

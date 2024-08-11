@@ -17,15 +17,22 @@ namespace CausalModel.Facts
         private readonly BlockConvention? convention;
 
         public string? ConventionName => convention?.Name;
-        public IEnumerable<Factor>? Causes => convention?.Causes;
-        public IEnumerable<BaseFact>? Consequences => convention?.Consequences;
 
-        public DeclaredBlock Block { get; private set; }
+        public IEnumerable<Factor>? Causes => DeclaredBlock
+            .CauseBlockReferencesMap
+            .Values
+            .Select(x => new Factor() { CauseId = x });
 
-        public BlockFact(DeclaredBlock block, BlockConvention? convention)
+        public IEnumerable<BaseFact>? Consequences => convention?
+            .Consequences
+            .Select(x => new BaseFact() { Id = x });
+
+        public DeclaredBlock DeclaredBlock { get; private set; }
+
+        public BlockFact(DeclaredBlock declaredBlock, BlockConvention? convention)
         {
+            DeclaredBlock = declaredBlock;
             this.convention = convention;
-            Block = block;
         }
 
         public override IEnumerable<Factor> GetCauses()

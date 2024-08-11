@@ -1,3 +1,4 @@
+using CausalModel.Blocks;
 using CausalModel.Facts;
 using CausalModel.Model.Instance;
 using System;
@@ -13,6 +14,12 @@ namespace CausalModel.Model.Resolving
     {
         private readonly ModelInstance<TFactValue> modelInstance;
         private readonly BlockResolvingHandler<TFactValue> resolvingHandler;
+
+        /// <summary>
+        /// Indicates who am I in the external model. Null for the root model
+        /// </summary>
+        private readonly DeclaredBlock? declaredBlock;
+
         private readonly ResolvedModelNode<TFactValue>? parent;
 
         private readonly CachingDecorator<TFactValue> cachingDecorator;
@@ -20,10 +27,12 @@ namespace CausalModel.Model.Resolving
         public ResolvedModelNode(
             ModelInstance<TFactValue> modelInstance,
             BlockResolvingHandler<TFactValue> resolvingHandler,
+            DeclaredBlock? declaredBlock,
             ResolvedModelNode<TFactValue>? parent = null)
         {
             this.modelInstance = modelInstance;
             this.resolvingHandler = resolvingHandler;
+            this.declaredBlock = declaredBlock;
             this.parent = parent;
 
             cachingDecorator = new CachingDecorator<TFactValue>(modelInstance.Model);
@@ -41,9 +50,11 @@ namespace CausalModel.Model.Resolving
         {
             var res = TryGetFact(factLocalId);
             if (res == null)
+            {
                 throw new InvalidOperationException($"Fact (local id: {factLocalId}) "
                     + $"was not found in the model instance "
                     + $"(id: {modelInstance.InstanceId}).");
+            }
             return res;
         }
 
@@ -65,15 +76,41 @@ namespace CausalModel.Model.Resolving
 
         public IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses()
         {
+            var factsFromParent = GetExternalFactsFromParent();
+
+            var factsFromBlocks = GetExternalFactsFromBlocks();
+
+            return factsFromParent.Concat(factsFromBlocks);
+        }
+
+        private IEnumerable<InstanceFact<TFactValue>> GetExternalFactsFromParent()
+        {
             IEnumerable<InstanceFact<TFactValue>> factsFromParent
                 = new List<InstanceFact<TFactValue>>();
 
             if (parent != null)
-                factsFromParent = cachingDecorator
+            {
+                if (declaredBlock == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Resolved model has parent, but {nameof(declaredBlock)} is null. "
+                        + "Block implementations should have this field set"
+                    );
+                }
+
+                var actualFactIds = cachingDecorator
                     .ExternalCauseIds
+                    .Select(declaredBlock.GetActualExternalFactId);
+                factsFromParent = actualFactIds
                     .Select(parent.TryGetFact)
                     .Where(parentFact => parentFact != null)!;
+            }
 
+            return factsFromParent;
+        }
+
+        private List<InstanceFact<TFactValue>> GetExternalFactsFromBlocks()
+        {
             var factsFromBlocks = new List<InstanceFact<TFactValue>>();
 
             var blocks = resolvingHandler.ResolvedBlockProviders;
@@ -81,15 +118,14 @@ namespace CausalModel.Model.Resolving
             {
                 foreach (var block in blocks)
                 {
-                    factsFromBlocks.AddRange(cachingDecorator
-                        .ExternalCauseIds
+                    factsFromBlocks.AddRange(cachingDecorator.ExternalCauseIds
                         .SelectMany(externalId => blocks
                             .Select(block => block.TryGetFactInRootInstance(externalId)))
                         .Where(fact => fact != null)!);
                 }
             }
 
-            return factsFromParent.Concat(factsFromBlocks);
+            return factsFromBlocks;
         }
     }
 }

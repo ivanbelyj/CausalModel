@@ -28,8 +28,8 @@ namespace CausalModel.Model.Resolving
 
         public InstanceFact<TFactValue> GetModelFact(string factId)
         {
-            return resolvedModelProvider.GetFact(new InstanceFactAddress(factId,
-                modelInstanceId));
+            return resolvedModelProvider.GetFact(
+                new InstanceFactAddress(factId, modelInstanceId));
         }
     }
 }

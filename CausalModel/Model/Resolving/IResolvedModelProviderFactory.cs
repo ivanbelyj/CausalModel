@@ -1,3 +1,4 @@
+using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
 using CausalModel.Model.Instance;
 using System;
@@ -13,6 +14,7 @@ namespace CausalModel.Model.Resolving
     {
         ResolvedModelProvider<TFactValue> CreateResolvedModel(
             ModelInstance<TFactValue> modelInstance,
+            DeclaredBlock declaredBlock,
             IBlockResolver<TFactValue> blockResolver);
     }
 }

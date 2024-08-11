@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model.Resolving
 {
-    public partial class ResolvedModelProvider<TFactValue> :
+    public abstract partial class ResolvedModelProvider<TFactValue> :
         IResolvedModelProvider<TFactValue>,
         IResolvedModelProviderFactory<TFactValue>
         where TFactValue : class
@@ -23,13 +23,22 @@ namespace CausalModel.Model.Resolving
 
         private readonly ResolvedModelProvider<TFactValue>? parent;
 
+        private readonly Dictionary<string, ModelProvider<TFactValue>>
+            modelProvidersByInstanceId
+            = new Dictionary<string, ModelProvider<TFactValue>>();
+
+        public string RootInstanceId => rootModel.ModelInstanceId;
+
+        public DeclaredBlock? DeclaredBlock { get; }
+
         protected ResolvedModelProvider(
             ModelInstance<TFactValue> modelInstance,
             IBlockResolver<TFactValue> blockResolver,
-            ResolvedModelProvider<TFactValue>? parent)
+            ResolvedModelProvider<TFactValue>? parent,
+            DeclaredBlock? declaredBlock)
         {
             this.parent = parent;
-
+            DeclaredBlock = declaredBlock;
             blockResolvingHandler = new BlockResolvingHandler<TFactValue>(
                 blockResolver,
                 modelInstance,
@@ -38,27 +47,26 @@ namespace CausalModel.Model.Resolving
             rootModel = new ResolvedModelNode<TFactValue>(
                 modelInstance,
                 blockResolvingHandler,
+                declaredBlock,
                 parent?.rootModel);
 
             addressResolver = new InstanceFactAddressResolver(this);
         }
 
-        public ResolvedModelProvider(ModelInstance<TFactValue> modelInstance,
+        public ResolvedModelProvider(
+            ModelInstance<TFactValue> modelInstance,
             IBlockResolver<TFactValue> blockResolver)
-            : this(modelInstance, blockResolver, null)
+            : this(modelInstance, blockResolver, null, null)
         {
 
         }
-
-        private readonly Dictionary<string, ModelProvider<TFactValue>> 
-            modelProvidersByInstanceId
-            = new Dictionary<string, ModelProvider<TFactValue>>();
 
         public IModelProvider<TFactValue> GetModelProvider(string modelInstanceId)
         {
             if (!modelProvidersByInstanceId.ContainsKey(modelInstanceId))
             {
-                var factProvider = new ModelProvider<TFactValue>(this,
+                var factProvider = new ModelProvider<TFactValue>(
+                    this,
                     modelInstanceId);
                 modelProvidersByInstanceId.Add(modelInstanceId, factProvider);
             }
@@ -66,14 +74,10 @@ namespace CausalModel.Model.Resolving
             return modelProvidersByInstanceId[modelInstanceId];
         }
 
-        public string RootInstanceId => rootModel.ModelInstanceId;
-
-        public virtual ResolvedModelProvider<TFactValue> CreateResolvedModel(
+        public abstract ResolvedModelProvider<TFactValue> CreateResolvedModel(
             ModelInstance<TFactValue> resolvedBlock,
-            IBlockResolver<TFactValue> blockResolver)
-        {
-            return new ResolvedModelProvider<TFactValue>(resolvedBlock, blockResolver);
-        }
+            DeclaredBlock declaredBlock,
+            IBlockResolver<TFactValue> blockResolver);
 
         private InstanceFactId ResolveAddress(InstanceFactAddress address)
         {

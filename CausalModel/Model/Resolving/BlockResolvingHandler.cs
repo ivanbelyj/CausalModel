@@ -1,3 +1,4 @@
+using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
 using CausalModel.Facts;
 using CausalModel.Model.Instance;
@@ -25,8 +26,7 @@ namespace CausalModel.Model.Resolving
         public BlockResolvingHandler(
             IBlockResolver<TFactValue> blockResolver,
             ModelInstance<TFactValue> modelInstance,
-            IResolvedModelProviderFactory<TFactValue> resolvedModelProviderFactory
-            )
+            IResolvedModelProviderFactory<TFactValue> resolvedModelProviderFactory)
         {
             this.blockResolver = blockResolver;
             this.modelInstance = modelInstance;
@@ -34,6 +34,13 @@ namespace CausalModel.Model.Resolving
             resolvedBlocksByInstanceId
                 = new Lazy<Dictionary<string, ResolvedModelProvider<TFactValue>>>(
                     GetResolvedBlocksByInstanceIds);
+        }
+
+        public ResolvedModelProvider<TFactValue>? TryGetResolvedBlock(
+            string modelInstanceId)
+        {
+            resolvedBlocksByInstanceId.Value.TryGetValue(modelInstanceId, out var res);
+            return res;
         }
 
         /// <summary>
@@ -47,36 +54,31 @@ namespace CausalModel.Model.Resolving
                 = new Dictionary<string, ResolvedModelProvider<TFactValue>>();
 
             var resolvedBlocksList = GetResolvedBlocks();
-            foreach (var resolvedBlock in resolvedBlocksList)
+            foreach (var (declaredBlock, resolvedBlock) in resolvedBlocksList)
             {
-                var resolvedModelProvider = resolvedModelProviderFactory
-                    .CreateResolvedModel(resolvedBlock, blockResolver);
+                var resolvedModelProvider = resolvedModelProviderFactory.CreateResolvedModel(
+                    resolvedBlock,
+                    declaredBlock,
+                    blockResolver);
                 resolvedBlocks.Add(resolvedBlock.InstanceId, resolvedModelProvider);
             }
 
             return resolvedBlocks;
         }
 
-        public ResolvedModelProvider<TFactValue>? TryGetResolvedBlock(
-            string modelInstanceId)
-        {
-            resolvedBlocksByInstanceId.Value.TryGetValue(modelInstanceId, out var res);
-            return res;
-        }
-
         /// <summary>
         /// Returns resolved blocks of the root causal model instance
         /// (not recursive resolving)
         /// </summary>
-        private IEnumerable<ModelInstance<TFactValue>> GetResolvedBlocks()
+        private IEnumerable<(DeclaredBlock, ModelInstance<TFactValue>)> GetResolvedBlocks()
         {
-            var res = new List<ModelInstance<TFactValue>>();
+            var res = new List<(DeclaredBlock, ModelInstance<TFactValue>)>();
             foreach (BlockFact block in modelInstance.Model.BlockFacts)
             {
                 ModelInstance<TFactValue> resolvedBlock =
-                    blockResolver.Resolve(block.Block, modelInstance);
+                    blockResolver.Resolve(block.DeclaredBlock, modelInstance);
 
-                res.Add(resolvedBlock);
+                res.Add((block.DeclaredBlock, resolvedBlock));
             }
             return res;
         }

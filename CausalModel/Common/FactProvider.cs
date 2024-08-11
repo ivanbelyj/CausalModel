@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Common
 {
-
     public class FactProvider<TFactValue>
         where TFactValue : class
     {
