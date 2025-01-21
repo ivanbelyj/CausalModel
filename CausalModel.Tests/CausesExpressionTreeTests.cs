@@ -1,8 +1,5 @@
 ﻿using CausalModel.CausesExpressionTree;
-using CausalModel.Model;
 using CausalModel.Factors;
-using CausalModel.Fixation;
-using CausalModel.Facts;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;

@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CausalModel.Common
+namespace CausalModel.Common.DataProviders
 {
     public interface IModelsProvider<T> where T : class
     {
-        CausalModel<T> GetModel(string name);
+        CausalModel<T> GetModelByName(string name);
     }
 }

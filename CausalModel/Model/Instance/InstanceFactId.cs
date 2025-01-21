@@ -1,4 +1,4 @@
-using CausalModel.Model.Resolving;
+using CausalModel.Model.Resolving.ResolvingNode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Model.Instance
 {
-
     /// <summary>
     /// The unique identifier of the fact in the resolved causal model.
     /// If the fact is used in several model instances via blocks mechanism,

@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using CausalModel.CausesExpressionTree;
-using CausalModel.Factors;
-using CausalModel.Facts;
 using Newtonsoft.Json.Serialization;
 
-namespace CausalModel.Model.Serialization
+namespace CausalModel.Serialization
 {
     public class CausalModelSerializationBinder<TFactValue> : ISerializationBinder
     {
@@ -18,12 +16,11 @@ namespace CausalModel.Model.Serialization
 
         public static readonly List<(Type type, string name)> KnownTypes
             = new List<(Type, string)>() {
-        (typeof(ConjunctionOperation), "and"),
-        (typeof(DisjunctionOperation), "or"),
-        (typeof(FactorLeaf), "factor"),
-        (typeof(InversionOperation), "not"),
+            (typeof(ConjunctionOperation), "and"),
+            (typeof(DisjunctionOperation), "or"),
+            (typeof(FactorLeaf), "factor"),
+            (typeof(InversionOperation), "not"),
         };
-        //public static List<(Type type, string name)> KnownTypes => knownTypes;
 
         public void BindToName(Type serializedType, out string? assemblyName,
             out string? typeName)

@@ -2,6 +2,7 @@ using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
 using CausalModel.Facts;
 using CausalModel.Model.Instance;
+using CausalModel.Model.Resolving.ResolvingNode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,8 +89,10 @@ namespace CausalModel.Model.Resolving
         {
             var res = TryGetFact(address);
             if (res == null)
-                throw new InvalidOperationException($"Fact was not found " +
-                    $"by address ({address}).");
+            {
+                throw new InvalidOperationException(
+                    $"Fact was not found by address ({address}).");
+            }
             return res;
         }
 
@@ -146,16 +149,12 @@ namespace CausalModel.Model.Resolving
         {
             var res = TryGetInstanceProvider(modelInstanceId);
             if (res == null)
-                throw new InvalidOperationException($"Resolved model instance provider " +
+            {
+                throw new InvalidOperationException(
+                    $"Resolved model instance provider " +
                     $"(instance id: {modelInstanceId}) was not found.");
+            }
             return res;
         }
-
-        //public IEnumerable<InstanceFact<TFactValue>>? TryGetExternalCauses(
-        //    string modelInstanceId)
-        //{
-        //    var provider = TryGetInstanceProvider(modelInstanceId);
-        //    return provider?.rootModel.TryGetExternalCauses();
-        //}
     }
 }

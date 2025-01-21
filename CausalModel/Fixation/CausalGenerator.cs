@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CausalModel.Common;
 using CausalModel.Facts;
 using CausalModel.CausesExpressionTree;
 using CausalModel.Model.Instance;
 using CausalModel.Model;
 using CausalModel.Model.Resolving;
 using CausalModel.Fixation.Fixators;
+using CausalModel.Model.Resolving.ResolvingNode;
+using CausalModel.Common.Extensions;
 
 namespace CausalModel.Fixation
 {
@@ -152,7 +153,8 @@ namespace CausalModel.Fixation
 
             string modelInstanceId = fixatingFact.InstanceFactId.ModelInstanceId;
             return modelProvider.GetFact(
-                new InstanceFactAddress(fixatingFact.Fact.AbstractFactId,
+                new InstanceFactAddress(
+                    fixatingFact.Fact.AbstractFactId,
                     modelInstanceId));
         }
 

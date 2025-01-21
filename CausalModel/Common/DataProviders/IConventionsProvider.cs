@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CausalModel.Common
+namespace CausalModel.Common.DataProviders
 {
     public interface IConventionsProvider
     {

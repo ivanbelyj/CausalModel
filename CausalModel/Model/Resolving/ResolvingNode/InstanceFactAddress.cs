@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Resolving
+namespace CausalModel.Model.Resolving.ResolvingNode
 {
-
     /// <summary>
     /// Allows to get an instance fact from the resolved model provider
     /// both by its actual location and by the location where it's used

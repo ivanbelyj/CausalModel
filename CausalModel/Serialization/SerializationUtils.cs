@@ -1,4 +1,4 @@
-﻿using CausalModel.Facts;
+﻿using CausalModel.Serialization.Mapping;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -7,30 +7,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Model.Serialization
+namespace CausalModel.Serialization
 {
-    public class CausalModelSerialization
+    public class SerializationUtils
     {
         public static string ToJson<TFactValue>(
-            CausalModel<TFactValue> model,
+            Common.CausalBundle<TFactValue> model,
             bool writeIndented = false)
             where TFactValue : class
         {
+            var modelToSerialize = MappingUtils.Map(model);
+
             var settings = CreateSerializerSettings<TFactValue>(writeIndented);
 
-            return JsonConvert.SerializeObject(model, settings);
+            return JsonConvert.SerializeObject(modelToSerialize, settings);
         }
 
-        public static CausalModel<TFactValue>? FromJson<TFactValue>(
+        public static Common.CausalBundle<TFactValue>? FromJson<TFactValue>(
             string jsonString)
             where TFactValue : class
         {
             var settings = CreateSerializerSettings<TFactValue>();
 
-            var model = JsonConvert
-                .DeserializeObject<CausalModel<TFactValue>>(
-                    jsonString, settings);
-            return model;
+            var deserializedModel = JsonConvert.DeserializeObject<CausalBundle<TFactValue>>(
+                jsonString,
+                settings);
+            return deserializedModel == null ? null : MappingUtils.Map(deserializedModel);
         }
 
         private static JsonSerializerSettings CreateSerializerSettings<TFactValue>(

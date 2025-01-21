@@ -1,43 +1,44 @@
-using CausalModel.Blocks.Resolving;
+using CausalModel.Common;
+using CausalModel.Common.DataProviders;
 using CausalModel.Demo.Utils;
 using CausalModel.Fixation;
 using CausalModel.Fixation.Fixators;
 using CausalModel.Fixation.Fixators.Pending;
-using CausalModel.Model;
-using CausalModel.Model.Instance;
-using CausalModel.Model.Resolving;
-using CausalModel.Model.Serialization;
 using CausalModel.Running;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using static CausalModel.Demo.Utils.WriteUtils;
 
 namespace CausalModel.Demo;
 public class DemoRunner
 {
-    private readonly SourceData sourceData;
+    private readonly CausalBundle<string> bundle;
 
-    private CausalModel<string> CausalModel => sourceData.CausalModel;
-    private BlockResolvingMap<string> BlockResolvingMap
-        => sourceData.BlockResolvingMap;
-
-    public DemoRunner(SourceData sourceData)
+    public DemoRunner(CausalBundle<string> sourceData)
     {
-        this.sourceData = sourceData;
+        this.bundle = sourceData;
     }
 
     public DemoRunner(string sourceDataFileName)
     {
-        sourceData = DemoUtils.GetSourceData(sourceDataFileName);
+        bundle = DemoUtils.GetSourceData(sourceDataFileName);
     }
 
     public void Run()
+    {
+        try
+        {
+            RunLoop();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred. Press any key to exit. {ex}");
+            Console.ReadKey(false);
+        }
+    }
+
+    private void RunLoop()
     {
         bool shouldContinue = true;
         while (shouldContinue)
@@ -144,7 +145,8 @@ public class DemoRunner
         var fixator = new PendingFixator<string>();
         fixator.FactPending += (sender, instanceFact, isOccurred) => {
             var fact = instanceFact.Fact;
-            WriteSubtle($"Pending fact: {fact.FactValue} ({fact.Id}). " +
+            WriteSubtle(
+                $"Pending fact: {fact.FactValue} ({fact.Id}). " +
                 $"is occurred: {isOccurred}");
         };
         return fixator;
@@ -153,25 +155,24 @@ public class DemoRunner
     private FixationFacadeBuilder<string> CreateFacadeBuilder(
         IFixator<string>? fixator = null)
     {
-        return new FixationFacadeBuilder<string>(CausalModel)
+        return new FixationFacadeBuilder<string>(bundle)
             .UseFixator(fixator ?? new Fixator<string>())
             .AddOnFactFixated(DemoUtils.WriteFactFixated)
-            .UseResolvingMap(BlockResolvingMap)
             .AddOnBlockImplemented((sender, block, convention, implementation) =>
             {
                 Write($"// Block implemented: {block.Id}");
             })
             .AddOnModelInstanceCreated((sender, ModelInstance) =>
             {
-                Write($"// Model instantiated: {ModelInstance.Model.Name}"
-                    + $"{ModelInstance.InstanceId}");
+                Write(
+                    $"// Model instantiated: {ModelInstance.Model.Name}" +
+                    $"{ModelInstance.InstanceId}");
             });
     }
 
     private void RunMonteCarloSimulation(bool? usePendingFixator = null)
     {
-        var facadeBuilder = new FixationFacadeBuilder<string>(CausalModel)
-            .UseResolvingMap(BlockResolvingMap);
+        var facadeBuilder = new FixationFacadeBuilder<string>(bundle);
         SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
 
         Write("\nRunning Monte-Carlo simulation...");
@@ -179,6 +180,6 @@ public class DemoRunner
 
         WriteMain("\n\nSimulation completed.\n");
 
-        Write(totalResult.ToString(CausalModel, BlockResolvingMap));
+        Write(totalResult.ToString(new FactsProvider<string>(bundle.CausalModels)));
     }
 }

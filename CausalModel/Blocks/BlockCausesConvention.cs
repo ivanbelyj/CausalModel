@@ -11,7 +11,6 @@ namespace CausalModel.Blocks
 {
     public class BlockCausesConvention
     {
-        [JsonProperty(Required = Required.Always)]
         public string Name { get; set; }
 
         /// <summary>
@@ -23,12 +22,6 @@ namespace CausalModel.Blocks
         public BlockCausesConvention(string name)
         {
             Name = name;
-        }
-
-        // Should be used for deserialization only
-        private BlockCausesConvention() : this(null!)
-        {
-
         }
     }
 }

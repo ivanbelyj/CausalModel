@@ -1,10 +1,9 @@
 using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
+using CausalModel.Common;
 using CausalModel.Factors;
 using CausalModel.Facts;
 using CausalModel.Model;
-using CausalModel.Model.Instance;
-using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,17 +11,40 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CausalModel.Demo.Utils;
-public static class BuildingUtils
+public static class DemoBundleBuildingUtils
 {
-    private const string CausalModelName = "Character Model";
+    private const string CharacterModelName = "Character Model";
+    private const string BlockModelName = "Test model (used as block)";
 
-    public static BlockResolvingMap<string> CreateDemoConventionMap()
+    public static CausalBundle<string> CreateDemoCausalBundle()
     {
-        return new BlockResolvingMap<string>()
+        return new CausalBundle<string>()
         {
-            ModelsByConventionName = new Dictionary<string, CausalModel<string>>()
+            CausalModels = new List<CausalModel<string>>
             {
-                { "TestConvention", CreateDemoConventionImplementation() }
+                CreateDemoCausalModel(),
+                CreateDemoConventionImplementation()
+            },
+            BlockConventions = new List<BlockConvention>()
+            {
+                CreateDemoConvention()
+            },
+            BlockCausesConventions = new List<BlockCausesConvention>()
+            {
+                CreateDemoCausesConvention()
+            },
+            BlockResolvingMap = CreateDemoBlockResolvingMap(),
+            DefaultMainModel = CharacterModelName
+        };
+    }
+
+    private static BlockResolvingMap CreateDemoBlockResolvingMap()
+    {
+        return new BlockResolvingMap()
+        {
+            ModelNamesByConventionName = new Dictionary<string, string>()
+            {
+                { "TestConvention", BlockModelName }
             }
         };
     }
@@ -52,7 +74,7 @@ public static class BuildingUtils
     {
         var fact1 = FactBuilding.CreateFact(1, "Inner fact 1", null);
         var fact2 = FactBuilding.CreateFact(1, "Inner fact 2", fact1.Id);
-        var impl = new CausalModel<string>
+        var impl = new CausalModel<string>(BlockModelName)
         {
             Facts = new()
             {
@@ -61,71 +83,74 @@ public static class BuildingUtils
                 FactBuilding.CreateFact(1, "Inner fact 3", null),
                 FactBuilding.CreateFact(
                     probability: 1,
-                    value: "Block consequence (can be used in the parent model)",
-                    causeId: fact2.Id,
-                    id: "BlockConsequence"),
+                    value: "! Fact using external cause",
+                    causeId: "BlockCause",
+                    id: "fact1"),
                 FactBuilding.CreateFact(
                     probability: 1,
-                    value: "! Fact using external cause",
-                    causeId: "BlockCause"),
+                    value: "Block consequence (can be used in the parent model)",
+                    causeId: "fact1",
+                    id: "BlockConsequence"),
             },
-            Name = "Test model (used as block)"
         };
         return impl;
     }
 
-    public static CausalModel<string> CreateDemoCausalModel()
+    private static CausalModel<string> CreateDemoCausalModel()
     {
         var facts = CreateCharacterFacts();
-
-        // Required for the declared block
-        facts.Add(FactBuilding.CreateFact(
-            0.9f,
-            value: "Block cause fact value",
-            causeId: null,
-            id: "BlockCause1"));
-
-        facts.Add(FactBuilding.CreateFact(
-            0.9f,
-            value: "Block cause fact value (2)",
-            causeId: null,
-            id: "BlockCause2"));
-
-        // Add fact using block consequence
-        facts.Add(FactBuilding.CreateFact(1f,
-            value: "Fact using block consequence",
-            causeId: "BlockConsequence"));
-
-        var causalModel = new CausalModel<string>
+        AddFactsRelatedToDeclaredBlocks(facts);
+        
+        var causalModel = new CausalModel<string>(CharacterModelName)
         {
             Facts = facts,
-            BlockConventions = new List<BlockConvention>()
-            {
-                CreateDemoConvention()
-            },
-            BlockCausesConventions = new List<BlockCausesConvention>()
-            {
-                CreateDemoCausesConvention()
-            },
             DeclaredBlocks = new List<DeclaredBlock>()
             {
                 CreateDeclaredBlock(1),
                 CreateDeclaredBlock(2)
-            },
-            Name = CausalModelName
+            }
         };
         return causalModel;
+    }
+
+    private static void AddFactsRelatedToDeclaredBlocks(List<Fact<string>> facts)
+    {
+        // Required for the declared block
+        facts.Add(FactBuilding.CreateFact(
+            0.7f,
+            value: "Block cause fact value (1)",
+            causeId: null,
+            id: "BlockCause1"));
+
+        facts.Add(FactBuilding.CreateFact(
+            0.7f,
+            value: "Block cause fact value (2)",
+            causeId: null,
+            id: "BlockCause2"));
+
+        // Add facts using blocks consequences
+        facts.Add(FactBuilding.CreateFact(1f,
+            value: "Fact using block consequence (1)",
+            causeId: "BlockConsequence1"));
+
+        facts.Add(FactBuilding.CreateFact(1f,
+            value: "Fact using block consequence (2)",
+            causeId: "BlockConsequence2"));
     }
 
     private static DeclaredBlock CreateDeclaredBlock(int blockNumber)
     {
         return new DeclaredBlock(
-            $"Block{blockNumber}",
-            "TestConvention",
-            "TestCausesConvention",
-            new()
+            id: $"Block{blockNumber}",
+            convention: "TestConvention",
+            causesConvention: "TestCausesConvention",
+            blockCausesMap: new()
             {
                 { "BlockCause", $"BlockCause{blockNumber}" }
+            },
+            blockConsequencesMap: new()
+            {
+                { "BlockConsequence", $"BlockConsequence{blockNumber}" }
             });
     }
 
@@ -137,10 +162,9 @@ public static class BuildingUtils
         Fact<string> hobbyRoot = FactBuilding.CreateFact(0.9f, "Хобби");
         facts.Add(hobbyRoot);
 
-        foreach (string hobbyName in new string[] { "Рисование",
-            "Гитара", "Программирование", "Gamedev",
-            "Писательство", "Спорт", "Role play",
-            "3d моделирование"})
+        foreach (string hobbyName in new string[] {
+            "Рисование", "Гитара", "Программирование", "Gamedev",
+            "Писательство", "Спорт", "Role play", "3d моделирование"})
         {
             facts.Add(FactBuilding.CreateFact(0.3f, hobbyName, hobbyRoot.Id));
         }

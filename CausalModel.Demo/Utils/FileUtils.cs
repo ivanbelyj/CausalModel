@@ -1,11 +1,12 @@
-﻿using CausalModel.Model.Serialization;
-using CausalModel.Model;
+﻿using CausalModel.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using CausalModel.Serialization;
+using CausalModel.Common;
 
 namespace CausalModel.Demo.Utils;
 internal static class FileUtils
@@ -21,17 +22,18 @@ internal static class FileUtils
         return fileName;
     }
 
-    public static CausalModel<string>? Deserialize(string fileName)
+    public static CausalBundle<string>? Deserialize(string fileName)
     {
         string fileContent = File.ReadAllText(fileName);
-        var model = CausalModelSerialization.FromJson<string>(fileContent);
-        return model;
+        var bundle = SerializationUtils.FromJson<string>(fileContent);
+        return bundle;
     }
 
-    public static string Serialize(CausalModel<string> model,
+    public static string Serialize(
+        CausalBundle<string> bundle,
         string fileName = "fact-collection.json")
     {
-        string jsonString = CausalModelSerialization.ToJson<string>(model, true);
+        string jsonString = SerializationUtils.ToJson(bundle, true);
         if (!fileName.EndsWith(".json"))
         {
             fileName += ".json";

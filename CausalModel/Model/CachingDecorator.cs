@@ -1,4 +1,3 @@
-using CausalModel.Factors;
 using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
@@ -19,6 +18,9 @@ namespace CausalModel.Model
         public Dictionary<string, Fact<TFactValue>> FactsById { get; private set; }
             = new Dictionary<string, Fact<TFactValue>>();
 
+        /// <summary>
+        /// Cause Ids used by the model facts but not found directly in it
+        /// </summary>
         public HashSet<string> ExternalCauseIds { get; private set; }
             = new HashSet<string>();
 

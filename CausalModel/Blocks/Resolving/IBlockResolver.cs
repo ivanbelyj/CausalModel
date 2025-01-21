@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Blocks.Resolving
 {
-
     public delegate void BlockImplementedEventHandler<TFactValue>(
         object sender,
         DeclaredBlock block,

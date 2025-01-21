@@ -1,5 +1,6 @@
 ﻿using CausalModel.Facts;
 using CausalModel.Model.Instance;
+using CausalModel.Model.Resolving.ResolvingNode;
 using System;
 using System.Collections.Generic;
 using System.Linq;

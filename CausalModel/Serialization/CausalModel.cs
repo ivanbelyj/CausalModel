@@ -1,31 +1,29 @@
-using CausalModel.Blocks;
-using CausalModel.Facts;
+﻿using CausalModel.Facts;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace CausalModel.Model
+namespace CausalModel.Serialization
 {
     /// <summary>
-    /// Represents not resolved causal model, including declared blocks
+    /// Causal model serialization structure
     /// </summary>
-    public class CausalModel<TFactValue>
+    internal class CausalModel<TFactValue>
         where TFactValue : class
     {
-        public string Name { get; set; }
-
-        /// <summary>
-        /// The facts of the causal model, not including facts from blocks
-        /// </summary>
+        [JsonProperty(Required = Required.Always)]
+        public string Name { get; set; } = null!;
         public List<Fact<TFactValue>> Facts { get; set; } = new List<Fact<TFactValue>>();
-
         public List<DeclaredBlock> DeclaredBlocks { get; set; } = new List<DeclaredBlock>();
 
         public CausalModel(string name)
         {
             Name = name;
         }
+
+        // For deserialization only
+        public CausalModel() : this(null!) { }
     }
 }

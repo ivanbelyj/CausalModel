@@ -73,12 +73,12 @@ namespace CausalModel.Model.Resolving
         private IEnumerable<(DeclaredBlock, ModelInstance<TFactValue>)> GetResolvedBlocks()
         {
             var res = new List<(DeclaredBlock, ModelInstance<TFactValue>)>();
-            foreach (BlockFact block in modelInstance.Model.BlockFacts)
+            foreach (DeclaredBlock declaredBlock in modelInstance.Model.DeclaredBlocks)
             {
                 ModelInstance<TFactValue> resolvedBlock =
-                    blockResolver.Resolve(block.DeclaredBlock, modelInstance);
+                    blockResolver.Resolve(declaredBlock, modelInstance);
 
-                res.Add((block.DeclaredBlock, resolvedBlock));
+                res.Add((declaredBlock, resolvedBlock));
             }
             return res;
         }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CausalModel.Blocks.Resolving;
 using CausalModel.Model.Resolving;
 using CausalModel.Model.Instance;
+using CausalModel.Common;
 
 namespace CausalModel.Tests;
 internal static class TestUtils
@@ -55,7 +56,7 @@ internal static class TestUtils
         List<Fact<TFactValue>>? facts = null)
         where TFactValue : class
     {
-        var res = new CausalModel<TFactValue>();
+        var res = new CausalModel<TFactValue>("Name");
         if (facts != null)
             res.Facts = facts;
         return res;
@@ -72,11 +73,14 @@ internal static class TestUtils
         List<Fact<TFactValue>>? facts = null)
         where TFactValue : class
     {
-        var model = new CausalModel<TFactValue>();
+        var model = new CausalModel<TFactValue>("Name");
         if (facts != null)
             model.Facts = facts;
 
-        var builder = new FixationFacadeBuilder<TFactValue>(model);
+        var builder = new FixationFacadeBuilder<TFactValue>(new CausalBundle<TFactValue>()
+        {
+            CausalModels = new[] { model }
+        });
         var facade = builder.Build();
 
         return facade;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Common
+namespace CausalModel.Common.Extensions
 {
     internal static class RandomExtensions
     {

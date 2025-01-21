@@ -1,5 +1,6 @@
 using CausalModel.Blocks.Resolving;
 using CausalModel.Common;
+using CausalModel.Common.DataProviders;
 using CausalModel.Model;
 using System;
 using System.Collections.Generic;
@@ -20,17 +21,17 @@ namespace CausalModel.Running
         public long TotalMilliseconds { get; set; }
 
         public Dictionary<string, Dictionary<string, float>>
-            FactActualProbabilitiesByModelName
-        { get; set; }
-            = new Dictionary<string, Dictionary<string, float>>();
+            FactActualProbabilitiesByModelName {
+            get;
+            set;
+        } = new Dictionary<string, Dictionary<string, float>>();
 
-        public string ToString<TFactValue>(CausalModel<TFactValue> model,
-            BlockResolvingMap<TFactValue> blockResolvingMap)
+        public string ToString<TFactValue>(IFactsProvider<TFactValue> factsProvider)
             where TFactValue : class
         {
             var converter = new SimulationsTotalResultToStringConverter<TFactValue>(
                 this,
-                new FactProvider<TFactValue>(model, blockResolvingMap));
+                factsProvider);
             return converter.Convert();
         }
     }

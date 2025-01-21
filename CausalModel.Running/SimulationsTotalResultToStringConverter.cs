@@ -1,4 +1,4 @@
-﻿using CausalModel.Common;
+﻿using CausalModel.Common.DataProviders;
 using CausalModel.Facts;
 using System;
 using System.Collections.Generic;
@@ -12,11 +12,11 @@ namespace CausalModel.Running
         where TFactValue : class
     {
         private readonly SimulationsTotalResult result;
-        private readonly FactProvider<TFactValue> factProvider;
+        private readonly IFactsProvider<TFactValue> factProvider;
 
         public SimulationsTotalResultToStringConverter(
             SimulationsTotalResult result,
-            FactProvider<TFactValue> factProvider)
+            IFactsProvider<TFactValue> factProvider)
         {
             this.result = result;
             this.factProvider = factProvider;

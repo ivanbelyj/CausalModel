@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,57 +6,110 @@ using System.Threading.Tasks;
 
 namespace CausalModel.Blocks
 {
+    /// <summary>
+    /// A block, declared to be used in a specific causal model. It has consequences
+    /// that can be used by <b>external</b> model, and causes,
+    /// that <b>parent</b> model must provide. Causes are external facts for the block,
+    /// consequences are external facts for the model, that uses the block.
+    /// Ids of external facts are mapped, so every causal model can use several blocks
+    /// satisfying the same convention without conflicts of ids.
+    /// </summary>
     public class DeclaredBlock
     {
-        [JsonProperty(Required = Required.Always)]
         public string Id { get; set; }
 
+        /// <summary>
+        /// Name of the block convention defining consequences that can be used
+        /// in the external model
+        /// </summary>
         public string Convention { get; set; }
 
         /// <summary>
-        /// Null for declared block injected externally (abstract block)
+        /// Name of the block causes convention defining the facts that the parent model
+        /// must provide for the block.
         /// </summary>
-        public string? CausesConvention { get; set; }
+        public string CausesConvention { get; set; }
 
         /// <summary>
-        /// External Fact Ids By Block CauseIds
+        /// Provides external fact ids by local cause id in block.
         /// </summary>
-        public Dictionary<string, string> CauseBlockReferencesMap { get; set; }
+        public Dictionary<string, string> BlockCausesMap { get; set; }
+            = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Provides external consequence ids by local fact id in block.
+        /// Null is correct for default convention only.
+        /// <para>
+        /// <b>Getting / setting of this property is not optimized and supposed
+        /// to be used for not very often operations like serialization.
+        /// Please, use <see cref="MappedExternalToLocal"/> for converting ids</b>
+        /// </para>
+        /// </summary>
+        public IReadOnlyDictionary<string, string> BlockConsequencesMap
+        {
+            get
+            {
+                return localIdsByExternalConsequenceId.ToDictionary(x => x.Value, x => x.Key);
+            }
+            set
+            {
+                localIdsByExternalConsequenceId = value.ToDictionary(x => x.Value, x => x.Key);
+            }
+        }
+
+        /// <summary>
+        /// Provides local cause ids in block by external fact ids.
+        /// </summary>
+        private Dictionary<string, string>? localIdsByExternalConsequenceId
             = new Dictionary<string, string>();
 
         public DeclaredBlock(
             string id,
             string convention,
-            string? causesConvention,
-            Dictionary<string, string>? causeBlockReferencesMap)
+            string causesConvention,
+            Dictionary<string, string> blockCausesMap,
+            Dictionary<string, string> blockConsequencesMap)
         {
             Id = id;
             Convention = convention;
             CausesConvention = causesConvention;
 
-            if (causeBlockReferencesMap != null)
+            if (blockCausesMap != null)
             {
-                CauseBlockReferencesMap = causeBlockReferencesMap;
+                BlockCausesMap = blockCausesMap;
+            }
+            if (blockConsequencesMap != null)
+            {
+                BlockConsequencesMap = blockConsequencesMap;
             }
         }
 
-        /// <summary>
-        /// Constructor used for deserialization. Should be used for deserialization only
-        /// </summary>
-        private DeclaredBlock() : this(null!, null!, null, null) { }
-
-        /// <summary>
-        /// Block cause id to external model fact id
-        /// </summary>
-        public string GetActualExternalFactId(string blockCauseId)
+        public IEnumerable<string> GetMappedExternalCauses()
         {
-            return CauseBlockReferencesMap[blockCauseId];
+            return BlockCausesMap.Values;
         }
 
-        public string? TryGetActualExternalFactId(string blockCauseId)
+        public string? LocalCauseIdToMappedExternalFactId(string blockCauseId)
         {
-            var res = CauseBlockReferencesMap.TryGetValue(blockCauseId, out var actualFactId);
-            return res ? actualFactId : null;
+            return TryGetFromDictionary(BlockCausesMap, blockCauseId);
+        }
+
+        public string? MappedExternalToLocal(string externalCausalId)
+        {
+            return TryGetFromDictionary(localIdsByExternalConsequenceId, externalCausalId);
+        }
+
+        private string? TryGetFromDictionary(
+            Dictionary<string, string>? dictionary,
+            string key)
+        {
+            if (dictionary == null)
+            {
+                return null;
+            }
+
+            var containsKey = dictionary.TryGetValue(key, out var value);
+            return containsKey ? value : null;
         }
     }
 }

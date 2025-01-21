@@ -1,9 +1,8 @@
-using CausalModel.Blocks;
 using CausalModel.Blocks.Resolving;
+using CausalModel.Common;
+using CausalModel.Common.DataProviders;
 using CausalModel.Fixation.Fixators;
-using CausalModel.Model;
 using CausalModel.Model.Instance;
-using CausalModel.Model.Resolving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +14,7 @@ namespace CausalModel.Fixation
     public class FixationFacadeBuilder<TFactValue> : IFixationFacadeFactory<TFactValue>
         where TFactValue : class
     {
-        private CausalModel<TFactValue>? MainModel { get; set; }
-        private BlockResolvingMap<TFactValue>? ResolvingMap { get; set; }
+        private CausalBundle<TFactValue>? CausalBundle { get; set; }
 
         private ModelInstanceFactory<TFactValue>? ModelInstanceFactory { get; set; }
         private ModelInstanceCreatedEventHandler<TFactValue>? onModelInstanceCreated;
@@ -24,21 +22,17 @@ namespace CausalModel.Fixation
         private BlockResolver<TFactValue>? BlockResolver { get; set; }
         private BlockImplementedEventHandler<TFactValue>? onBlockImplemented;
 
+        private IBlockImplementationSelector? BlockImplementationSelector { get; set; }
+
         private IFixator<TFactValue>? Fixator { get; set; }
+
         private FactFixatedEventHandler<TFactValue>? onFactFixated;
 
         public FixationFacadeBuilder() { }
 
-        public FixationFacadeBuilder(CausalModel<TFactValue> mainModel)
+        public FixationFacadeBuilder(CausalBundle<TFactValue> causalBundle)
         {
-            this.MainModel = mainModel;
-        }
-
-        public FixationFacadeBuilder<TFactValue> UseResolvingMap(
-            BlockResolvingMap<TFactValue> resolvingMap)
-        {
-            this.ResolvingMap = resolvingMap;
-            return this;
+            CausalBundle = causalBundle;
         }
 
         public FixationFacadeBuilder<TFactValue> UseModelInstanceFactory(
@@ -67,7 +61,14 @@ namespace CausalModel.Fixation
         public FixationFacadeBuilder<TFactValue> UseBlockResolver(
             BlockResolver<TFactValue> blockResolver)
         {
-            this.BlockResolver = blockResolver;
+            BlockResolver = blockResolver;
+            return this;
+        }
+
+        public FixationFacadeBuilder<TFactValue> UseBlockImplementationSelector(
+            IBlockImplementationSelector blockImplementationSelector)
+        {
+            BlockImplementationSelector = blockImplementationSelector;
             return this;
         }
 
@@ -80,7 +81,7 @@ namespace CausalModel.Fixation
         public FixationFacadeBuilder<TFactValue> UseFixator(
             IFixator<TFactValue> fixator)
         {
-            this.Fixator = fixator;
+            Fixator = fixator;
             return this;
         }
 
@@ -92,9 +93,12 @@ namespace CausalModel.Fixation
 
         public FixationFacade<TFactValue> Build()
         {
-            if (MainModel == null)
-                throw new InvalidOperationException("Main causal model is required " +
-                    "for fixation facade building.");
+            if (CausalBundle == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot build {nameof(FixationFacade<TFactValue>)}" +
+                    $"with {nameof(CausalBundle)} not set.");
+            }
 
             var modelInstanceFactory = ModelInstanceFactory
                 ?? new ModelInstanceFactory<TFactValue>();
@@ -105,12 +109,14 @@ namespace CausalModel.Fixation
                 modelInstanceFactory.ModelInstantiated += onModelInstanceCreated;
             }
 
-            var blockResolvingMap = ResolvingMap ?? new BlockResolvingMap<TFactValue>();
+            var dataProviders = new DataProvidersBuilder<TFactValue>().Build(CausalBundle);
 
             var blockResolver = BlockResolver ?? new BlockResolver<TFactValue>(
-                blockResolvingMap,
-                modelInstanceFactory
-                );
+                modelInstanceFactory,
+                dataProviders.ConventionsProvider,
+                dataProviders.ModelsProvider,
+                BlockImplementationSelector
+                    ?? new BlockImplementationSelector(CausalBundle.BlockResolvingMap));
 
             var fixator = Fixator ?? new Fixator<TFactValue>();
             if (onFactFixated != null)
@@ -120,11 +126,11 @@ namespace CausalModel.Fixation
             }
 
             var res = new FixationFacade<TFactValue>(
-                MainModel,
-                blockResolvingMap,
                 modelInstanceFactory,
                 blockResolver,
-                fixator
+                fixator,
+                dataProviders.ModelsProvider,
+                CausalBundle.DefaultMainModel
                 );
             return res;
         }

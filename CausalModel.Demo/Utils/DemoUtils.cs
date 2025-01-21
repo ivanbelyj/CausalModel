@@ -1,4 +1,5 @@
-﻿using CausalModel.Model.Instance;
+﻿using CausalModel.Common;
+using CausalModel.Model.Instance;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ internal static class DemoUtils
         }
     }
 
-    public static SourceData GetSourceData(string fileName)
+    public static CausalBundle<string> GetSourceData(string fileName)
     {
         try
         {
