@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "CausalModel.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "montecarlo --input character-facts.json --iterations 10000",
+      "workingDirectory": "C:\\src\\Net\\CausalModel\\CausalModel.CLI\\bin"
+    }
+  }
+}

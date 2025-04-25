@@ -1,25 +1,23 @@
 ﻿using CausalModel.Common.DataProviders;
 using CausalModel.Facts;
+using CausalModel.Running.ProbabilityEstimation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Running
+namespace CausalModel.Running.Models.Converters
 {
-    internal class SimulationsTotalResultToStringConverter<TFactValue>
+    internal class ProbabilityEstimationResultToStringConverter<TFactValue>
         where TFactValue : class
     {
-        private readonly SimulationsTotalResult result;
-        private readonly IFactsProvider<TFactValue> factProvider;
+        private readonly ProbabilityEstimationResult<TFactValue> result;
 
-        public SimulationsTotalResultToStringConverter(
-            SimulationsTotalResult result,
-            IFactsProvider<TFactValue> factProvider)
+        public ProbabilityEstimationResultToStringConverter(
+            ProbabilityEstimationResult<TFactValue> result)
         {
             this.result = result;
-            this.factProvider = factProvider;
         }
 
         public string Convert()
@@ -36,19 +34,18 @@ namespace CausalModel.Running
             sb.Append("\n");
             sb.Append(CreateHeader("Actual probabilities", fullScreen: false));
             //sb.AppendLine("Actual probabilities:");
-            foreach (var (modelName, factsAndProbabilities) in
-                result.FactActualProbabilitiesByModelName)
+            foreach (var (modelName, factsInfo) in result.FactsInfoByModelName)
             {
-                sb.AppendLine($"\tModel Name: {modelName}");
+                sb.AppendLine($"\nModel Name: {modelName}\n");
 
                 // Sort facts by probability and color code them
-                var sortedFacts = factsAndProbabilities.ToList();
-                sortedFacts.Sort((pair1, pair2) => pair2.Value.CompareTo(pair1.Value));
+                var sortedFacts = factsInfo.ToList();
+                sortedFacts.Sort((pair1, pair2) => pair2.Value.EstimatedProbability.CompareTo(pair1.Value.EstimatedProbability));
 
-                foreach (var (factId, probability) in sortedFacts)
+                foreach (var (factId, factInfo) in sortedFacts)
                 {
-                    sb.Append("\t\t");
-                    sb.AppendLine(GetFactProbabilityLine(modelName, factId, probability));
+                    sb.Append("\t");
+                    sb.AppendLine(GetFactProbabilityLine(modelName, factId, factInfo.FactValue, factInfo.EstimatedProbability));
                 }
                 sb.AppendLine();
             }
@@ -56,24 +53,21 @@ namespace CausalModel.Running
             return sb.ToString();
         }
 
-        private static string GetFactName(Fact<TFactValue> fact)
+        private static string GetFactName(TFactValue factValue)
         {
             const int charsCountToDisplay = 25;
 
             string res = "";
 
-            if (fact.FactValue != null)
-            {
-                string factValue = fact.FactValue.ToString() ?? "";
+            var factValueString = factValue.ToString();
 
-                if (factValue.Length > charsCountToDisplay)
-                {
-                    res += string.Join("", factValue.Take(charsCountToDisplay - 3))
-                        + "...";
-                }
-                else
-                    res += factValue;
+            if (factValueString.Length > charsCountToDisplay)
+            {
+                res += string.Join("", factValueString.Take(charsCountToDisplay - 3))
+                    + "...";
             }
+            else
+                res += factValueString;
             return res.PadRight(charsCountToDisplay);
         }
 
@@ -90,9 +84,10 @@ namespace CausalModel.Running
             }
             else
             {
-                int paddingLength = 2; // устанавливаем отступы слева и справа
+                int paddingLength = 2; // padding left and right
                 sb.AppendLine(new string('-', header.Length + 2 * paddingLength));
-                sb.AppendLine(header.PadLeft(paddingLength + header.Length)
+                sb.AppendLine(header
+                    .PadLeft(paddingLength + header.Length)
                     .PadRight(header.Length + 2 * paddingLength));
                 sb.AppendLine(new string('-', header.Length + 2 * paddingLength));
             }
@@ -102,15 +97,16 @@ namespace CausalModel.Running
 
 
 
-        private string GetFactProbabilityLine(string modelName,
-            string factId, double probability)
+        private string GetFactProbabilityLine(
+            string modelName,
+            string factId,
+            TFactValue factValue,
+            double probability)
         {
             var probabilityColor = GetProbabilityColor(probability);
 
-            var fact = factProvider.GetFact(modelName, factId);
-
             return $"{probabilityColor}" +
-                $"{SimulationsTotalResultToStringConverter<TFactValue>.GetFactName(fact)}" +
+                $"{ProbabilityEstimationResultToStringConverter<TFactValue>.GetFactName(factValue)}" +
                 $"\tp: {probability:F3}" +
                 $"\t\u001b[90mId: {factId}\u001b[0m";
         }

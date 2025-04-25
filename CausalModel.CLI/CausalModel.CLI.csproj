@@ -11,6 +11,7 @@
 	<PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CausalModel.Running\CausalModel.Running.csproj" />
     <ProjectReference Include="..\CausalModel\CausalModel.csproj" />
   </ItemGroup>
 

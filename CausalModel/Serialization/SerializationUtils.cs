@@ -35,20 +35,28 @@ namespace CausalModel.Serialization
             return deserializedModel == null ? null : MappingUtils.Map(deserializedModel);
         }
 
-        private static JsonSerializerSettings CreateSerializerSettings<TFactValue>(
+        public static JsonSerializerSettings CreateCommonSerializerSettings(
             bool writeIndented = false)
         {
-            JsonSerializerSettings settings = new JsonSerializerSettings()
+            var settings = new JsonSerializerSettings()
             {
                 Formatting = writeIndented ? Formatting.Indented : Formatting.None,
                 NullValueHandling = NullValueHandling.Ignore,
                 TypeNameHandling = TypeNameHandling.Auto,
-                SerializationBinder = new CausalModelSerializationBinder<TFactValue>(),
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
                 {
                     NamingStrategy = new CamelCaseNamingStrategy()
                 }
             };
+            return settings;
+        }
+
+        private static JsonSerializerSettings CreateSerializerSettings<TFactValue>(
+            bool writeIndented = false)
+        {
+            JsonSerializerSettings settings = CreateCommonSerializerSettings(writeIndented);
+            settings.SerializationBinder = new CausalModelSerializationBinder<TFactValue>();
+
             return settings;
         }
     }

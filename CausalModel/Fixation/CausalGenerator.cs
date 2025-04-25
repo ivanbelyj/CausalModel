@@ -29,6 +29,10 @@ namespace CausalModel.Fixation
 
         private readonly Random random;
 
+        private readonly int seed;
+
+        public int Seed => seed;
+
         public CausalGenerator(
             IResolvedModelProvider<TFactValue> modelProvider,
             ICausesTree<TFactValue> causesTree,
@@ -41,7 +45,8 @@ namespace CausalModel.Fixation
             this.fixator = fixator;
             fixator.FactFixated += OnFactFixated;
 
-            random = seed == null ? new Random() : new Random(seed.Value);
+            this.seed = seed ?? new Random().Next();
+            random = new Random(this.seed);
         }
 
         private void OnFactFixated(

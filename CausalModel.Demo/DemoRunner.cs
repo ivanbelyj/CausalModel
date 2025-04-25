@@ -4,7 +4,7 @@ using CausalModel.Demo.Utils;
 using CausalModel.Fixation;
 using CausalModel.Fixation.Fixators;
 using CausalModel.Fixation.Fixators.Pending;
-using CausalModel.Running;
+using CausalModel.Running.ProbabilityEstimation;
 using System;
 using System.Diagnostics;
 
@@ -162,24 +162,24 @@ public class DemoRunner
             {
                 Write($"// Block implemented: {block.Id}");
             })
-            .AddOnModelInstanceCreated((sender, ModelInstance) =>
+            .AddOnModelInstanceCreated((sender, modelInstance) =>
             {
                 Write(
-                    $"// Model instantiated: {ModelInstance.Model.Name}" +
-                    $"{ModelInstance.InstanceId}");
+                    $"// Model instantiated: {modelInstance.Model.Name}" +
+                    $"{modelInstance.InstanceId}");
             });
     }
 
     private void RunMonteCarloSimulation(bool? usePendingFixator = null)
     {
         var facadeBuilder = new FixationFacadeBuilder<string>(bundle);
-        SimulationsRunner<string> simulationsRunner = new(facadeBuilder);
+        var probabilityEstimator = new ProbabilityEstimator<string>(facadeBuilder);
 
         Write("\nRunning Monte-Carlo simulation...");
-        var totalResult = simulationsRunner.RunSimulations(10000);
+        var totalResult = probabilityEstimator.RunSimulations(10000);
 
         WriteMain("\n\nSimulation completed.\n");
 
-        Write(totalResult.ToString(new FactsProvider<string>(bundle.CausalModels)));
+        Write(totalResult.ToString());
     }
 }
