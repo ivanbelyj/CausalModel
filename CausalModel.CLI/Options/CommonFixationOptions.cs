@@ -12,7 +12,7 @@ internal class CommonFixationOptions
     {
         return new Option<string>(
             aliases: new[] { "--input", "-i" },
-            description: "Input (file path or causal bundle raw JSON)")
+            description: "Input (file path, '-' for stdin, or raw JSON)")
         {
             IsRequired = true
         };

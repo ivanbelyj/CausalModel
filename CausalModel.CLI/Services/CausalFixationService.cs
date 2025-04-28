@@ -62,7 +62,27 @@ internal class CausalFixationService
 
     private static CausalBundle<string>? ParseInput(string input)
     {
-        return Deserialize(File.Exists(input) ? File.ReadAllText(input) : input);
+        string jsonContent = GetInputContent(input);
+        return Deserialize(jsonContent);
+    }
+
+    private static string GetInputContent(string input)
+    {
+        if (input == "-")
+        {
+            // Read stdin
+            using var reader = new StreamReader(Console.OpenStandardInput());
+            return reader.ReadToEnd();
+        }
+
+        if (File.Exists(input))
+        {
+            // Read from file
+            return File.ReadAllText(input);
+        }
+
+        // Believe that this is raw JSON
+        return input;
     }
 
     private static CausalBundle<string>? Deserialize(string json)
