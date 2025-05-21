@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model;
+using CausalModel.Fixation.Random;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -27,11 +28,12 @@ namespace CausalModel.CausesExpressionTree
 
         public override bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
-            IFixatedProvider happenedProvider,
+            IFixationStateProvider happenedProvider,
             IRandomProvider fixingValueProvider)
             where TFactValue : class
         {
-            bool probabilityHappened = ProbabilityFactor.IsHappened(Edge.Probability,
+            bool probabilityHappened = ProbabilityFactor.IsHappened(
+                Edge.Probability,
                 (float)fixingValueProvider.NextFloat());
             
             bool isExistingCauseHappened = false;

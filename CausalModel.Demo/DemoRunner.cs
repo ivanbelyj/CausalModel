@@ -93,19 +93,19 @@ public class DemoRunner
 
     private void Generate(int? seed = null)
     {
+        var generator = CreateGenerator(new Fixator<string>(), seed);
         MeasureExecutionTime(() =>
         {
-            var generator = CreateGenerator(new Fixator<string>(), seed);
             generator.FixateRootFacts();
         });
     }
 
     private void GeneratePending(int? seed = null)
     {
+        var pendingFixator = CreatePendingFixator();
+        var generator = CreateGenerator(pendingFixator, seed);
         MeasureExecutionTime(() =>
         {
-            var pendingFixator = CreatePendingFixator();
-            var generator = CreateGenerator(pendingFixator, seed);
             generator.FixateRootFacts();
 
             while (pendingFixator.HasPendingFacts())
@@ -123,7 +123,7 @@ public class DemoRunner
         action();
         stopwatch.Stop();
         Write("\n---------------------");
-        Write($"Execution time: {stopwatch.ElapsedMilliseconds} ms");
+        Write($"Execution time: {stopwatch.Elapsed.TotalNanoseconds:N0} ns ({stopwatch.ElapsedMilliseconds} ms)");
     }
 
     private CausalGenerator<string> CreateGenerator(

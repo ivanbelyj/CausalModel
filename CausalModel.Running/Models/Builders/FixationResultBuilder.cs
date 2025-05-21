@@ -78,12 +78,11 @@ namespace CausalModel.Running.Models.Builders
         }
 
         public FixationResult<TFactValue> BuildResult(
-            long elapsedMilliseconds,
+            TimeSpan elapsed,
             int seed)
         {
-            return new FixationResult<TFactValue>()
+            return new FixationResult<TFactValue>(elapsed)
             {
-                ElapsedMilliseconds = elapsedMilliseconds,
                 Seed = seed,
                 ResultModelElementsByModelName = modelResultsByModelName,
                 ModelInstanceElementsByModelInstanceId = modelInstanceResultsByInstanceId,

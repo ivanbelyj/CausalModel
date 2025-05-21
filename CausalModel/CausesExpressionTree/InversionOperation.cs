@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model;
+using CausalModel.Fixation.Random;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -21,7 +22,7 @@ namespace CausalModel.CausesExpressionTree
 
         public override bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
-            IFixatedProvider happenedProvider,
+            IFixationStateProvider happenedProvider,
             IRandomProvider fixingValueProvider)
         {
             bool? eval = expression.Evaluate(factProvider, happenedProvider, fixingValueProvider);

@@ -15,11 +15,17 @@ namespace CausalModel.Running.Models.FixationResult
         where TFactValue : class
     {
         public int Seed { get; set; }
-        public long ElapsedMilliseconds { get; set; }
+        public long ElapsedMilliseconds { get => Elapsed.Milliseconds; }
+        public TimeSpan Elapsed { get; set; }
 
         public Dictionary<string, FixationResultModelElement<FactInfo<TFactValue>, TFactValue>> ResultModelElementsByModelName { get; set; }
             = new Dictionary<string, FixationResultModelElement<FactInfo<TFactValue>, TFactValue>>();
         public Dictionary<string, FixationResultModelInstanceElement<TFactValue>> ModelInstanceElementsByModelInstanceId { get; set; } = new Dictionary<string, FixationResultModelInstanceElement<TFactValue>>();
+
+        public FixationResult(TimeSpan elapsed)
+        {
+            Elapsed = elapsed;
+        }
 
         public override string ToString()
         {

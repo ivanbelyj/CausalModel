@@ -10,7 +10,7 @@ namespace CausalModel.Fixation
     /// <summary>
     /// Provides information about whether the fact with a given id has been fixated
     /// </summary>
-    public interface IFixatedProvider
+    public interface IFixationStateProvider
     {
         public bool? IsFixated(InstanceFactId factId);
     }

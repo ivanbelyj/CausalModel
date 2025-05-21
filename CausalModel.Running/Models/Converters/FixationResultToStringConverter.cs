@@ -1,5 +1,6 @@
 ﻿using CausalModel.Common.DataProviders;
 using CausalModel.Model.Instance;
+using CausalModel.Running.Extensions;
 using CausalModel.Running.Models.Common;
 using CausalModel.Running.Models.FixationResult;
 using System;
@@ -55,7 +56,7 @@ namespace CausalModel.Running.Models.Converters
         private void AppendExecutionInfo(StringBuilder sb)
         {
             sb.AppendLine($"Seed: {result.Seed}");
-            sb.AppendLine($"Execution time: {result.ElapsedMilliseconds} ms");
+            sb.AppendLine($"Execution time: {result.Elapsed.GetTotalNanoseconds():N0} ns ({result.ElapsedMilliseconds} ms)");
             sb.AppendLine();
         }
 

@@ -21,7 +21,7 @@ namespace CausalModel.Fixation.Fixators
     /// (storing a state, override fixation data, etc.)
     /// </summary>
     /// <typeparam name="TFactValue">The type of the causal model fact value</typeparam>
-    public interface IFixator<TFactValue> : IFixatedProvider
+    public interface IFixator<TFactValue> : IFixationStateProvider
         where TFactValue : class
     {
         event FactFixatedEventHandler<TFactValue> FactFixated;

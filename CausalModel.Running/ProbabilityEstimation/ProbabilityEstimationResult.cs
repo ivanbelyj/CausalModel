@@ -16,16 +16,16 @@ namespace CausalModel.Running.ProbabilityEstimation
     {
         public int SimulationsCount { get; set; }
 
-        public long MinTimeMilliseconds { get; set; }
-        public long MaxTimeMilliseconds { get; set; }
-        public double AverageTimeMilliseconds { get; set; }
+        public TimeSpan MinTime { get; set; }
+        public TimeSpan MaxTime { get; set; }
+        public TimeSpan AverageTime { get; set; }
+
+        public long MinTimeMilliseconds { get => MinTime.Milliseconds; }
+        public long MaxTimeMilliseconds { get => MaxTime.Milliseconds; }
+        public double AverageTimeMilliseconds { get => AverageTime.Milliseconds; }
 
         public long TotalMilliseconds { get; set; }
 
-        //public Dictionary<string, Dictionary<string, float>> FactActualProbabilitiesByModelName
-        //{
-        //    get; set;
-        //} = new Dictionary<string, Dictionary<string, float>>();
         public Dictionary<string, Dictionary<string, ProbabilityEstimationResultFactInfo<TFactValue>>> FactsInfoByModelName
             { get; set; } = new Dictionary<string, Dictionary<string, ProbabilityEstimationResultFactInfo<TFactValue>>>();
 

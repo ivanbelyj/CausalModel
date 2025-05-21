@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CausalModel.Model;
+using CausalModel.Fixation.Random;
 
 namespace CausalModel.CausesExpressionTree
 {
@@ -16,7 +17,7 @@ namespace CausalModel.CausesExpressionTree
     {
         public abstract bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
-            IFixatedProvider happenedProvider,
+            IFixationStateProvider happenedProvider,
             IRandomProvider fixingValueProvider)
             where TFactValue : class;
         // Todo: shouldn't we make the class generic?

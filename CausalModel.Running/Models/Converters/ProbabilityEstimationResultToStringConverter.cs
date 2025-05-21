@@ -1,5 +1,6 @@
 ﻿using CausalModel.Common.DataProviders;
 using CausalModel.Facts;
+using CausalModel.Running.Extensions;
 using CausalModel.Running.ProbabilityEstimation;
 using System;
 using System.Collections.Generic;
@@ -25,11 +26,11 @@ namespace CausalModel.Running.Models.Converters
             StringBuilder sb = new StringBuilder();
 
             sb.Append(CreateHeader("Simulation info"));
-            sb.AppendLine($"Simulations count: {result.SimulationsCount.ToString("N0")}");
-            sb.AppendLine($"Min time: {result.MinTimeMilliseconds.ToString("N0")} ms");
-            sb.AppendLine($"Max time: {result.MaxTimeMilliseconds.ToString("N0")} ms");
-            sb.AppendLine($"Average time: {result.AverageTimeMilliseconds.ToString("F2")} ms");
-            sb.AppendLine($"Total time: {result.TotalMilliseconds.ToString("N0")} ms");
+            sb.AppendLine($"Simulations count: {result.SimulationsCount:N0}");
+            sb.AppendLine($"Min time: {result.MinTime.GetTotalNanoseconds():N0} ns ({result.MinTimeMilliseconds} ms)");
+            sb.AppendLine($"Max time: {result.MaxTime.GetTotalNanoseconds():N0} ns ({result.MaxTimeMilliseconds} ms)");
+            sb.AppendLine($"Average time: {result.AverageTime.GetTotalNanoseconds():N0} ns ({result.AverageTimeMilliseconds} ms)");
+            sb.AppendLine($"Total time: {result.TotalMilliseconds:N0} ms");
 
             sb.Append("\n");
             sb.Append(CreateHeader("Actual probabilities", fullScreen: false));

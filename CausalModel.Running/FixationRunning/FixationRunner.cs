@@ -37,7 +37,7 @@ namespace CausalModel.Running.FixationRunning
             generator.FixateRootFacts();
             stopwatch.Stop();
 
-            return resultBuilder.BuildResult(stopwatch.ElapsedMilliseconds, generator.Seed);
+            return resultBuilder.BuildResult(stopwatch.Elapsed, generator.Seed);
         }
 
         private void OnModelInstantiated(object sender, ModelInstance<TFactValue> modelInstance)

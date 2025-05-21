@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CausalModel.Fixation
+namespace CausalModel.Fixation.Random
 {
     /// <summary>
     /// A component generating random values for causal model fixation purposes

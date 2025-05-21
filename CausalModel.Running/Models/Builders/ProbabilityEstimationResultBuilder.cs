@@ -13,7 +13,7 @@ namespace CausalModel.Running.Models.Builders
         where TFactValue : class
     {
         private int runCount = 0;
-        private readonly List<long> elapsedTimesMs = new List<long>();
+        private readonly List<TimeSpan> elapsedTimes = new List<TimeSpan>();
 
         private readonly Dictionary<string, FixationResultModelElement<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>> aggregatedResultsByModelName
             = new Dictionary<string, FixationResultModelElement<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>>();
@@ -23,7 +23,7 @@ namespace CausalModel.Running.Models.Builders
         {
             runCount++;
 
-            elapsedTimesMs.Add(fixationResult.ElapsedMilliseconds);
+            elapsedTimes.Add(fixationResult.Elapsed);
 
             foreach (var (modelName, resultModelElement) in fixationResult.ResultModelElementsByModelName)
             {
@@ -58,9 +58,9 @@ namespace CausalModel.Running.Models.Builders
             return new ProbabilityEstimationResult<TFactValue>()
             {
                 SimulationsCount = runCount,
-                MinTimeMilliseconds = elapsedTimesMs.Min(),
-                MaxTimeMilliseconds = elapsedTimesMs.Max(),
-                AverageTimeMilliseconds = elapsedTimesMs.Average(),
+                MinTime = elapsedTimes.Min(),
+                MaxTime = elapsedTimes.Max(),
+                AverageTime = TimeSpan.FromTicks((long)elapsedTimes.Average(ts => ts.Ticks)),
                 FactsInfoByModelName = CalculateFactActualProbabilitiesByModelName(),
             };
         }
