@@ -78,7 +78,8 @@ internal static class TestUtils
 
         var builder = new FixationFacadeBuilder<TFactValue>(new CausalBundle<TFactValue>()
         {
-            CausalModels = new[] { model }
+            CausalModels = new[] { model },
+            DefaultMainModel = model.Name,
         });
         var facade = builder.Build();
 
