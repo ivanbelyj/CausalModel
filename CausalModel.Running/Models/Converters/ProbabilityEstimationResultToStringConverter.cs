@@ -27,9 +27,9 @@ namespace CausalModel.Running.Models.Converters
 
             sb.Append(CreateHeader("Simulation info"));
             sb.AppendLine($"Simulations count: {result.SimulationsCount:N0}");
-            sb.AppendLine($"Min time: {result.MinTime.GetTotalNanoseconds():N0} ns ({result.MinTimeMilliseconds} ms)");
-            sb.AppendLine($"Max time: {result.MaxTime.GetTotalNanoseconds():N0} ns ({result.MaxTimeMilliseconds} ms)");
-            sb.AppendLine($"Average time: {result.AverageTime.GetTotalNanoseconds():N0} ns ({result.AverageTimeMilliseconds} ms)");
+            sb.AppendLine($"Min time: {result.MinTimeNanoseconds:N0} ns ({result.MinTimeMilliseconds} ms)");
+            sb.AppendLine($"Max time: {result.MaxTimeNanoseconds:N0} ns ({result.MaxTimeMilliseconds} ms)");
+            sb.AppendLine($"Average time: {result.AverageTimeNanoseconds:N0} ns ({result.AverageTimeMilliseconds} ms)");
             sb.AppendLine($"Total time: {result.TotalMilliseconds:N0} ms");
 
             sb.Append("\n");

@@ -29,8 +29,7 @@ namespace CausalModel.Tests
         {
             // Arrange
             var abstractNode = FactBuilding.CreateFact(1, "Kemsh (race)", null);
-            var races = new string[] {"Cheaymea", "Emera", "Evoymea",
-                "Myeuramea", "Oanai" };
+            var races = new string[] {"Cheaymea", "Emera", "Evoymea", "Myeuramea", "Oanai" };
 
             // Act
             var variants = FactBuilding.CreateAbstractFactVariants(abstractNode, races);

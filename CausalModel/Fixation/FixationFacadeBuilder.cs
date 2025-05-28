@@ -24,7 +24,7 @@ namespace CausalModel.Fixation
 
         private IBlockImplementationSelector? BlockImplementationSelector { get; set; }
 
-        private IFixator<TFactValue>? Fixator { get; set; }
+        private Func<IFixator<TFactValue>>? CreateFixator { get; set; }
 
         private FactFixatedEventHandler<TFactValue>? onFactFixated;
 
@@ -38,7 +38,7 @@ namespace CausalModel.Fixation
         public FixationFacadeBuilder<TFactValue> UseModelInstanceFactory(
             ModelInstanceFactory<TFactValue> modelInstanceFactory)
         {
-            this.ModelInstanceFactory = modelInstanceFactory;
+            ModelInstanceFactory = modelInstanceFactory;
             return this;
         }
 
@@ -78,10 +78,10 @@ namespace CausalModel.Fixation
             return SetOrAddAndReturnThis(ref onBlockImplemented, eventHandler);
         }
 
-        public FixationFacadeBuilder<TFactValue> UseFixator(
-            IFixator<TFactValue> fixator)
+        public FixationFacadeBuilder<TFactValue> UseFixatorFactory(
+            Func<IFixator<TFactValue>> createFixator)
         {
-            Fixator = fixator;
+            CreateFixator = createFixator;
             return this;
         }
 
@@ -118,7 +118,7 @@ namespace CausalModel.Fixation
                 BlockImplementationSelector
                     ?? new BlockImplementationSelector(CausalBundle.BlockResolvingMap));
 
-            var fixator = Fixator ?? new Fixator<TFactValue>();
+            var fixator = CreateFixator == null ? new Fixator<TFactValue>() : CreateFixator();
             if (onFactFixated != null)
             {
                 fixator.FactFixated -= onFactFixated;

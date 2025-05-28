@@ -13,10 +13,10 @@ namespace CausalModel.Running.Models.Builders
     public class FixationResultBuilder<TFactValue>
         where TFactValue : class
     {
-        private readonly Dictionary<string, FixationResultModelInstanceElement<TFactValue>>
-            modelInstanceResultsByInstanceId = new Dictionary<string, FixationResultModelInstanceElement<TFactValue>>();
-        private readonly Dictionary<string, FixationResultModelElement<FactInfo<TFactValue>, TFactValue>> modelResultsByModelName
-            = new Dictionary<string, FixationResultModelElement<FactInfo<TFactValue>, TFactValue>>();
+        private readonly Dictionary<string, FixationResultModelInstanceInfo<TFactValue>>
+            modelInstanceInfoById = new Dictionary<string, FixationResultModelInstanceInfo<TFactValue>>();
+        private readonly Dictionary<string, FixationResultModelInfo<FactInfo<TFactValue>, TFactValue>>
+            modelInfoByName = new Dictionary<string, FixationResultModelInfo<FactInfo<TFactValue>, TFactValue>>();
 
         public void AddModelInstantiated(ModelInstance<TFactValue> modelInstance)
         {
@@ -30,24 +30,25 @@ namespace CausalModel.Running.Models.Builders
                 $"Causal model (id: {modelInstance.InstanceId}) must have its name set " +
                 $"to be used in {nameof(FixationResultBuilder<TFactValue>)}");
 
-            if (!modelInstanceResultsByInstanceId.ContainsKey(modelInstance.InstanceId))
+            if (!modelInstanceInfoById.ContainsKey(modelInstance.InstanceId))
             {
-                modelInstanceResultsByInstanceId.Add(
+                modelInstanceInfoById.Add(
                     modelInstance.InstanceId,
-                    new FixationResultModelInstanceElement<TFactValue>(modelInstance));
+                    new FixationResultModelInstanceInfo<TFactValue>(modelInstance));
             }
 
-            if (!modelResultsByModelName.TryGetValue(modelName, out var modelResult))
+            if (!modelInfoByName.TryGetValue(modelName, out var modelResult))
             {
-                modelResult = new FixationResultModelElement<FactInfo<TFactValue>, TFactValue>(modelName);
-                modelResultsByModelName.Add(modelName, modelResult);
+                modelResult = new FixationResultModelInfo<FactInfo<TFactValue>, TFactValue>(modelName);
+                modelInfoByName.Add(modelName, modelResult);
             }
+
             modelResult.RunCount++;
         }
 
         public void AddFact(InstanceFact<TFactValue> instanceFact, bool isHappened)
         {
-            if (!modelInstanceResultsByInstanceId.TryGetValue(
+            if (!modelInstanceInfoById.TryGetValue(
                 instanceFact.InstanceFactId.ModelInstanceId,
                 out var modelInstanceResult))
             {
@@ -61,7 +62,7 @@ namespace CausalModel.Running.Models.Builders
 
             string factLocalId = instanceFact.Fact.Id;
 
-            var currentModelResult = modelResultsByModelName[modelName];
+            var currentModelResult = modelInfoByName[modelName];
 
             if (!currentModelResult.FactsInfoByFactLocalId.ContainsKey(factLocalId))
             {
@@ -74,7 +75,7 @@ namespace CausalModel.Running.Models.Builders
             }
 
             (isHappened ? modelInstanceResult.OccurredFacts : modelInstanceResult.NotOccurredFacts)
-                .Add(FixationResultInstanceFactInfo<TFactValue>.Create(instanceFact));
+                .Add(InstanceFactInfo<TFactValue>.Create(instanceFact));
         }
 
         public FixationResult<TFactValue> BuildResult(
@@ -84,8 +85,8 @@ namespace CausalModel.Running.Models.Builders
             return new FixationResult<TFactValue>(elapsed)
             {
                 Seed = seed,
-                ResultModelElementsByModelName = modelResultsByModelName,
-                ModelInstanceElementsByModelInstanceId = modelInstanceResultsByInstanceId,
+                ModelInfoByName = modelInfoByName,
+                ModelInstanceInfoById = modelInstanceInfoById,
             };
         }
     }

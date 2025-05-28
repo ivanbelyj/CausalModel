@@ -5,13 +5,13 @@ using System.Text;
 
 namespace CausalModel.Running.Models.FixationResult
 {
-    public class FixationResultInstanceFactInfo<TFactValue>
+    public class InstanceFactInfo<TFactValue>
         where TFactValue : class
     {
         public InstanceFactId InstanceFactId { get; private set; }
         public TFactValue? FactValue { get; private set; }
 
-        private FixationResultInstanceFactInfo(
+        private InstanceFactInfo(
             InstanceFactId instanceFactId,
             TFactValue? factValue)
         {
@@ -19,9 +19,9 @@ namespace CausalModel.Running.Models.FixationResult
             FactValue = factValue;
         }
 
-        public static FixationResultInstanceFactInfo<TFactValue> Create(InstanceFact<TFactValue> instanceFact)
+        public static InstanceFactInfo<TFactValue> Create(InstanceFact<TFactValue> instanceFact)
         {
-            return new FixationResultInstanceFactInfo<TFactValue>(
+            return new InstanceFactInfo<TFactValue>(
                 instanceFact.InstanceFactId,
                 instanceFact.Fact.FactValue);
         }

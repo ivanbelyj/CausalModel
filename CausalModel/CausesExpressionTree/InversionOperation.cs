@@ -12,20 +12,21 @@ namespace CausalModel.CausesExpressionTree
 {
     public class InversionOperation : CausesExpression
     {
-        private CausesExpression expression;
+        public CausesExpression CausesExpression { get; set; }
+
         public InversionOperation(CausesExpression expression)
         {
-            this.expression = expression;
+            CausesExpression = expression;
         }
 
-        public override IEnumerable<ProbabilityFactor> GetEdges() => expression.GetEdges();
+        public override IEnumerable<ProbabilityFactor> GetEdges() => CausesExpression.GetEdges();
 
         public override bool? Evaluate<TFactValue>(
             IModelProvider<TFactValue> factProvider,
             IFixationStateProvider happenedProvider,
             IRandomProvider fixingValueProvider)
         {
-            bool? eval = expression.Evaluate(factProvider, happenedProvider, fixingValueProvider);
+            bool? eval = CausesExpression.Evaluate(factProvider, happenedProvider, fixingValueProvider);
             if (eval == null)
                 return null;
             else

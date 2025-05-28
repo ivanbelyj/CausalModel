@@ -53,8 +53,8 @@ namespace CausalModel.CausesExpressionTree
 
             // If there is no cause, then it is enough to just fulfill
             // the factor itself based on probability
-            return probabilityHappened &&
-                (Edge.CauseId == null || isExistingCauseHappened);
+            return probabilityHappened
+                && (Edge.CauseId == null || isExistingCauseHappened);
         }
     }
 }

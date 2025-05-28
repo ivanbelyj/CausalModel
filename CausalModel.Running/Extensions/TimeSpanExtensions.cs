@@ -9,9 +9,9 @@ namespace CausalModel.Running.Extensions
     {
         public const long NanosecondsPerTick = 100;
 
-        public static double GetTotalNanoseconds(this TimeSpan timeSpan)
+        public static long GetTotalNanoseconds(this TimeSpan timeSpan)
         {
-            return (double)timeSpan.Ticks * NanosecondsPerTick;
+            return timeSpan.Ticks * NanosecondsPerTick;
         }
     }
 }

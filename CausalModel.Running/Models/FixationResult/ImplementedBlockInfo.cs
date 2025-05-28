@@ -5,13 +5,13 @@ using System.Text;
 
 namespace CausalModel.Running.Models.FixationResult
 {
-    public class FixationResultImplementedBlockInfo
+    public class ImplementedBlockInfo
     {
         public string Id { get; private set; }
         public string Convention { get; private set; }
         public string CausesConvention { get; private set; }
 
-        public FixationResultImplementedBlockInfo(DeclaredBlock declaredBlock)
+        public ImplementedBlockInfo(DeclaredBlock declaredBlock)
         {
             Id = declaredBlock.Id;
             Convention = declaredBlock.Convention;

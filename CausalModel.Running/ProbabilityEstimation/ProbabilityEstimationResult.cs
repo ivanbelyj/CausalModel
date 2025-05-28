@@ -2,6 +2,7 @@ using CausalModel.Blocks.Resolving;
 using CausalModel.Common;
 using CausalModel.Common.DataProviders;
 using CausalModel.Model;
+using CausalModel.Running.Extensions;
 using CausalModel.Running.Models.Converters;
 using System;
 using System.Collections.Generic;
@@ -20,9 +21,13 @@ namespace CausalModel.Running.ProbabilityEstimation
         public TimeSpan MaxTime { get; set; }
         public TimeSpan AverageTime { get; set; }
 
-        public long MinTimeMilliseconds { get => MinTime.Milliseconds; }
-        public long MaxTimeMilliseconds { get => MaxTime.Milliseconds; }
-        public double AverageTimeMilliseconds { get => AverageTime.Milliseconds; }
+        public long MinTimeMilliseconds => MinTime.Milliseconds;
+        public long MaxTimeMilliseconds => MaxTime.Milliseconds;
+        public double AverageTimeMilliseconds => AverageTime.Milliseconds;
+
+        public long MinTimeNanoseconds => MinTime.GetTotalNanoseconds();
+        public long MaxTimeNanoseconds => MaxTime.GetTotalNanoseconds();
+        public long AverageTimeNanoseconds => AverageTime.GetTotalNanoseconds();
 
         public long TotalMilliseconds { get; set; }
 

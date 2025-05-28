@@ -29,10 +29,10 @@ namespace CausalModel.Serialization
         {
             var settings = CreateSerializerSettings<TFactValue>();
 
-            var deserializedModel = JsonConvert.DeserializeObject<CausalBundle<TFactValue>>(
+            var deserializedBundle = JsonConvert.DeserializeObject<CausalBundle<TFactValue>>(
                 jsonString,
                 settings);
-            return deserializedModel == null ? null : MappingUtils.Map(deserializedModel);
+            return deserializedBundle == null ? null : MappingUtils.Map(deserializedBundle);
         }
 
         public static JsonSerializerSettings CreateCommonSerializerSettings(

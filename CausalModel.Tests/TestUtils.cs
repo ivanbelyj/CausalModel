@@ -21,8 +21,7 @@ internal static class TestUtils
     public static (Fact<string> cause, Fact<string> consequence)
         CreateCauseAndConsequence()
     {
-        var cause = FactBuilding.CreateFact(1,
-            "Cause", null);
+        var cause = FactBuilding.CreateFact(1, "Cause", null);
 
         var consequence = FactBuilding.CreateFact(1, "Consequence", cause.Id);
         return (cause, consequence);

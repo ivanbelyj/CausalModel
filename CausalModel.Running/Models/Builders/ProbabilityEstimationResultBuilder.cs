@@ -15,8 +15,8 @@ namespace CausalModel.Running.Models.Builders
         private int runCount = 0;
         private readonly List<TimeSpan> elapsedTimes = new List<TimeSpan>();
 
-        private readonly Dictionary<string, FixationResultModelElement<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>> aggregatedResultsByModelName
-            = new Dictionary<string, FixationResultModelElement<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>>();
+        private readonly Dictionary<string, FixationResultModelInfo<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>> aggregatedResultsByModelName
+            = new Dictionary<string, FixationResultModelInfo<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>>();
 
         // Todo: improve naming
         public void AddNewFixationResult(FixationResult<TFactValue> fixationResult)
@@ -25,11 +25,11 @@ namespace CausalModel.Running.Models.Builders
 
             elapsedTimes.Add(fixationResult.Elapsed);
 
-            foreach (var (modelName, resultModelElement) in fixationResult.ResultModelElementsByModelName)
+            foreach (var (modelName, resultModelElement) in fixationResult.ModelInfoByName)
             {
                 if (!aggregatedResultsByModelName.TryGetValue(modelName, out var aggregated))
                 {
-                    aggregated = new FixationResultModelElement<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>(modelName);
+                    aggregated = new FixationResultModelInfo<ProbabilityEstimationResultFactInfo<TFactValue>, TFactValue>(modelName);
                     aggregatedResultsByModelName.Add(
                         modelName,
                         aggregated);

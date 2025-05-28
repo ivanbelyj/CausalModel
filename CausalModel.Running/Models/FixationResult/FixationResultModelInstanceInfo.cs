@@ -1,27 +1,25 @@
-﻿using CausalModel.Model.Instance;
+﻿using CausalModel.Blocks;
+using CausalModel.Model.Instance;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CausalModel.Running.Models.FixationResult
 {
-    public class FixationResultModelInstanceInfo
+    /// <summary>
+    /// Part of the fixation result, separated by model instance
+    /// </summary>
+    public class FixationResultModelInstanceInfo<TFactValue>
+        where TFactValue : class
     {
-        public string ModelName { get; private set; }
-        public string InstanceId { get; private set; }
+        public ModelInstanceInfo ModelInstance { get; private set; }
+        //public List<FixationResultImplementedBlockInfo> ImplementedBlocks { get; set; } = new List<FixationResultImplementedBlockInfo>();
+        public List<InstanceFactInfo<TFactValue>> OccurredFacts { get; set; } = new List<InstanceFactInfo<TFactValue>>();
+        public List<InstanceFactInfo<TFactValue>> NotOccurredFacts { get; set; } = new List<InstanceFactInfo<TFactValue>>();
 
-        private FixationResultModelInstanceInfo(string modelName, string instanceId)
+        public FixationResultModelInstanceInfo(ModelInstance<TFactValue> modelInstance)
         {
-            ModelName = modelName;
-            InstanceId = instanceId;
-        }
-
-        public static FixationResultModelInstanceInfo Create<TFactValue>(ModelInstance<TFactValue> modelInstance)
-            where TFactValue : class
-        {
-            return new FixationResultModelInstanceInfo(
-                modelName: modelInstance.Model.Name,
-                instanceId: modelInstance.InstanceId);
+            ModelInstance = ModelInstanceInfo.Create(modelInstance);
         }
     }
 }

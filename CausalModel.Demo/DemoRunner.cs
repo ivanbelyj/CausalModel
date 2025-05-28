@@ -156,7 +156,7 @@ public class DemoRunner
         IFixator<string>? fixator = null)
     {
         return new FixationFacadeBuilder<string>(bundle)
-            .UseFixator(fixator ?? new Fixator<string>())
+            .UseFixatorFactory(() => fixator ?? new Fixator<string>())
             .AddOnFactFixated(DemoUtils.WriteFactFixated)
             .AddOnBlockImplemented((sender, block, convention, implementation) =>
             {

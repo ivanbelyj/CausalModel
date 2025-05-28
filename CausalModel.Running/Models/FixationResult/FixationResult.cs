@@ -1,5 +1,6 @@
 using CausalModel.Blocks;
 using CausalModel.Model.Instance;
+using CausalModel.Running.Extensions;
 using CausalModel.Running.FixationRunning;
 using CausalModel.Running.Models.Common;
 using CausalModel.Running.Models.Converters;
@@ -15,12 +16,14 @@ namespace CausalModel.Running.Models.FixationResult
         where TFactValue : class
     {
         public int Seed { get; set; }
-        public long ElapsedMilliseconds { get => Elapsed.Milliseconds; }
+        public long ElapsedMilliseconds => Elapsed.Milliseconds;
+        public long ElapsedNanoseconds => Elapsed.GetTotalNanoseconds();
         public TimeSpan Elapsed { get; set; }
 
-        public Dictionary<string, FixationResultModelElement<FactInfo<TFactValue>, TFactValue>> ResultModelElementsByModelName { get; set; }
-            = new Dictionary<string, FixationResultModelElement<FactInfo<TFactValue>, TFactValue>>();
-        public Dictionary<string, FixationResultModelInstanceElement<TFactValue>> ModelInstanceElementsByModelInstanceId { get; set; } = new Dictionary<string, FixationResultModelInstanceElement<TFactValue>>();
+        public Dictionary<string, FixationResultModelInfo<FactInfo<TFactValue>, TFactValue>> ModelInfoByName { get; set; }
+            = new Dictionary<string, FixationResultModelInfo<FactInfo<TFactValue>, TFactValue>>();
+        public Dictionary<string, FixationResultModelInstanceInfo<TFactValue>> ModelInstanceInfoById { get; set; }
+            = new Dictionary<string, FixationResultModelInstanceInfo<TFactValue>>();
 
         public FixationResult(TimeSpan elapsed)
         {

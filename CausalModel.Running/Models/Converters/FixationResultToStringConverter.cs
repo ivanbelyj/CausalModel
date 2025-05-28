@@ -56,13 +56,13 @@ namespace CausalModel.Running.Models.Converters
         private void AppendExecutionInfo(StringBuilder sb)
         {
             sb.AppendLine($"Seed: {result.Seed}");
-            sb.AppendLine($"Execution time: {result.Elapsed.GetTotalNanoseconds():N0} ns ({result.ElapsedMilliseconds} ms)");
+            sb.AppendLine($"Execution time: {result.ElapsedNanoseconds:N0} ns ({result.ElapsedMilliseconds} ms)");
             sb.AppendLine();
         }
 
         private void AppendModelInstances(StringBuilder sb)
         {
-            foreach (var instanceElement in result.ModelInstanceElementsByModelInstanceId.Values)
+            foreach (var instanceElement in result.ModelInstanceInfoById.Values)
             {
                 AppendModelInstanceInfo(sb, instanceElement);
                 AppendOccurredFacts(sb, instanceElement);
@@ -73,7 +73,7 @@ namespace CausalModel.Running.Models.Converters
 
         private void AppendModelInstanceInfo(
             StringBuilder sb,
-            FixationResultModelInstanceElement<TFactValue> instanceElement)
+            FixationResultModelInstanceInfo<TFactValue> instanceElement)
         {
             var instance = instanceElement.ModelInstance;
             var modelInfo = $"Model: {instance.ModelName} (Instance: {instance.InstanceId})";
@@ -90,7 +90,7 @@ namespace CausalModel.Running.Models.Converters
 
         private void AppendOccurredFacts(
             StringBuilder sb,
-            FixationResultModelInstanceElement<TFactValue> instanceElement)
+            FixationResultModelInstanceInfo<TFactValue> instanceElement)
         {
             if (instanceElement.OccurredFacts.Any())
             {
@@ -104,7 +104,7 @@ namespace CausalModel.Running.Models.Converters
 
         private void AppendNotOccurredFacts(
             StringBuilder sb,
-            FixationResultModelInstanceElement<TFactValue> instanceElement)
+            FixationResultModelInstanceInfo<TFactValue> instanceElement)
         {
             if (instanceElement.NotOccurredFacts.Any() && options.ShowNotOccurredFacts)
             {
@@ -118,7 +118,7 @@ namespace CausalModel.Running.Models.Converters
 
         private void AppendFact(
             StringBuilder sb,
-            FixationResultInstanceFactInfo<TFactValue> factInfo,
+            InstanceFactInfo<TFactValue> factInfo,
             bool isOccurred)
         {
             var infix = isOccurred ? "V" : " ";
@@ -152,11 +152,11 @@ namespace CausalModel.Running.Models.Converters
 
         private void AppendModelStatistics(StringBuilder sb)
         {
-            if (result.ResultModelElementsByModelName.Any())
+            if (result.ModelInfoByName.Any())
             {
                 AppendHeader(sb, "Model Statistics");
 
-                foreach (var modelElement in result.ResultModelElementsByModelName.Values)
+                foreach (var modelElement in result.ModelInfoByName.Values)
                 {
                     AppendModelStatistics(sb, modelElement);
                 }
@@ -165,7 +165,7 @@ namespace CausalModel.Running.Models.Converters
 
         private void AppendModelStatistics(
             StringBuilder sb,
-            FixationResultModelElement<FactInfo<TFactValue>, TFactValue> modelElement)
+            FixationResultModelInfo<FactInfo<TFactValue>, TFactValue> modelElement)
         {
             var modelNameLine = $"Model: {modelElement.ModelName}";
             var runCountLine = $"Run count: {modelElement.RunCount}";

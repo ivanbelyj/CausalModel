@@ -25,8 +25,6 @@ namespace CausalModel.Running.FixationRunning
 
             fixationFacade.ModelInstanceFactory.ModelInstantiated += OnModelInstantiated;
             fixationFacade.Fixator.FactFixated += OnFactFixated;
-
-            // Todo: add data about not fixated facts ?
         }
 
         public FixationResult<TFactValue> Run(int? seed = null)

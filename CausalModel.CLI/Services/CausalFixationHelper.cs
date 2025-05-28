@@ -54,7 +54,7 @@ internal class CausalFixationHelper
         IFixator<string>? fixator = null)
     {
         return new FixationFacadeBuilder<string>(bundle)
-            .UseFixator(fixator ?? new Fixator<string>());
+            .UseFixatorFactory(() => fixator ?? new Fixator<string>());
             //.AddOnFactFixated(HandleFactFixated)
             //.AddOnBlockImplemented((sender, block, convention, implementation) =>
             //    fixationResult.ImplementedBlocks.Add(block))
