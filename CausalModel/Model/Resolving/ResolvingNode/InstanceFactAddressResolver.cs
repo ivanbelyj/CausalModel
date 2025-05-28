@@ -31,32 +31,25 @@ namespace CausalModel.Model.Resolving
                 var provider = resolvedModelProvider.GetInstanceProvider(
                     address.ModelInstanceId);
 
-                return
-                    TryGetFromRootModel(provider, address)
-                    ?? TryGetExternalFactId(provider, address)
+                return TryGetFactId(provider, address)
                     ?? throw new InvalidOperationException(
                         $"The fact was not found by address"
                         + $" ({address}) in the resolved model.");
             }
 
-            private InstanceFactId? TryGetFromRootModel(
-                ResolvedModelProvider<TFactValue> provider,
-                InstanceFactAddress address)
-            {
-                var factFromInstanceModel = provider.rootModel.TryGetFact(address.FactId);
-                return factFromInstanceModel?.InstanceFactId;
-            }
-
             /// <param name="address">
-            /// External cause (addressed locally for us) or a consequence
+            /// External cause (addressed locally for us), consequence
             /// of one of our blocks (addressed mapped for us and local for the block)
+            /// or a fact from the root model
             /// </param>
-            private InstanceFactId? TryGetExternalFactId(
+            private InstanceFactId? TryGetFactId(
                 ResolvedModelProvider<TFactValue> provider,
                 InstanceFactAddress address)
             {
-                return (provider.rootModel.TryGetConsequenceFromBlocks(address)
-                    ?? provider.rootModel.TryGetCauseFromParent(address))
+                return (
+                    provider.rootModel.TryGetCauseFromParent(address)
+                    ?? provider.rootModel.TryGetFact(address.FactId)
+                    ?? provider.rootModel.TryGetConsequenceFromBlocks(address))
                     ?.InstanceFactId;
             }
         }

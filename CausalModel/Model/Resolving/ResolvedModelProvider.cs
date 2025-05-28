@@ -87,13 +87,8 @@ namespace CausalModel.Model.Resolving
 
         public InstanceFact<TFactValue> GetFact(InstanceFactAddress address)
         {
-            var res = TryGetFact(address);
-            if (res == null)
-            {
-                throw new InvalidOperationException(
-                    $"Fact was not found by address ({address}).");
-            }
-            return res;
+            return TryGetFact(address)
+                ?? throw new InvalidOperationException($"Fact was not found by address ({address}).");
         }
 
         public IEnumerable<InstanceFact<TFactValue>> GetInstanceFacts(

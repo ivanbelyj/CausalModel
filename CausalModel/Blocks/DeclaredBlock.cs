@@ -40,7 +40,7 @@ namespace CausalModel.Blocks
         /// Provides external consequence ids by local fact id in block.
         /// Null is correct for default convention only.
         /// <para>
-        /// <b>Getting / setting of this property is not optimized and supposed
+        /// <b>Setting of this property is not optimized and supposed
         /// to be used for not very often operations like serialization.
         /// Please, use <see cref="MappedExternalToLocal"/> for converting ids</b>
         /// </para>
@@ -49,7 +49,7 @@ namespace CausalModel.Blocks
         {
             get
             {
-                return localIdsByExternalConsequenceId.ToDictionary(x => x.Value, x => x.Key);
+                return localIdsByExternalConsequenceId;
             }
             set
             {
@@ -60,7 +60,7 @@ namespace CausalModel.Blocks
         /// <summary>
         /// Provides local cause ids in block by external fact ids.
         /// </summary>
-        private Dictionary<string, string>? localIdsByExternalConsequenceId
+        private Dictionary<string, string> localIdsByExternalConsequenceId
             = new Dictionary<string, string>();
 
         public DeclaredBlock(

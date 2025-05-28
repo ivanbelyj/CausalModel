@@ -55,6 +55,13 @@ namespace CausalModel.Fixation.Fixators
             InstanceFact<TFactValue> fact,
             bool isOccurred)
         {
+            // Ignore fixation of facts that were already fixated.
+            // This case occurs when root external facts (referenced to the same facts
+            // in the parent model) of blocks are fixated
+            if (factIdsFixated.ContainsKey(fact.InstanceFactId))
+            {
+                return;
+            }
             factIdsFixated[fact.InstanceFactId] = isOccurred;
             FactFixated?.Invoke(this, fact, isOccurred);
         }

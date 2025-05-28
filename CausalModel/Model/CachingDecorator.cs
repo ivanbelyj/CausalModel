@@ -18,39 +18,39 @@ namespace CausalModel.Model
         public Dictionary<string, Fact<TFactValue>> FactsById { get; private set; }
             = new Dictionary<string, Fact<TFactValue>>();
 
-        /// <summary>
-        /// Cause Ids used by the model facts but not found directly in it
-        /// </summary>
         public HashSet<string> ExternalCauseIds { get; private set; }
             = new HashSet<string>();
 
-        public CachingDecorator(CausalModel<TFactValue> model)
+        public CachingDecorator(CausalModel<TFactValue> model, List<string> declaredBlockOverridenFactIds)
         {
             this.model = model;
 
-            Initialize(this.model);
+            Initialize(this.model, declaredBlockOverridenFactIds);
         }
 
-        private void Initialize(CausalModel<TFactValue> model)
+        private void Initialize(CausalModel<TFactValue> model, List<string> declaredBlockOverridenFactIds)
         {
             // Facts dictionary
             foreach (Fact<TFactValue> fact in model.Facts)
             {
                 FactsById.Add(fact.Id, fact);
             }
+            
+            ExternalCauseIds = declaredBlockOverridenFactIds.ToHashSet();
 
-            // External causes
-            foreach (string? cause in model.Facts
-                .SelectMany(fact => fact.GetCauses())
-                .Select(factor => factor.CauseId))
-            {
-                if (cause != null
-                    && !FactsById.ContainsKey(cause)
-                    && !ExternalCauseIds.Contains(cause))
-                {
-                    ExternalCauseIds.Add(cause);
-                }
-            }
+            // Previously were used cause ids used by the model facts but not found directly in it
+            //// External causes
+            //foreach (string? cause in model.Facts
+            //    .SelectMany(fact => fact.GetCauses())
+            //    .Select(factor => factor.CauseId))
+            //{
+            //    if (cause != null
+            //        && !FactsById.ContainsKey(cause)
+            //        && !ExternalCauseIds.Contains(cause))
+            //    {
+            //        ExternalCauseIds.Add(cause);
+            //    }
+            //}
         }
 
         public Fact<TFactValue>? TryGetFact(string id)

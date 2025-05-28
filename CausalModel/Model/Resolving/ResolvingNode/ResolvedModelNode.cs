@@ -51,7 +51,9 @@ namespace CausalModel.Model.Resolving.ResolvingNode
             this.declaredBlock = declaredBlock;
             this.parent = parent;
 
-            cachingDecorator = new CachingDecorator<TFactValue>(modelInstance.Model);
+            cachingDecorator = new CachingDecorator<TFactValue>(
+                modelInstance.Model,
+                GetOverridenFactIds(modelInstance, declaredBlock));
         }
 
         public string ModelInstanceId => modelInstance.InstanceId;
@@ -72,6 +74,17 @@ namespace CausalModel.Model.Resolving.ResolvingNode
                     + $"(id: {modelInstance.InstanceId}).");
             }
             return res;
+        }
+
+        private List<string> GetOverridenFactIds(
+            ModelInstance<TFactValue> modelInstance,
+            DeclaredBlock? declaredBlock)
+        {
+            var declaredBlockCauses = (IEnumerable<string>?)declaredBlock?.BlockCausesMap.Keys
+                ?? new List<string>();
+            var innerDeclaredBlockConsequences = modelInstance.Model.DeclaredBlocks
+                .SelectMany(x => x.BlockConsequencesMap.Keys);
+            return declaredBlockCauses.Concat(innerDeclaredBlockConsequences).ToList();
         }
 
         private InstanceFact<TFactValue> ToInstanceFact(Fact<TFactValue> fact)
@@ -95,7 +108,6 @@ namespace CausalModel.Model.Resolving.ResolvingNode
             if (parent == null)
             {
                 return null;
-                
             }
 
             if (declaredBlock == null)
@@ -108,7 +120,7 @@ namespace CausalModel.Model.Resolving.ResolvingNode
 
             return cachingDecorator
                 .ExternalCauseIds
-                .Where(localCauseId =>  localCauseId == address.FactId)
+                .Where(localCauseId => localCauseId == address.FactId)
                 .Select(declaredBlock.LocalCauseIdToMappedExternalFactId)
                 .Where(mappedExternalFactId => mappedExternalFactId != null)
                 .Select(parent.TryGetFact!)
