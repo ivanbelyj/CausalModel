@@ -40,7 +40,7 @@ namespace CausalModel.Fixation.Random
                     weightsSum += totalWeight;
                 }
             }
-            if (weightsSum < Epsilon)
+            if (!factsAndWeights.Any())
                 return null;
 
             // Define the Id of the single implementation
@@ -50,12 +50,12 @@ namespace CausalModel.Fixation.Random
             while (choice >= 0)
             {
                 curNodeIndex++;
-                if (curNodeIndex >= variants.Count)
+                if (curNodeIndex >= factsAndWeights.Count)
                     curNodeIndex = 0;
 
                 choice -= factsAndWeights[curNodeIndex].totalWeight;
             }
-            return variants[curNodeIndex];
+            return factsAndWeights[curNodeIndex].fact;
         }
 
         /// <summary>
